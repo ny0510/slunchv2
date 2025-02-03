@@ -1,5 +1,6 @@
 import React from 'react';
 import {StatusBar} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import Home from '@/screens/Home';
 import Onboarding from '@/screens/Onboarding';
@@ -11,13 +12,15 @@ const App = () => {
   const Stack = createStackNavigator();
 
   return (
-    <NavigationContainer>
-      <StatusBar animated barStyle="light-content" backgroundColor={theme.colors.background} />
-      <Stack.Navigator initialRouteName="Onboarding" screenOptions={{headerShown: false, animation: 'slide_from_right', cardStyle: {backgroundColor: theme.colors.background}}}>
-        <Stack.Screen name="Onboarding" component={Onboarding} />
-        <Stack.Screen name="Home" component={Home} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <SafeAreaView style={{flex: 1, backgroundColor: theme.colors.background}}>
+      <NavigationContainer>
+        <StatusBar animated barStyle="light-content" backgroundColor={theme.colors.background} />
+        <Stack.Navigator initialRouteName="Onboarding" screenOptions={{headerShown: false, animation: 'slide_from_right', cardStyle: {backgroundColor: theme.colors.background}}}>
+          <Stack.Screen name="Onboarding" component={Onboarding} />
+          <Stack.Screen name="Home" component={Home} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaView>
   );
 };
 

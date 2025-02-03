@@ -96,7 +96,7 @@ const School = () => {
         </View>
         <View style={s.inputContent}>
           <View style={s.textInputContainer}>
-            <TextInput placeholder="학교명" value={inputText} onChangeText={setInputText} maxLength={25} autoCorrect={false} autoCapitalize="none" style={s.textInput} />
+            <TextInput placeholder="학교명" value={inputText} onChangeText={setInputText} maxLength={25} autoCorrect={false} autoCapitalize="none" placeholderTextColor={theme.colors.secondaryText} style={s.textInput} />
             <TouchableOpacity onPress={() => navigation.navigate('School')}>
               <FontAwesome6 name="magnifying-glass" iconStyle="solid" size={18} color={theme.colors.primaryText} />
             </TouchableOpacity>
