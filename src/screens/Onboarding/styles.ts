@@ -3,6 +3,11 @@ import {StyleSheet} from 'react-native';
 import {theme} from '@/styles/theme';
 
 export const style = StyleSheet.create({
+  centerView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   introContainer: {
     paddingHorizontal: 20,
     paddingVertical: 25,
@@ -27,7 +32,6 @@ export const style = StyleSheet.create({
     color: theme.colors.primaryText,
     fontFamily: theme.typography.title.fontFamily,
     fontSize: 34,
-    lineHeight: 40,
   },
   title: {
     color: theme.colors.primaryText,
@@ -38,14 +42,14 @@ export const style = StyleSheet.create({
     ...theme.typography.subtitle,
   },
   introContent: {
-    gap: 80,
+    gap: 60,
   },
   nextButton: {
     backgroundColor: theme.colors.highlight,
     borderColor: theme.colors.highlight,
     borderWidth: 2,
     borderRadius: 12,
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
