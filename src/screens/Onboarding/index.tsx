@@ -102,11 +102,11 @@ export const SchoolSearchScreen = () => {
             <FlatList
               style={s.schoolFlatList}
               data={schoolList}
-              keyExtractor={item => item.code.toString()}
+              keyExtractor={item => item.schoolCode.toString()}
               renderItem={({item}) => (
                 <TouchableOpacity style={s.schoolFlatListItem} onPress={() => navigation.navigate('ClassSelect', {school: item})}>
-                  <Text style={s.schoolFlatListNameText}>{item.name}</Text>
-                  <Text style={s.schoolFlatListAddrText}>{item.period}</Text>
+                  <Text style={s.schoolFlatListNameText}>{item.schoolName}</Text>
+                  <Text style={s.schoolFlatListAddrText}>{item.region}</Text>
                 </TouchableOpacity>
               )}
             />
@@ -121,11 +121,10 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const {school} = route.params;
 
-  const [classList, setClassList] = useState<{[key: string]: string[]}>({});
-  const [gradeList, setGradeList] = useState<string[]>([]);
-  const [selectedGrade, setSelectedGrade] = useState<string>('');
-  const [selectedClass, setSelectedClass] = useState<string>('');
-  const [selectedClassList, setSelectedClassList] = useState<string[]>([]);
+  const [gradeList, setGradeList] = useState<number[]>([]);
+  const [classList, setClassList] = useState<number[][]>([]);
+  const [selectedGrade, setSelectedGrade] = useState<number>(0);
+  const [selectedClass, setSelectedClass] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const classScrollPickerRef = useRef<any>(null);
@@ -133,58 +132,46 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
   useEffect(() => {
     const fetchClassList = async () => {
       try {
-        const response = await getClassList(school.name, school.code);
-        const groupedClasses = response.reduce((acc: {[key: string]: string[]}, className: string) => {
-          const [grade, classNum] = className.split('-');
-          if (!acc[grade]) {
-            acc[grade] = [];
-          }
-          acc[grade].push(`${classNum}반`);
-          return acc;
-        }, {});
-        setClassList(groupedClasses);
-        const grades = Object.keys(groupedClasses).map(grade => `${grade}학년`);
-        setGradeList(grades);
-        if (grades.length > 0) {
-          setSelectedGrade(grades[0]);
-          const initialClassList = groupedClasses[grades[0].replace('학년', '')];
-          setSelectedClassList(initialClassList);
-          if (initialClassList.length > 0) {
-            setSelectedClass(initialClassList[0]);
-          }
-        }
+        const response = await getClassList(school.schoolCode);
+        const _gradeList = response.map(item => item.grade);
+        const _classList = response.map(item => item.classes);
+
+        setGradeList(_gradeList);
+        setClassList(_classList);
+        setSelectedGrade(_gradeList[0]);
+        setSelectedClass(_classList[0][0]);
       } catch (error) {
         console.error('Error fetching class list:', error);
-        setClassList({});
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchClassList();
-  }, [school]);
+  }, [school.schoolCode]);
 
-  const handleGradeChange = (grade: string | undefined) => {
-    if (!grade) {
+  const handleGradeChange = (index?: number) => {
+    if (index === undefined || index < 1 || index > gradeList.length) {
       return;
     }
 
-    setSelectedGrade(grade);
-    const gradeNumber = grade.replace('학년', '');
-    const newClassList = classList[gradeNumber] || [];
-    setSelectedClassList(newClassList);
-    if (newClassList.length > 0) {
-      setSelectedClass(newClassList[0]);
-      classScrollPickerRef.current?.scrollToTargetIndex(0);
-    }
+    const newGradeIndex = index - 1;
+    setSelectedGrade(gradeList[newGradeIndex]);
+    setSelectedClass(classList[newGradeIndex][0]);
+    classScrollPickerRef.current?.scrollToTargetIndex(0);
   };
 
-  const handleClassChange = (className: string | undefined) => {
-    if (!className) {
+  const handleClassChange = (index?: number) => {
+    if (index === undefined || index < 1) {
       return;
     }
 
-    setSelectedClass(className);
+    const gradeIndex = gradeList.indexOf(selectedGrade);
+    if (gradeIndex === -1 || index > classList[gradeIndex].length) {
+      return;
+    }
+
+    setSelectedClass(classList[gradeIndex][index - 1]);
   };
 
   return (
@@ -203,28 +190,24 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
             <View style={s.scrollPickerContainer}>
               <ScrollPicker
                 dataSource={gradeList}
-                selectedIndex={0}
                 wrapperHeight={150}
                 wrapperBackground={'transparent'}
                 itemHeight={50}
                 highlightColor={theme.colors.secondaryText}
                 highlightBorderWidth={2}
-                itemTextStyle={{fontSize: 20}}
                 onValueChange={handleGradeChange}
-                renderItem={(data, index, isSelected) => <Text style={{fontSize: 20, color: isSelected ? theme.colors.primaryText : theme.colors.secondaryText, fontFamily: theme.typography.subtitle.fontFamily}}>{data}</Text>}
+                renderItem={(data, index, isSelected) => <Text style={{fontSize: 20, color: isSelected ? theme.colors.primaryText : theme.colors.secondaryText, fontFamily: theme.typography.subtitle.fontFamily}}>{data}학년</Text>}
               />
               <ScrollPicker
-                dataSource={selectedClassList}
-                selectedIndex={0}
+                dataSource={classList[gradeList.indexOf(selectedGrade)]}
                 wrapperHeight={150}
                 wrapperBackground={'transparent'}
                 itemHeight={50}
                 highlightColor={theme.colors.secondaryText}
                 highlightBorderWidth={2}
-                itemTextStyle={{fontSize: 20}}
                 onValueChange={handleClassChange}
                 ref={classScrollPickerRef}
-                renderItem={(data, index, isSelected) => <Text style={{fontSize: 20, color: isSelected ? theme.colors.primaryText : theme.colors.secondaryText, fontFamily: theme.typography.subtitle.fontFamily}}>{data}</Text>}
+                renderItem={(data, index, isSelected) => <Text style={{fontSize: 20, color: isSelected ? theme.colors.primaryText : theme.colors.secondaryText, fontFamily: theme.typography.subtitle.fontFamily}}>{data}반</Text>}
               />
             </View>
           )}
@@ -236,6 +219,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
           AsyncStorage.setItem('isFirstOpen', 'false');
           AsyncStorage.setItem('school', JSON.stringify(school));
           AsyncStorage.setItem('class', JSON.stringify({grade: selectedGrade, class: selectedClass}));
+
           navigation.reset({
             index: 0,
             routes: [{name: 'Home'}],

@@ -1,12 +1,10 @@
-export interface ApiResponse {
-  success: boolean;
-  data: [];
-}
-
 export interface School {
-  name: string;
-  period: string;
-  code: number;
+  schoolName: string;
+  schoolCode: number;
+  region: string;
 }
 
-export type ClassList = string[];
+export interface ClassList {
+  grade: number;
+  classes: number[];
+}
