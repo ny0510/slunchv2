@@ -35,6 +35,7 @@ export const style = StyleSheet.create({
   },
   title: {
     color: theme.colors.primaryText,
+    lineHeight: 40,
     ...theme.typography.title,
   },
   subtitle: {
