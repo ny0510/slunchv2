@@ -7,6 +7,7 @@ import {RootStackParamList} from '@/App';
 import {getClassList, searchSchool} from '@/api/api';
 import {theme} from '@/styles/theme';
 import {School} from '@/types/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 import {StackScreenProps} from '@react-navigation/stack';
@@ -232,7 +233,13 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
       <TouchableOpacity
         style={s.nextButton}
         onPress={() => {
-          console.log(`Selected grade: ${selectedGrade}, Selected class: ${selectedClass}`);
+          AsyncStorage.setItem('isFirstOpen', 'false');
+          AsyncStorage.setItem('school', JSON.stringify(school));
+          AsyncStorage.setItem('class', JSON.stringify({grade: selectedGrade, class: selectedClass}));
+          navigation.reset({
+            index: 0,
+            routes: [{name: 'Home'}],
+          });
         }}>
         <Text style={s.nextButtonText}>계속하기</Text>
         <FontAwesome6 name="angle-right" iconStyle="solid" size={18} color={theme.colors.primaryText} />

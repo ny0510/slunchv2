@@ -50,7 +50,7 @@ export const style = StyleSheet.create({
     borderColor: theme.colors.highlight,
     borderWidth: 2,
     borderRadius: 12,
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',

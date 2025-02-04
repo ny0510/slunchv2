@@ -32,7 +32,7 @@ const App = () => {
   }, []);
 
   const RootStack = createStackNavigator({
-    initialRouteName: isFirstOpen ? 'Intro' : 'Intro',
+    initialRouteName: isFirstOpen ? 'Intro' : 'Home',
     screenOptions: {
       headerShown: false,
       cardStyle: {backgroundColor: theme.colors.background},
