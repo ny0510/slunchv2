@@ -3,37 +3,16 @@ import {ActivityIndicator, FlatList, Image, Text, TextInput, TouchableOpacity, V
 import ScrollPicker from 'react-native-wheel-scrollview-picker';
 
 import {style as s} from './styles';
+import {RootStackParamList} from '@/App';
 import {getClassList, searchSchool} from '@/api/api';
 import {theme} from '@/styles/theme';
 import {School} from '@/types/api';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
-import {NavigationProp, RouteProp, useNavigation} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
+import {NavigationProp, useNavigation} from '@react-navigation/native';
+import {StackScreenProps} from '@react-navigation/stack';
 
-type OnboardingStackParamList = {
-  Intro: undefined;
-  SchoolSearch: undefined;
-  ClassSelect: {school: School};
-};
-
-const Stack = createStackNavigator();
-
-const Onboarding = () => (
-  <Stack.Navigator
-    initialRouteName="Intro"
-    screenOptions={{
-      headerShown: false,
-      cardStyle: {backgroundColor: theme.colors.background},
-      animation: 'slide_from_right',
-    }}>
-    <Stack.Screen name="Intro" component={IntroScreen} />
-    <Stack.Screen name="SchoolSearch" component={SchoolSearchScreen} />
-    <Stack.Screen name="ClassSelect" component={ClassSelectScreen} />
-  </Stack.Navigator>
-);
-
-const IntroScreen = () => {
-  const navigation = useNavigation<NavigationProp<OnboardingStackParamList>>();
+export const IntroScreen = () => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   return (
     <View style={s.introContainer}>
@@ -54,8 +33,8 @@ const IntroScreen = () => {
   );
 };
 
-const SchoolSearchScreen = () => {
-  const navigation = useNavigation<NavigationProp<OnboardingStackParamList>>();
+export const SchoolSearchScreen = () => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const [inputText, setInputText] = useState('');
   const [schoolList, setSchoolList] = useState<School[]>([]);
@@ -137,8 +116,8 @@ const SchoolSearchScreen = () => {
   );
 };
 
-const ClassSelectScreen = ({route}: {route: RouteProp<OnboardingStackParamList, 'ClassSelect'>}) => {
-  const navigation = useNavigation<NavigationProp<OnboardingStackParamList>>();
+export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 'ClassSelect'>) => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const {school} = route.params;
 
   const [classList, setClassList] = useState<{[key: string]: string[]}>({});
@@ -261,5 +240,3 @@ const ClassSelectScreen = ({route}: {route: RouteProp<OnboardingStackParamList, 
     </View>
   );
 };
-
-export default Onboarding;
