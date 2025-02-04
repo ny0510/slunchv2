@@ -1,7 +1,8 @@
+import {API_BASE_URL} from '@env';
 import axios from 'axios';
 
 const httpClient = axios.create({
-  baseURL: 'https://slunch-v2.ny64.kr',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
