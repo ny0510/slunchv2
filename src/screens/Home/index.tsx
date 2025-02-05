@@ -1,17 +1,21 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {Button, ScrollView, StyleSheet, Text} from 'react-native';
+
+import {theme} from '@/styles/theme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Home = () => {
   return (
-    <View style={styles.container}>
-      <Text
-        style={{
-          color: 'red',
-          fontSize: 20,
-        }}>
-        Hello, World!
-      </Text>
-    </View>
+    <ScrollView contentContainerStyle={[styles.container]}>
+      <Text style={[theme.typography.title, {color: theme.colors.primaryText}]}>Home</Text>
+      <Button
+        title="Go to Onboarding"
+        onPress={() => {
+          AsyncStorage.setItem('isFirstOpen', 'true');
+          console.log('isFirstOpen set to false');
+        }}
+      />
+    </ScrollView>
   );
 };
 
