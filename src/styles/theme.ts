@@ -7,6 +7,7 @@ const colors: Colors = {
   card: '#252525',
   primaryText: '#FEFCFF',
   secondaryText: '#B0B0B0',
+  border: '#333333',
 };
 
 const typography: Typography = {

@@ -10,6 +10,7 @@ export interface Colors {
   card: string;
   primaryText: string;
   secondaryText: string;
+  border: string;
 }
 
 interface FontStyle {
