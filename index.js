@@ -1,6 +1,7 @@
 import React from 'react';
 import {AppRegistry, Text, TextInput} from 'react-native';
 import {setCustomImage, setCustomText, setCustomTouchableOpacity} from 'react-native-global-props';
+import changeNavigationBarColor from 'react-native-navigation-bar-color';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {enableScreens} from 'react-native-screens';
 
@@ -15,6 +16,8 @@ TextInput.defaultProps.allowFontScaling = false;
 
 const Root = () => {
   enableScreens();
+  changeNavigationBarColor('transparent', true);
+
   setCustomText({
     style: {
       fontFamily: 'Pretendard-Regular',
