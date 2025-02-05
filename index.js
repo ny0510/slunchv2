@@ -22,6 +22,7 @@ const Root = () => {
   setCustomText({
     style: {
       fontFamily: theme.fontWeights.regular,
+      color: theme.colors.primaryText,
       includeFontPadding: false,
       fontSize: 16,
     },
