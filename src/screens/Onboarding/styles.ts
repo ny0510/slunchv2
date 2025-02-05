@@ -71,7 +71,7 @@ export const style = StyleSheet.create({
     justifyContent: 'space-between',
   },
   inputContentTop: {
-    gap: 60,
+    gap: 50,
     flex: 1,
   },
   textInputContainer: {
