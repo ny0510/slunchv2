@@ -30,7 +30,7 @@ export const style = StyleSheet.create({
   },
   introTitle: {
     color: theme.colors.primaryText,
-    fontFamily: theme.typography.title.fontFamily,
+    fontFamily: theme.fontWeights.bold,
     fontSize: 34,
   },
   title: {

@@ -34,7 +34,7 @@ const BottomTabs = createBottomTabNavigator({
     tabBarAccessibilityLabel: 'Tab',
     tabBarLabelStyle: {
       fontSize: 12,
-      fontFamily: 'Pretendard-Medium',
+      fontFamily: theme.fontWeights.medium,
       lineHeight: 15,
     },
     tabBarButton: props => <TabBarButton children={props.children} onPress={props.onPress} />,

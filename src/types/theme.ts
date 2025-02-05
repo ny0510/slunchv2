@@ -1,6 +1,7 @@
 export interface Theme {
   colors: Colors;
   typography: Typography;
+  fontWeights: FontWeights;
 }
 
 export interface Colors {
@@ -24,4 +25,14 @@ export interface Typography {
   body: FontStyle;
   caption: FontStyle;
   small: FontStyle;
+}
+
+export interface FontWeights {
+  thin: string;
+  light: string;
+  regular: string;
+  medium: string;
+  semiBold: string;
+  bold: string;
+  extraBold: string;
 }

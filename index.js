@@ -7,6 +7,7 @@ import {enableScreens} from 'react-native-screens';
 
 import {name as appName} from './app.json';
 import App from '@/App';
+import {theme} from '@/styles/theme';
 
 Text.defaultProps = Text.defaultProps || {};
 Text.defaultProps.allowFontScaling = false;
@@ -20,7 +21,7 @@ const Root = () => {
 
   setCustomText({
     style: {
-      fontFamily: 'Pretendard-Regular',
+      fontFamily: theme.fontWeights.regular,
       includeFontPadding: false,
       fontSize: 16,
     },
