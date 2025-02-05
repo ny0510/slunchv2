@@ -2,6 +2,7 @@ import React from 'react';
 import {AppRegistry, Text, TextInput} from 'react-native';
 import {setCustomImage, setCustomText, setCustomTouchableOpacity} from 'react-native-global-props';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {enableScreens} from 'react-native-screens';
 
 import {name as appName} from './app.json';
 import App from '@/App';
@@ -13,6 +14,7 @@ TextInput.defaultProps.autoCorrect = false;
 TextInput.defaultProps.allowFontScaling = false;
 
 const Root = () => {
+  enableScreens();
   setCustomText({
     style: {
       fontFamily: 'Pretendard-Regular',

@@ -3,8 +3,8 @@ import {ActivityIndicator, FlatList, Image, Text, TextInput, TouchableOpacity, V
 import ScrollPicker from 'react-native-wheel-scrollview-picker';
 
 import {style as s} from './styles';
-import {RootStackParamList} from '@/App';
 import {getClassList, searchSchool} from '@/api/api';
+import {RootStackParamList} from '@/navigation/RootStacks';
 import {theme} from '@/styles/theme';
 import {School} from '@/types/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -222,7 +222,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
 
           navigation.reset({
             index: 0,
-            routes: [{name: 'Home'}],
+            routes: [{name: 'Tab'}],
           });
         }}>
         <Text style={s.nextButtonText}>계속하기</Text>
