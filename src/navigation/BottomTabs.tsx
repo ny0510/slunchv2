@@ -2,6 +2,8 @@ import React from 'react';
 import {GestureResponderEvent, TouchableOpacity} from 'react-native';
 
 import Home from '@/screens/Home';
+import SchoolCard from '@/screens/SchoolCard';
+import Settings from '@/screens/Settings';
 import {theme} from '@/styles/theme';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
@@ -45,8 +47,18 @@ const BottomTabs = createBottomTabNavigator({
         title: '홈',
       },
     },
-    Home1: Home,
-    Home2: Home,
+    SchoolCard: {
+      screen: SchoolCard,
+      options: {
+        title: '학생증',
+      },
+    },
+    Settings: {
+      screen: Settings,
+      options: {
+        title: '설정',
+      },
+    },
   },
 });
 
@@ -62,10 +74,10 @@ const TabBarIcon = ({route, size, color}: {route: {name: string}; size: number; 
   switch (route.name) {
     case 'Home':
       return <FontAwesome6 name="house" iconStyle="solid" size={size} color={color} />;
-    case 'Home1':
-      return <FontAwesome6 name="house" iconStyle="solid" size={size} color={color} />;
-    case 'Home2':
-      return <FontAwesome6 name="house" iconStyle="solid" size={size} color={color} />;
+    case 'SchoolCard':
+      return <FontAwesome6 name="id-card" iconStyle="solid" size={size} color={color} />;
+    case 'Settings':
+      return <FontAwesome6 name="gear" iconStyle="solid" size={size} color={color} />;
     default:
       return null;
   }

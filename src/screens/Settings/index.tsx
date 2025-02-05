@@ -3,10 +3,10 @@ import {ScrollView, StyleSheet, Text} from 'react-native';
 
 import {theme} from '@/styles/theme';
 
-const Home = () => {
+const Settings = () => {
   return (
     <ScrollView contentContainerStyle={[styles.container]}>
-      <Text style={[theme.typography.title, {color: theme.colors.primaryText}]}>홈</Text>
+      <Text style={[theme.typography.title, {color: theme.colors.primaryText}]}>설정</Text>
     </ScrollView>
   );
 };
@@ -19,4 +19,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Home;
+export default Settings;
