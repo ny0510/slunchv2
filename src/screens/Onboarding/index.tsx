@@ -192,21 +192,19 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
             <View style={s.scrollPickerContainer}>
               <ScrollPicker
                 dataSource={gradeList}
-                wrapperHeight={150}
                 wrapperBackground={'transparent'}
                 itemHeight={50}
                 highlightColor={theme.colors.secondaryText}
-                highlightBorderWidth={2}
+                highlightBorderWidth={1}
                 onValueChange={handleGradeChange}
                 renderItem={(data, index, isSelected) => <Text style={{fontSize: 20, color: isSelected ? theme.colors.primaryText : theme.colors.secondaryText, fontFamily: theme.typography.subtitle.fontFamily}}>{data}학년</Text>}
               />
               <ScrollPicker
                 dataSource={classList[gradeList.indexOf(selectedGrade)]}
-                wrapperHeight={150}
                 wrapperBackground={'transparent'}
                 itemHeight={50}
                 highlightColor={theme.colors.secondaryText}
-                highlightBorderWidth={2}
+                highlightBorderWidth={1}
                 onValueChange={handleClassChange}
                 ref={classScrollPickerRef}
                 renderItem={(data, index, isSelected) => <Text style={{fontSize: 20, color: isSelected ? theme.colors.primaryText : theme.colors.secondaryText, fontFamily: theme.typography.subtitle.fontFamily}}>{data}반</Text>}
