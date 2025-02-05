@@ -5,6 +5,6 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["env.d.ts"]
+    "types": ["./env.d.ts"]
   }
 }
