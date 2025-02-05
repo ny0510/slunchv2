@@ -26,7 +26,7 @@ export const IntroScreen = () => {
           <Text style={s.introTitle}>🍔🍕🍣🍜🍩</Text>
         </View>
         <TouchableOpacity style={s.nextButton} onPress={() => navigation.navigate('SchoolSearch')}>
-          <Text style={s.nextButtonText}>계속하기</Text>
+          <Text style={s.nextButtonText}>시작하기</Text>
           <FontAwesome6 name="angle-right" iconStyle="solid" size={18} color={theme.colors.primaryText} />
         </TouchableOpacity>
       </View>
@@ -74,6 +74,7 @@ export const SchoolSearchScreen = () => {
         <View>
           <Text style={s.title}>학교를 선택해주세요</Text>
           <Text style={s.subtitle}>급식 정보를 받아오기 위해 필요해요</Text>
+          <Text style={s.subtitle}>컴시간알리미에 등록된 학교만 검색 가능해요</Text>
         </View>
         <View style={s.inputContent}>
           <View style={s.textInputContainer}>
