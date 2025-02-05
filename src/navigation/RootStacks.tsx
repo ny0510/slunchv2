@@ -1,8 +1,7 @@
 import React from 'react';
-import {ActivityIndicator, Text, View} from 'react-native';
 
 import {useFirstOpen} from '@/hooks/useFirstOpen';
-import BottomTabs from '@/navigation/BotomTabs';
+import BottomTabs from '@/navigation/BottomTabs';
 import {ClassSelectScreen, IntroScreen, SchoolSearchScreen} from '@/screens/Onboarding';
 import {theme} from '@/styles/theme';
 import {School} from '@/types/api';
@@ -17,17 +16,18 @@ export type RootStackParamList = {
 };
 
 const RootStacks = () => {
-  const {isFirstOpen, isLoading} = useFirstOpen();
+  const isFirstOpen = useFirstOpen();
 
-  if (isLoading) {
+  if (isFirstOpen === null) {
     return null;
   }
 
   const RootStack = createStackNavigator({
     screenOptions: {
       headerShown: false,
-      cardStyle: {backgroundColor: theme.colors.background},
       animation: 'slide_from_right',
+      freezeOnBlur: true,
+      cardStyle: {backgroundColor: theme.colors.background},
     },
     groups: {
       FirstLaunch: {
@@ -40,6 +40,7 @@ const RootStacks = () => {
         },
       },
       Tab: {
+        navigationKey: 'Tab',
         screens: {
           Tab: BottomTabs,
         },

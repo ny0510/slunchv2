@@ -3,18 +3,15 @@ import {useEffect, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const useFirstOpen = () => {
-  const [isFirstOpen, setIsFirstOpen] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isFirstOpen, setIsFirstOpen] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const checkIfFirstOpen = async () => {
-      const _isFirstOpen = await AsyncStorage.getItem('isFirstOpen');
-      setIsFirstOpen(!_isFirstOpen);
-      setIsLoading(false);
+    const checkFirstOpen = async () => {
+      const storedValue = await AsyncStorage.getItem('isFirstOpen');
+      setIsFirstOpen(storedValue ? JSON.parse(storedValue) : true);
     };
-
-    checkIfFirstOpen();
+    checkFirstOpen();
   }, []);
 
-  return {isFirstOpen, isLoading};
+  return isFirstOpen;
 };
