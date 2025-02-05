@@ -226,7 +226,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
 
           navigation.reset({
             index: 0,
-            routes: [{name: 'Home'}],
+            routes: [{name: 'Tab'}],
           });
         }}>
         <Text style={s.nextButtonText}>계속하기</Text>
