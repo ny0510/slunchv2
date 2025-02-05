@@ -22,9 +22,7 @@ export const IntroScreen = () => {
       </View>
       <View style={s.introContent}>
         <View>
-          <Text style={s.introTitle}>
-            <Text style={{color: theme.colors.primaryText}}>오</Text>늘 <Text style={{color: theme.colors.primaryText}}>급</Text>식 <Text style={{color: theme.colors.primaryText}}>뭐</Text>임?
-          </Text>
+          <Text style={s.introTitle}>오늘 급식 뭐임?</Text>
           <Text style={s.introTitle}>🍔🍕🍣🍜🍩</Text>
         </View>
         <TouchableOpacity style={s.nextButton} onPress={() => navigation.navigate('SchoolSearch')}>

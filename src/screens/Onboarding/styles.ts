@@ -29,7 +29,7 @@ export const style = StyleSheet.create({
     filter: [{brightness: 0.6}],
   },
   introTitle: {
-    color: theme.colors.secondaryText,
+    color: theme.colors.primaryText,
     fontFamily: theme.typography.title.fontFamily,
     fontSize: 34,
   },
