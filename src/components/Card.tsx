@@ -31,7 +31,7 @@ const Card = ({title, arrow, titleIcon, children}: Props) => {
 const s = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.card,
-    borderRadius: 14,
+    borderRadius: 18,
     paddingHorizontal: 18,
     paddingVertical: 14,
     width: '100%',
