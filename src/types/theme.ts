@@ -29,10 +29,12 @@ export interface Typography {
 
 export interface FontWeights {
   thin: string;
+  extraLight: string;
   light: string;
   regular: string;
   medium: string;
   semiBold: string;
   bold: string;
   extraBold: string;
+  black: string;
 }
