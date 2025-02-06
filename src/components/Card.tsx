@@ -8,16 +8,18 @@ interface Props {
   title?: string;
   arrow?: boolean;
   titleIcon?: React.ReactNode;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 const Card = ({title, arrow, titleIcon, children}: Props) => {
   return (
-    <View style={styles.container}>
+    <View style={s.container}>
       {title && (
-        <View style={styles.titleContainer}>
-          {titleIcon}
-          <Text style={styles.title}>{title}</Text>
+        <View style={s.titleRowContainer}>
+          <View style={s.titleContainer}>
+            {titleIcon}
+            <Text style={s.title}>{title}</Text>
+          </View>
           {arrow && <FontAwesome6 name="angle-right" iconStyle="solid" size={18} color={theme.colors.secondaryText} />}
         </View>
       )}
@@ -26,7 +28,7 @@ const Card = ({title, arrow, titleIcon, children}: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
+const s = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.card,
     borderRadius: 10,
@@ -40,6 +42,11 @@ const styles = StyleSheet.create({
     ...theme.typography.title,
   },
   titleContainer: {
+    gap: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  titleRowContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
