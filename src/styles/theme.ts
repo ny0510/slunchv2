@@ -10,14 +10,6 @@ const colors: Colors = {
   border: '#333333',
 };
 
-const typography: Typography = {
-  title: {fontSize: 24, fontFamily: 'Pretendard-SemiBold'},
-  subtitle: {fontSize: 18, fontFamily: 'Pretendard-Medium'},
-  body: {fontSize: 16, fontFamily: 'Pretendard-Medium'},
-  caption: {fontSize: 14, fontFamily: 'Pretendard-Regular'},
-  small: {fontSize: 12, fontFamily: 'Pretendard-Regular'},
-};
-
 const fontWeights: FontWeights = {
   thin: 'Pretendard-Thin',
   extraLight: 'Pretendard-ExtraLight',
@@ -28,6 +20,14 @@ const fontWeights: FontWeights = {
   bold: 'Pretendard-Bold',
   extraBold: 'Pretendard-ExtraBold',
   black: 'Pretendard-Black',
+};
+
+const typography: Typography = {
+  title: {fontSize: 24, fontFamily: fontWeights.semiBold},
+  subtitle: {fontSize: 18, fontFamily: fontWeights.medium},
+  body: {fontSize: 16, fontFamily: fontWeights.medium},
+  caption: {fontSize: 14, fontFamily: fontWeights.regular},
+  small: {fontSize: 12, fontFamily: fontWeights.regular},
 };
 
 export const theme: Theme = {
