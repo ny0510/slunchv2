@@ -65,7 +65,7 @@ const BottomTabs = createBottomTabNavigator({
 
 const TabBarButton = ({children, onPress}: {children: React.ReactNode; onPress: () => void}) => {
   return (
-    <TouchableScale pressInEasing={Easing.elastic(1.5)} pressOutEasing={Easing.elastic(1.5)} pressInDuration={100} pressOutDuration={100} scaleTo={0.95} onTouchEnd={onPress} style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+    <TouchableScale pressInEasing={Easing.elastic(1.5)} pressOutEasing={Easing.elastic(1.5)} pressInDuration={150} pressOutDuration={150} scaleTo={0.9} onTouchEnd={onPress} style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <TouchableOpacity>{children}</TouchableOpacity>
     </TouchableScale>
   );
