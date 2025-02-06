@@ -5,13 +5,15 @@ interface Props {
   scrollView?: boolean;
   bounceVertical?: boolean;
   bounceHorizontal?: boolean;
+  showsVerticalScrollIndicator?: boolean;
+  showsHorizontalScrollIndicator?: boolean;
   children: React.ReactNode;
 }
 
-const Container = ({scrollView = false, bounceVertical = false, children}: Props) => {
+const Container = ({scrollView = false, bounceVertical = false, showsVerticalScrollIndicator = false, showsHorizontalScrollIndicator = false, children}: Props) => {
   if (scrollView) {
     return (
-      <ScrollView contentContainerStyle={s.container} bounces={bounceVertical}>
+      <ScrollView contentContainerStyle={s.container} bounces={bounceVertical} showsVerticalScrollIndicator={showsVerticalScrollIndicator} showsHorizontalScrollIndicator={showsHorizontalScrollIndicator}>
         {children}
       </ScrollView>
     );
@@ -22,8 +24,7 @@ const Container = ({scrollView = false, bounceVertical = false, children}: Props
 const s = StyleSheet.create({
   container: {
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    padding: 12,
   },
 });
 
