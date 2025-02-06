@@ -44,7 +44,7 @@ export const SchoolSearchScreen = () => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       const fetchSchools = async () => {
-        const query = inputText.trim();
+        const query = inputText.replace(/\s+/g, '').trim();
 
         if (query.length > 0) {
           try {
