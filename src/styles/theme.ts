@@ -4,6 +4,7 @@ const colors: Colors = {
   white: '#FEFCFF',
   background: '#181818',
   highlight: '#7956FC',
+  highlightLight: '#BAA6FF',
   card: '#252525',
   primaryText: '#FEFCFF',
   secondaryText: '#B0B0B0',

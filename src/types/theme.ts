@@ -8,6 +8,7 @@ export interface Colors {
   white: string;
   background: string;
   highlight: string;
+  highlightLight: string;
   card: string;
   primaryText: string;
   secondaryText: string;
