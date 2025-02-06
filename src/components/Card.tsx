@@ -7,13 +7,15 @@ import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 interface Props {
   title?: string;
   arrow?: boolean;
+  notificationDot?: boolean;
   titleIcon?: React.ReactNode;
   children?: React.ReactNode;
 }
 
-const Card = ({title, arrow, titleIcon, children}: Props) => {
+const Card = ({title, arrow, titleIcon, children, notificationDot}: Props) => {
   return (
     <View style={s.container}>
+      {notificationDot && <View style={s.notificationDot} />}
       {title && (
         <View style={s.titleRowContainer}>
           <View style={s.titleContainer}>
@@ -38,6 +40,7 @@ const s = StyleSheet.create({
     borderColor: theme.colors.border,
     borderWidth: 1,
     gap: 8,
+    position: 'relative',
   },
   title: {
     color: theme.colors.primaryText,
@@ -53,6 +56,15 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  notificationDot: {
+    position: 'absolute',
+    width: 12,
+    height: 12,
+    borderRadius: 12 / 2,
+    top: -2,
+    end: -2,
+    backgroundColor: theme.colors.highlight,
   },
 });
 
