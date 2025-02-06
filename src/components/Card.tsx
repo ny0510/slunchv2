@@ -20,7 +20,7 @@ const Card = ({title, arrow, titleIcon, children}: Props) => {
             {titleIcon}
             <Text style={s.title}>{title}</Text>
           </View>
-          {arrow && <FontAwesome6 name="angle-right" iconStyle="solid" size={18} color={theme.colors.secondaryText} />}
+          {arrow && <FontAwesome6 name="angle-right" iconStyle="solid" size={16} color={theme.colors.secondaryText} />}
         </View>
       )}
       {children}
@@ -41,7 +41,8 @@ const s = StyleSheet.create({
   },
   title: {
     color: theme.colors.primaryText,
-    ...theme.typography.title,
+    fontFamily: theme.fontWeights.semiBold,
+    fontSize: 20,
   },
   titleContainer: {
     gap: 8,
