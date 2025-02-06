@@ -1,5 +1,5 @@
 import React from 'react';
-import {Easing, TouchableOpacity} from 'react-native';
+import {Easing, GestureResponderEvent, TouchableOpacity} from 'react-native';
 
 import TouchableScale from '@/components/TouchableScale';
 import Home from '@/screens/Home';
@@ -38,7 +38,7 @@ const BottomTabs = createBottomTabNavigator({
       fontFamily: theme.fontWeights.medium,
       lineHeight: 15,
     },
-    tabBarButton: props => <TabBarButton children={props.children} onPress={props.onPress} />,
+    tabBarButton: props => (props.onPress ? <TabBarButton children={props.children} onPress={event => props.onPress && props.onPress(event!)} /> : null),
     tabBarIcon: props => <TabBarIcon route={route} size={20} color={props.color} />,
   }),
   screens: {
@@ -63,7 +63,7 @@ const BottomTabs = createBottomTabNavigator({
   },
 });
 
-const TabBarButton = ({children, onPress}: {children: React.ReactNode; onPress: () => void}) => {
+const TabBarButton = ({children, onPress}: {children: React.ReactNode; onPress: (event?: GestureResponderEvent) => void}) => {
   return (
     <TouchableScale pressInEasing={Easing.elastic(1.5)} pressOutEasing={Easing.elastic(1.5)} pressInDuration={150} pressOutDuration={150} scaleTo={0.9} onTouchEnd={onPress} style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <TouchableOpacity>{children}</TouchableOpacity>
