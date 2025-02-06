@@ -8,10 +8,10 @@ interface Props {
   children: React.ReactNode;
 }
 
-const Container = ({scrollView = false, bounceVertical = false, bounceHorizontal = false, children}: Props) => {
+const Container = ({scrollView = false, bounceVertical = false, children}: Props) => {
   if (scrollView) {
     return (
-      <ScrollView contentContainerStyle={s.container} alwaysBounceVertical={bounceVertical} alwaysBounceHorizontal={bounceHorizontal}>
+      <ScrollView contentContainerStyle={s.container} bounces={bounceVertical}>
         {children}
       </ScrollView>
     );
@@ -21,7 +21,6 @@ const Container = ({scrollView = false, bounceVertical = false, bounceHorizontal
 
 const s = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 8,
