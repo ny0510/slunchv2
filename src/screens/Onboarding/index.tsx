@@ -1,9 +1,9 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {ActivityIndicator, FlatList, Image, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, Alert, FlatList, Image, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import ScrollPicker from 'react-native-wheel-scrollview-picker';
 
 import {style as s} from './styles';
-import {comciganSchoolSearch, getClassList} from '@/api/api';
+import {comciganSchoolSearch, getClassList, neisSchoolSearch} from '@/api/api';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {theme} from '@/styles/theme';
 import {School} from '@/types/api';
@@ -214,9 +214,27 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
       </View>
       <TouchableOpacity
         style={s.nextButton}
-        onPress={() => {
+        onPress={async () => {
+          const response = await neisSchoolSearch(school.schoolName);
+          const neisSchool = response.find(item => item.region.includes(school.region)) || response[0];
+
+          if (!neisSchool) {
+            Alert.alert('학교 정보를 불러오는데 실패했습니다', '다시 시도해주세요');
+            return;
+          }
+
           AsyncStorage.setItem('isFirstOpen', 'false');
-          AsyncStorage.setItem('school', JSON.stringify(school));
+          AsyncStorage.setItem(
+            'school',
+            JSON.stringify({
+              schoolName: school.schoolName,
+              comciganCode: school.schoolCode,
+              comciganRegion: school.region,
+              neisCode: neisSchool.schoolCode,
+              neisRegion: neisSchool.region,
+              neisRegionCode: neisSchool.regionCode,
+            }),
+          );
           AsyncStorage.setItem('class', JSON.stringify({grade: selectedGrade, class: selectedClass}));
 
           console.log(`grade: ${selectedGrade}, class: ${selectedClass}`);
