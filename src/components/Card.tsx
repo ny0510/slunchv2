@@ -15,14 +15,16 @@ interface Props {
 const Card = ({title, arrow, titleIcon, children, notificationDot}: Props) => {
   return (
     <View style={s.container}>
-      {notificationDot && <View style={s.notificationDot} />}
       {title && (
         <View style={s.titleRowContainer}>
-          <View style={s.titleContainer}>
+          <View style={s.titleContentContainer}>
             {titleIcon}
             <Text style={s.title}>{title}</Text>
           </View>
-          {arrow && <FontAwesome6 name="angle-right" iconStyle="solid" size={16} color={theme.colors.secondaryText} />}
+          <View style={s.titleContentContainer}>
+            {notificationDot && <View style={s.notificationDot} />}
+            {arrow && <FontAwesome6 name="angle-right" iconStyle="solid" size={16} color={theme.colors.secondaryText} />}
+          </View>
         </View>
       )}
       {children}
@@ -34,20 +36,19 @@ const s = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.card,
     borderRadius: 18,
-    paddingHorizontal: 18,
-    paddingVertical: 14,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     width: '100%',
     borderColor: theme.colors.border,
     borderWidth: 1,
     gap: 8,
-    position: 'relative',
   },
   title: {
     color: theme.colors.primaryText,
     fontFamily: theme.fontWeights.semiBold,
     fontSize: 20,
   },
-  titleContainer: {
+  titleContentContainer: {
     gap: 8,
     flexDirection: 'row',
     alignItems: 'center',
@@ -58,12 +59,9 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   notificationDot: {
-    position: 'absolute',
     width: 12,
     height: 12,
     borderRadius: 12 / 2,
-    top: -2,
-    end: -2,
     backgroundColor: theme.colors.highlight,
   },
 });
