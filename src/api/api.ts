@@ -43,6 +43,9 @@ export const getMeal = async (schoolCode: number, regionCode: string, year: stri
     },
   });
 
+  if (response.status === 404) {
+    return [];
+  }
   return response.data;
 };
 
@@ -50,5 +53,9 @@ export const getSchedules = async (schoolCode: number, regionCode: string, year:
   const response = await httpClient.get('/neis/schedule', {
     params: {schoolCode, regionCode, year, month, day},
   });
+
+  if (response.status === 404) {
+    return [];
+  }
   return response.data;
 };

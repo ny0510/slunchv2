@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import React, {ReactNode, useCallback, useEffect, useState} from 'react';
-import {ActivityIndicator, Easing, FlatList, Text, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, Alert, Easing, FlatList, Text, TouchableOpacity, View} from 'react-native';
 import Midnight from 'react-native-midnight';
 
 import {getMeal, getSchedules, getTimetable} from '@/api/api';
@@ -31,15 +31,13 @@ const Home = () => {
     getSettings();
 
     try {
-      const today = dayjs('2025-02-06');
+      const today = dayjs();
       const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
       const classData: {grade: number; class: number} = JSON.parse((await AsyncStorage.getItem('class')) || '{}');
 
       const timetableResponse = await getTimetable(school.comciganCode, classData.grade, classData.class);
       const mealResponse = await getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), today.format('DD'), showAllergy, true, true);
       const scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'));
-
-      console.log('scheduleResponse', scheduleResponse);
 
       setTimetable(transpose(timetableResponse));
       setMeal(mealResponse);
@@ -103,13 +101,19 @@ const Home = () => {
       <View style={{gap: 16, width: '100%'}}>
         <HomeCard title="공지사항" titleIcon={<FontAwesome6 name="bullhorn" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow notificationDot onPress={() => {}} />
         <HomeCard title="학사일정" titleIcon={<FontAwesome6 name="calendar" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => {}}>
-          {loading ? <LoadingView height={100} /> : <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />}
+          {loading ? <LoadingView height={100} /> : schedules.length === 0 ? <Text style={{color: theme.colors.secondaryText}}>학사일정이 없어요.</Text> : <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />}
         </HomeCard>
         <HomeCard title="급식" titleIcon={<FontAwesome6 name="utensils" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => {}}>
-          {loading ? <LoadingView height={100} /> : <FlatList data={meal} renderItem={({item}) => <View>{item.meal.map(renderMealItem)}</View>} scrollEnabled={false} />}
+          {loading ? <LoadingView height={100} /> : meal.length === 0 ? <Text style={{color: theme.colors.secondaryText}}>급식 정보가 없어요.</Text> : <FlatList data={meal} renderItem={({item}) => <View>{item.meal.map(renderMealItem)}</View>} scrollEnabled={false} />}
         </HomeCard>
         <HomeCard title="시간표" titleIcon={<FontAwesome6 name="table" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => {}}>
-          {loading ? <LoadingView height={250} /> : <FlatList data={timetable} contentContainerStyle={{gap: 3}} renderItem={({item, index}) => <TimetableRow item={item} index={index} todayIndex={todayIndex} />} scrollEnabled={false} />}
+          {loading ? (
+            <LoadingView height={250} />
+          ) : timetable.length === 0 ? (
+            <Text style={{color: theme.colors.secondaryText}}>이번주 시간표가 없어요.</Text>
+          ) : (
+            <FlatList data={timetable} contentContainerStyle={{gap: 3}} renderItem={({item, index}) => <TimetableRow item={item} index={index} todayIndex={todayIndex} />} scrollEnabled={false} />
+          )}
         </HomeCard>
       </View>
     </Container>
