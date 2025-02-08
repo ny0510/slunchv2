@@ -33,5 +33,5 @@ export interface Schedule {
     start: string;
     end: string;
   };
-  content: string;
+  schedule: string;
 }
