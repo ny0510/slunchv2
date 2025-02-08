@@ -3,7 +3,7 @@ import {ActivityIndicator, FlatList, Image, Text, TextInput, TouchableOpacity, V
 import ScrollPicker from 'react-native-wheel-scrollview-picker';
 
 import {style as s} from './styles';
-import {getClassList, searchSchool} from '@/api/api';
+import {comciganSchoolSearch, getClassList} from '@/api/api';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {theme} from '@/styles/theme';
 import {School} from '@/types/api';
@@ -48,7 +48,7 @@ export const SchoolSearchScreen = () => {
 
         if (query.length > 0) {
           try {
-            const response = await searchSchool(query);
+            const response = await comciganSchoolSearch(query);
             setSchoolList(response);
           } catch (error) {
             console.error('Error fetching schools:', error);
@@ -133,7 +133,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
   useEffect(() => {
     const fetchClassList = async () => {
       try {
-        const response = await getClassList(school.schoolCode);
+        const response = await getClassList(Number(school.schoolCode));
         const _gradeList = response.map(item => item.grade);
         const _classList = response.map(item => item.classes);
 
