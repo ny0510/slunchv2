@@ -36,6 +36,25 @@ const RootStacks = () => {
       animation: 'slide_from_right',
       freezeOnBlur: true,
       cardStyle: {backgroundColor: theme.colors.background},
+      headerStatusBarHeight: 0,
+      headerStyle: {
+        backgroundColor: theme.colors.background,
+        shadowColor: 'transparent',
+        borderBottomColor: theme.colors.border,
+        borderBottomWidth: 1,
+      },
+      headerTintColor: theme.colors.primaryText,
+      headerTitleAlign: 'left',
+      headerTitleStyle: {
+        color: theme.colors.primaryText,
+        fontFamily: theme.typography.subtitle.fontFamily,
+        fontSize: theme.typography.subtitle.fontSize,
+      },
+      headerLeftContainerStyle: {
+        paddingLeft: 4,
+      },
+      headerBackButtonDisplayMode: 'minimal',
+      headerBackAccessibilityLabel: '뒤로가기',
     },
     groups: {
       FirstLaunch: {
@@ -51,10 +70,34 @@ const RootStacks = () => {
         navigationKey: 'Tab',
         screens: {
           Tab: BottomTabs,
-          Announcement: Announcement,
-          Schedules: Schedules,
-          Meal: Meal,
-          Timetable: Timetable,
+          Announcement: {
+            screen: Announcement,
+            options: {
+              headerShown: true,
+              title: '공지사항',
+            },
+          },
+          Schedules: {
+            screen: Schedules,
+            options: {
+              headerShown: true,
+              title: '학사일정',
+            },
+          },
+          Meal: {
+            screen: Meal,
+            options: {
+              headerShown: true,
+              title: '급식',
+            },
+          },
+          Timetable: {
+            screen: Timetable,
+            options: {
+              headerShown: true,
+              title: '시간표',
+            },
+          },
         },
       },
     },
