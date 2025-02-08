@@ -50,8 +50,11 @@ export const SchoolSearchScreen = () => {
           try {
             const response = await comciganSchoolSearch(query);
             setSchoolList(response);
-          } catch (error) {
-            console.error('Error fetching schools:', error);
+          } catch (e) {
+            const err = e as Error;
+
+            Alert.alert('학교 정보를 불러오는데 실패했습니다. 다시 시도해주세요.', '오류 메시지: ' + err.message);
+            console.error('Error fetching schools:', err);
             setSchoolList([]);
           } finally {
             setIsLoading(false);
@@ -141,8 +144,11 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
         setClassList(_classList);
         setSelectedGrade(_gradeList[0]);
         setSelectedClass(_classList[0][0]);
-      } catch (error) {
-        console.error('Error fetching class list:', error);
+      } catch (e) {
+        const err = e as Error;
+
+        Alert.alert('학급 정보를 불러오는데 실패했습니다. 다시 시도해주세요.', '오류 메시지: ' + err.message);
+        console.error('Error fetching class list:', err);
       } finally {
         setIsLoading(false);
       }

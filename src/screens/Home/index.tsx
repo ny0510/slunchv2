@@ -44,8 +44,11 @@ const Home = () => {
       setTimetable(transpose(timetableResponse));
       setMeal(mealResponse);
       setSchedules(scheduleResponse);
-    } catch (error) {
-      console.error('Error fetching data:', error);
+    } catch (e) {
+      const err = e as Error;
+
+      Alert.alert('데이터를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.', '오류 메시지: ' + err.message);
+      console.error('Error fetching data:', err);
       setLoading(false);
     } finally {
       setLoading(false);
