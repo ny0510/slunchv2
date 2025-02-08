@@ -29,7 +29,7 @@ export const neisSchoolSearch = async (schoolName: string): Promise<School[]> =>
   return response.data;
 };
 
-export const getMeal = async (schoolCode: number, regionCode: string, year: string, month: string, day?: string, howAllergy: boolean = false, showOrigin: boolean = false, showNutrition: boolean = false): Promise<Meal[]> => {
+export const getMeal = async (schoolCode: number, regionCode: string, year: string, month: string, day?: string, showAllergy: boolean = false, showOrigin: boolean = false, showNutrition: boolean = false): Promise<Meal[]> => {
   const response = await httpClient.get('/neis/meal', {
     params: {
       schoolCode,
@@ -37,11 +37,12 @@ export const getMeal = async (schoolCode: number, regionCode: string, year: stri
       year,
       month,
       day,
-      howAllergy,
+      showAllergy,
       showOrigin,
       showNutrition,
     },
   });
+
   return response.data;
 };
 
