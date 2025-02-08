@@ -2,9 +2,9 @@ import React from 'react';
 import {Easing, GestureResponderEvent, TouchableOpacity} from 'react-native';
 
 import TouchableScale from '@/components/TouchableScale';
-import Home from '@/screens/Home';
-import SchoolCard from '@/screens/SchoolCard';
-import Settings from '@/screens/Settings';
+import Home from '@/screens/Tab/Home';
+import SchoolCard from '@/screens/Tab/SchoolCard';
+import Settings from '@/screens/Tab/Settings';
 import {theme} from '@/styles/theme';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
@@ -65,7 +65,7 @@ const BottomTabs = createBottomTabNavigator({
 
 const TabBarButton = ({children, onPress}: {children: React.ReactNode; onPress: (event?: GestureResponderEvent) => void}) => {
   return (
-    <TouchableScale pressInEasing={Easing.elastic(1.5)} pressOutEasing={Easing.elastic(1.5)} pressInDuration={150} pressOutDuration={150} scaleTo={0.9} onTouchEnd={onPress} style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+    <TouchableScale pressInEasing={Easing.elastic(1.5)} pressOutEasing={Easing.elastic(1.5)} pressInDuration={150} pressOutDuration={150} scaleTo={0.9} onPress={onPress} style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <TouchableOpacity>{children}</TouchableOpacity>
     </TouchableScale>
   );

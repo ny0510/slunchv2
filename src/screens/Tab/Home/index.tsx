@@ -7,11 +7,13 @@ import {getMeal, getSchedules, getTimetable} from '@/api/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import TouchableScale from '@/components/TouchableScale';
+import {RootStackParamList} from '@/navigation/RootStacks';
 import {theme} from '@/styles/theme';
 import {Meal, Schedule, Timetable} from '@/types/api';
 import {MealItem} from '@/types/meal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
+import {NavigationProp, useNavigation} from '@react-navigation/native';
 
 const Home = () => {
   const [timetable, setTimetable] = useState<Timetable[][]>([]);
@@ -21,6 +23,8 @@ const Home = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [todayIndex, setTodayIndex] = useState<number>(dayjs().day() - 1);
   const [midnightTrigger, setMidnightTrigger] = useState<boolean>(false);
+
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const getSettings = async () => {
     const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
@@ -99,14 +103,14 @@ const Home = () => {
   return (
     <Container scrollView>
       <View style={{gap: 16, width: '100%'}}>
-        <HomeCard title="공지사항" titleIcon={<FontAwesome6 name="bullhorn" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow notificationDot onPress={() => {}} />
-        <HomeCard title="학사일정" titleIcon={<FontAwesome6 name="calendar" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => {}}>
+        <HomeCard title="공지사항" titleIcon={<FontAwesome6 name="bullhorn" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow notificationDot onPress={() => navigation.navigate('Announcement')} />
+        <HomeCard title="학사일정" titleIcon={<FontAwesome6 name="calendar" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Schedules')}>
           {loading ? <LoadingView height={100} /> : schedules.length === 0 ? <Text style={{color: theme.colors.secondaryText}}>학사일정이 없어요.</Text> : <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />}
         </HomeCard>
-        <HomeCard title="급식" titleIcon={<FontAwesome6 name="utensils" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => {}}>
+        <HomeCard title="급식" titleIcon={<FontAwesome6 name="utensils" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Meal')}>
           {loading ? <LoadingView height={100} /> : meal.length === 0 ? <Text style={{color: theme.colors.secondaryText}}>급식 정보가 없어요.</Text> : <FlatList data={meal} renderItem={({item}) => <View>{item.meal.map(renderMealItem)}</View>} scrollEnabled={false} />}
         </HomeCard>
-        <HomeCard title="시간표" titleIcon={<FontAwesome6 name="table" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => {}}>
+        <HomeCard title="시간표" titleIcon={<FontAwesome6 name="table" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Timetable')}>
           {loading ? (
             <LoadingView height={250} />
           ) : timetable.length === 0 ? (
@@ -121,7 +125,7 @@ const Home = () => {
 };
 
 const HomeCard = ({title, titleIcon, arrow, onPress, notificationDot, children}: {title?: string; titleIcon: ReactNode; arrow?: boolean; onPress?: () => void; notificationDot?: boolean; children?: ReactNode}) => (
-  <TouchableScale pressInEasing={Easing.elastic(0.5)} pressOutEasing={Easing.elastic(0.5)} pressInDuration={100} pressOutDuration={100} scaleTo={0.98} onTouchEnd={onPress}>
+  <TouchableScale pressInEasing={Easing.elastic(0.5)} pressOutEasing={Easing.elastic(0.5)} pressInDuration={100} pressOutDuration={100} scaleTo={0.98} onPress={onPress}>
     <TouchableOpacity>
       <Card title={title} titleIcon={titleIcon} arrow={arrow} notificationDot={notificationDot}>
         {children}

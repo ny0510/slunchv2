@@ -2,7 +2,11 @@ import React from 'react';
 
 import {useFirstOpen} from '@/hooks/useFirstOpen';
 import BottomTabs from '@/navigation/BottomTabs';
+import Announcement from '@/screens/Announcement';
+import Meal from '@/screens/Meal';
 import {ClassSelectScreen, IntroScreen, SchoolSearchScreen} from '@/screens/Onboarding';
+import Schedules from '@/screens/Schedules';
+import Timetable from '@/screens/Timetable';
 import {theme} from '@/styles/theme';
 import {School} from '@/types/api';
 import {createStaticNavigation} from '@react-navigation/native';
@@ -13,6 +17,10 @@ export type RootStackParamList = {
   Intro: undefined;
   SchoolSearch: undefined;
   ClassSelect: {school: School};
+  Announcement: undefined;
+  Schedules: undefined;
+  Meal: undefined;
+  Timetable: undefined;
 };
 
 const RootStacks = () => {
@@ -43,6 +51,10 @@ const RootStacks = () => {
         navigationKey: 'Tab',
         screens: {
           Tab: BottomTabs,
+          Announcement: Announcement,
+          Schedules: Schedules,
+          Meal: Meal,
+          Timetable: Timetable,
         },
       },
     },
