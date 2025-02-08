@@ -1,4 +1,4 @@
-package com.slunchv2
+package kr.ny64.slunchv2
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
