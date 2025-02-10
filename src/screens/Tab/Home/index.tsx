@@ -105,10 +105,10 @@ const Home = () => {
       <View style={{gap: 16, width: '100%'}}>
         <HomeCard title="공지사항" titleIcon={<FontAwesome6 name="bullhorn" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow notificationDot onPress={() => navigation.navigate('Announcement')} />
         <HomeCard title="학사일정" titleIcon={<FontAwesome6 name="calendar" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Schedules')}>
-          {loading ? <LoadingView height={100} /> : schedules.length === 0 ? <Text style={{color: theme.colors.secondaryText}}>학사일정이 없어요.</Text> : <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />}
+          {loading ? <LoadingView height={100} /> : schedules.length === 0 ? <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}]}>학사일정이 없어요.</Text> : <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />}
         </HomeCard>
         <HomeCard title="급식" titleIcon={<FontAwesome6 name="utensils" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Meal')}>
-          {loading ? <LoadingView height={100} /> : meal.length === 0 ? <Text style={{color: theme.colors.secondaryText}}>급식 정보가 없어요.</Text> : <FlatList data={meal} renderItem={({item}) => <View>{item.meal.map(renderMealItem)}</View>} scrollEnabled={false} />}
+          {loading ? <LoadingView height={100} /> : meal.length === 0 ? <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}]}>급식 정보가 없어요.</Text> : <FlatList data={meal} renderItem={({item}) => <View>{item.meal.map(renderMealItem)}</View>} scrollEnabled={false} />}
         </HomeCard>
         <HomeCard title="시간표" titleIcon={<FontAwesome6 name="table" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Timetable')}>
           {loading ? (

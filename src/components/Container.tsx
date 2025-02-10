@@ -24,7 +24,7 @@ const Container = ({scrollView = false, bounceVertical = false, showsVerticalScr
 const s = StyleSheet.create({
   container: {
     alignItems: 'center',
-    padding: 12,
+    padding: 14,
   },
 });
 

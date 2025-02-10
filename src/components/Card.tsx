@@ -35,9 +35,9 @@ const Card = ({title, arrow, titleIcon, children, notificationDot}: Props) => {
 const s = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.card,
-    borderRadius: 18,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    borderRadius: 12,
+    paddingHorizontal: 22,
+    paddingVertical: 18,
     width: '100%',
     borderColor: theme.colors.border,
     borderWidth: 1,
@@ -45,7 +45,7 @@ const s = StyleSheet.create({
   },
   title: {
     color: theme.colors.primaryText,
-    fontFamily: theme.fontWeights.semiBold,
+    fontFamily: theme.fontWeights.bold,
     fontSize: 20,
   },
   titleContentContainer: {
