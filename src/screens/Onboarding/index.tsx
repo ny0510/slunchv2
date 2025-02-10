@@ -1,9 +1,10 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {ActivityIndicator, Alert, FlatList, Image, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, Alert, FlatList, ImageBackground, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import ScrollPicker from 'react-native-wheel-scrollview-picker';
 
 import {style as s} from './styles';
 import {comciganSchoolSearch, getClassList, neisSchoolSearch} from '@/api/api';
+import EmojiSlotMachine from '@/components/EmojiSlotMachine';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {theme} from '@/styles/theme';
 import {School} from '@/types/api';
@@ -18,12 +19,12 @@ export const IntroScreen = () => {
   return (
     <View style={s.introContainer}>
       <View style={s.onboardingImageContainer}>
-        <Image source={require('@/assets/images/onboarding.png')} style={s.onboardingImage} />
+        <ImageBackground blurRadius={4} source={require('@/assets/images/onboarding.png')} style={s.onboardingImage} />
       </View>
       <View style={s.introContent}>
-        <View>
+        <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
           <Text style={s.introTitle}>오늘 급식 뭐임?</Text>
-          <Text style={s.introTitle}>🍔🍕🍣🍜🍩</Text>
+          <EmojiSlotMachine emojis={['🍔', '🍕', '🍟', '🍦', '🍩']} delay={1000} duration={300} />
         </View>
         <TouchableOpacity style={s.nextButton} onPress={() => navigation.navigate('SchoolSearch')}>
           <Text style={s.nextButtonText}>시작하기</Text>
