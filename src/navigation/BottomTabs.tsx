@@ -3,6 +3,7 @@ import React, {useState} from 'react';
 import {Easing, GestureResponderEvent, TouchableOpacity} from 'react-native';
 
 import TouchableScale from '@/components/TouchableScale';
+import Community from '@/screens/Tab/Community';
 import Home from '@/screens/Tab/Home';
 import SchoolCard from '@/screens/Tab/SchoolCard';
 import Settings from '@/screens/Tab/Settings';
@@ -48,7 +49,7 @@ const BottomTabs = () => {
       })}>
       <BottomTab.Screen name="Home" component={Home} options={{title: '홈'}} />
       {isSunrin && <BottomTab.Screen name="SchoolCard" component={SchoolCard} options={{title: '학생증'}} />}
-      <BottomTab.Screen name="Community" component={Home} options={{title: '커뮤니티'}} />
+      <BottomTab.Screen name="Community" component={Community} options={{title: '커뮤니티'}} />
       <BottomTab.Screen name="Settings" component={Settings} options={{title: '설정'}} />
     </BottomTab.Navigator>
   );
