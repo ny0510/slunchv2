@@ -1,4 +1,4 @@
-package com.slunchv2
+package kr.ny64.slunchv2
 
 import android.app.Application
 import com.facebook.react.PackageList
