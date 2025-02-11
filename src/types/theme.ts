@@ -18,6 +18,7 @@ export interface Colors {
 interface FontStyle {
   fontSize: number;
   fontFamily: string;
+  color: string;
 }
 
 export interface Typography {
