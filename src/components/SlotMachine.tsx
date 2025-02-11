@@ -3,15 +3,16 @@ import {StyleSheet, Text, View} from 'react-native';
 import Reanimated, {Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 interface Props {
-  emojis?: string[];
-  emojiHeight?: number;
+  list: string[];
+  style?: object;
+  height?: number;
   delay?: number;
   duration?: number;
 }
 
-const EmojiSlotMachine = ({emojis = ['🍔', '🍕', '🍟', '🍦', '🍩'], emojiHeight = 45, delay = 1500, duration = 500}: Props) => {
+const SlotMachine = ({list, height = 45, delay = 1500, duration = 500, style}: Props) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const translateY = useSharedValue(-emojiHeight);
+  const translateY = useSharedValue(-height);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{translateY: translateY.value}],
@@ -26,8 +27,8 @@ const EmojiSlotMachine = ({emojis = ['🍔', '🍕', '🍟', '🍦', '🍩'], em
   };
 
   const handleAnimationEnd = () => {
-    setCurrentIndex(prev => (prev - 1 + emojis.length) % emojis.length);
-    translateY.value = -emojiHeight;
+    setCurrentIndex(prev => (prev - 1 + list.length) % list.length);
+    translateY.value = -height;
     setTimeout(animateStep, delay);
   };
 
@@ -36,31 +37,30 @@ const EmojiSlotMachine = ({emojis = ['🍔', '🍕', '🍟', '🍦', '🍩'], em
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const prevIndex = (currentIndex - 1 + emojis.length) % emojis.length;
-  const nextIndex = (currentIndex + 1) % emojis.length;
+  const prevIndex = (currentIndex - 1 + list.length) % list.length;
+  const nextIndex = (currentIndex + 1) % list.length;
 
   const s = StyleSheet.create({
     container: {
-      height: emojiHeight,
+      height: height,
       overflow: 'hidden',
     },
     emoji: {
-      fontSize: 32,
-      textAlign: 'center',
-      height: emojiHeight,
-      lineHeight: emojiHeight,
+      height: height,
+      lineHeight: height,
+      ...style,
     },
   });
 
   return (
     <View style={s.container}>
       <Reanimated.View style={[animatedStyle]}>
-        <Text style={s.emoji}>{emojis[prevIndex]}</Text>
-        <Text style={s.emoji}>{emojis[currentIndex]}</Text>
-        <Text style={s.emoji}>{emojis[nextIndex]}</Text>
+        <Text style={s.emoji}>{list[prevIndex]}</Text>
+        <Text style={s.emoji}>{list[currentIndex]}</Text>
+        <Text style={s.emoji}>{list[nextIndex]}</Text>
       </Reanimated.View>
     </View>
   );
 };
 
-export default EmojiSlotMachine;
+export default SlotMachine;
