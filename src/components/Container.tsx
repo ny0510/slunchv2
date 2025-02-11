@@ -3,18 +3,18 @@ import {ScrollView, StyleSheet, View} from 'react-native';
 
 interface Props {
   scrollView?: boolean;
-  bounceVertical?: boolean;
-  bounceHorizontal?: boolean;
+  bounce?: boolean;
   showsVerticalScrollIndicator?: boolean;
   showsHorizontalScrollIndicator?: boolean;
   style?: {};
   children: React.ReactNode;
+  refreshControl?: React.ReactElement; // added refreshControl prop
 }
 
-const Container = ({scrollView = false, bounceVertical = false, showsVerticalScrollIndicator = false, showsHorizontalScrollIndicator = false, style, children}: Props) => {
+const Container = ({scrollView = false, bounce = false, showsVerticalScrollIndicator = false, showsHorizontalScrollIndicator = false, style, children, refreshControl}: Props) => {
   if (scrollView) {
     return (
-      <ScrollView contentContainerStyle={[s.container, style]} bounces={bounceVertical} showsVerticalScrollIndicator={showsVerticalScrollIndicator} showsHorizontalScrollIndicator={showsHorizontalScrollIndicator}>
+      <ScrollView contentContainerStyle={[s.container, style]} bounces={bounce} showsVerticalScrollIndicator={showsVerticalScrollIndicator} showsHorizontalScrollIndicator={showsHorizontalScrollIndicator} refreshControl={refreshControl}>
         {children}
       </ScrollView>
     );
