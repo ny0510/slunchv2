@@ -4,7 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import ScrollPicker from 'react-native-wheel-scrollview-picker';
 
 import {style as s} from './styles';
-import {comciganSchoolSearch, getClassList, neisSchoolSearch} from '@/api/api';
+import {comciganSchoolSearch, getClassList, neisSchoolSearch} from '@/api';
 import SlotMachine from '@/components/SlotMachine';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {theme} from '@/styles/theme';

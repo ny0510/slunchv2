@@ -3,7 +3,7 @@ import React, {ReactNode, useCallback, useEffect, useState} from 'react';
 import {ActivityIndicator, Alert, Easing, FlatList, Text, TouchableOpacity, View} from 'react-native';
 import Midnight from 'react-native-midnight';
 
-import {getMeal, getSchedules, getTimetable} from '@/api/api';
+import {getMeal, getSchedules, getTimetable} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import TouchableScale from '@/components/TouchableScale';
@@ -32,6 +32,7 @@ const Home = () => {
   };
 
   const fetchData = useCallback(async () => {
+    setLoading(true);
     getSettings();
 
     try {
@@ -51,7 +52,6 @@ const Home = () => {
 
       Alert.alert('데이터를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.', '오류 메시지: ' + err.message);
       console.error('Error fetching data:', err);
-      setLoading(false);
     } finally {
       setLoading(false);
     }
