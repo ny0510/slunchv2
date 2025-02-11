@@ -20,10 +20,10 @@ const Card = ({title, subtitle, arrow, titleIcon, children, notificationDot}: Pr
         <View style={s.titleRowContainer}>
           <View style={s.titleContentContainer}>
             {titleIcon}
-            <View style={{gap: 2}}>
-              <Text style={s.title}>{title}</Text>
-              {subtitle && <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}]}>{subtitle}</Text>}
-            </View>
+            {/* <View style={{gap: 2}}> */}
+            <Text style={s.title}>{title}</Text>
+            {subtitle && <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}]}>{subtitle}</Text>}
+            {/* </View> */}
           </View>
           <View style={s.titleContentContainer}>
             {notificationDot && <View style={s.notificationDot} />}

@@ -102,8 +102,8 @@ const Home = () => {
 
   return (
     <Container scrollView>
-      <View style={{gap: 16, width: '100%'}}>
-        <HomeCard title="공지사항" titleIcon={<FontAwesome6 name="bullhorn" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow notificationDot onPress={() => navigation.navigate('Announcement')} />
+      <View style={{gap: 12, width: '100%'}}>
+        <HomeCard title="알림" titleIcon={<FontAwesome6 name="bell" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow notificationDot onPress={() => navigation.navigate('Notifications')} />
         <HomeCard title="학사일정" titleIcon={<FontAwesome6 name="calendar" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Schedules')}>
           {loading ? <LoadingView height={100} /> : schedules.length === 0 ? <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}]}>학사일정이 없어요.</Text> : <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />}
         </HomeCard>

@@ -2,8 +2,8 @@ import React from 'react';
 
 import {useFirstOpen} from '@/hooks/useFirstOpen';
 import BottomTabs from '@/navigation/BottomTabs';
-import Announcement from '@/screens/Announcement';
 import Meal from '@/screens/Meal';
+import Notifications from '@/screens/Notifications';
 import {ClassSelectScreen, IntroScreen, SchoolSearchScreen} from '@/screens/Onboarding';
 import Schedules from '@/screens/Schedules';
 import Timetable from '@/screens/Timetable';
@@ -17,7 +17,7 @@ export type RootStackParamList = {
   Intro: undefined;
   SchoolSearch: undefined;
   ClassSelect: {school: School};
-  Announcement: undefined;
+  Notifications: undefined;
   Schedules: undefined;
   Meal: undefined;
   Timetable: undefined;
@@ -70,13 +70,6 @@ const RootStacks = () => {
         navigationKey: 'Tab',
         screens: {
           Tab: BottomTabs,
-          Announcement: {
-            screen: Announcement,
-            options: {
-              headerShown: true,
-              title: '공지사항',
-            },
-          },
           Schedules: {
             screen: Schedules,
             options: {
@@ -96,6 +89,13 @@ const RootStacks = () => {
             options: {
               headerShown: true,
               title: '시간표',
+            },
+          },
+          Notifications: {
+            screen: Notifications,
+            options: {
+              headerShown: true,
+              title: '알림',
             },
           },
         },
