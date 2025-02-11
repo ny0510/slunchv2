@@ -1,10 +1,11 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {ActivityIndicator, Alert, FlatList, ImageBackground, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import ScrollPicker from 'react-native-wheel-scrollview-picker';
 
 import {style as s} from './styles';
 import {comciganSchoolSearch, getClassList, neisSchoolSearch} from '@/api/api';
-import EmojiSlotMachine from '@/components/EmojiSlotMachine';
+import SlotMachine from '@/components/SlotMachine';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {theme} from '@/styles/theme';
 import {School} from '@/types/api';
@@ -18,13 +19,18 @@ export const IntroScreen = () => {
 
   return (
     <View style={s.introContainer}>
+      <LinearGradient colors={[theme.colors.background, 'transparent']} style={{position: 'absolute', top: 0, left: 0, right: 0, height: 250, zIndex: 10}} />
       <View style={s.onboardingImageContainer}>
-        <ImageBackground blurRadius={4} source={require('@/assets/images/onboarding.png')} style={s.onboardingImage} />
+        <ImageBackground blurRadius={1} source={require('@/assets/images/onboarding.png')} style={s.onboardingImage} />
       </View>
+      <LinearGradient colors={['transparent', theme.colors.background]} style={{position: 'absolute', bottom: 0, left: 0, right: 0, height: 250}} />
       <View style={s.introContent}>
-        <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
-          <Text style={s.introTitle}>오늘 급식 뭐임?</Text>
-          <EmojiSlotMachine emojis={['🍔', '🍕', '🍟', '🍦', '🍩']} delay={1000} duration={300} />
+        <View style={{gap: 8}}>
+          <SlotMachine list={['🍽️ 급식 뭐 나오지?', '📚 오늘 1교시가,,', '📅 중요한 학사일정은?', '🎈 곧 있을 학교 행사는?']} style={s.introTitle} delay={1000} duration={300} />
+          <View>
+            <Text style={[theme.typography.body, {fontFamily: theme.fontWeights.semiBold}]}>챙기기 번거로운 학사일정, 시간표, 급식을 간편하게 확인!</Text>
+            <Text style={[theme.typography.body, {fontFamily: theme.fontWeights.semiBold}]}>전국 익명 커뮤니티에서 자유롭게 소통하세요.</Text>
+          </View>
         </View>
         <TouchableOpacity style={s.nextButton} onPress={() => navigation.navigate('SchoolSearch')}>
           <Text style={s.nextButtonText}>시작하기</Text>

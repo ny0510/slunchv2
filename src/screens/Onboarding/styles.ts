@@ -11,8 +11,9 @@ export const style = StyleSheet.create({
   introContainer: {
     paddingHorizontal: 20,
     paddingVertical: 25,
+    paddingTop: 120,
     flex: 1,
-    justifyContent: 'flex-end',
+    // justifyContent: 'flex-end',
   },
   onboardingImageContainer: {
     flex: 1,
@@ -35,16 +36,17 @@ export const style = StyleSheet.create({
     fontSize: 34,
   },
   title: {
-    color: theme.colors.primaryText,
     lineHeight: 40,
     ...theme.typography.title,
   },
   subtitle: {
-    color: theme.colors.secondaryText,
     ...theme.typography.subtitle,
   },
   introContent: {
-    gap: 70,
+    flex: 1,
+    justifyContent: 'space-between',
+    zIndex: 20,
+    // gap: 70,
   },
   nextButton: {
     // backgroundColor: theme.colors.highlight,
@@ -86,7 +88,6 @@ export const style = StyleSheet.create({
     paddingHorizontal: 5,
   },
   textInput: {
-    color: theme.colors.primaryText,
     ...theme.typography.subtitle,
     flex: 1,
   },
@@ -99,11 +100,9 @@ export const style = StyleSheet.create({
     borderColor: theme.colors.secondaryText,
   },
   schoolFlatListNameText: {
-    color: theme.colors.primaryText,
     ...theme.typography.subtitle,
   },
   schoolFlatListAddrText: {
-    color: theme.colors.secondaryText,
     ...theme.typography.body,
   },
   scrollPickerContainer: {
