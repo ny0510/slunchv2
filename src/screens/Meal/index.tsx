@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
-import React, {useEffect, useState} from 'react';
-import {ActivityIndicator, Alert, Text, View} from 'react-native';
+import React, {useCallback, useEffect, useState} from 'react';
+import {ActivityIndicator, Alert, RefreshControl, Text, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import {getMeal} from '@/api';
@@ -15,36 +15,32 @@ const Meal = () => {
   const [meal, setMeal] = useState<MealType[]>([]);
   const [showAllergy, setShowAllergy] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
-  const getSettings = async () => {
+  const fetchData = useCallback(async () => {
+    setLoading(true);
     const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
     setShowAllergy(settings.showAllergy);
-  };
+
+    try {
+      const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
+      const today = dayjs();
+
+      const mealResponse = await getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), undefined, showAllergy, true, true);
+      setMeal(mealResponse);
+    } catch (e) {
+      const err = e as Error;
+
+      Alert.alert('데이터를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.', '오류 메시지: ' + err.message);
+      console.error('Error fetching data:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [showAllergy]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      getSettings();
-
-      try {
-        const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
-        const today = dayjs();
-
-        const mealResponse = await getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), undefined, showAllergy, true, true);
-        console.log(mealResponse);
-        setMeal(mealResponse);
-      } catch (e) {
-        const err = e as Error;
-
-        Alert.alert('데이터를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.', '오류 메시지: ' + err.message);
-        console.error('Error fetching data:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
-  }, [showAllergy]);
+  }, [fetchData]);
 
   const renderMealItem = (mealItem: string | MealItem, index: number) => {
     if (typeof mealItem === 'string') {
@@ -66,7 +62,18 @@ const Meal = () => {
       <ActivityIndicator size="large" color={theme.colors.primaryText} />
     </View>
   ) : (
-    <Container scrollView bounce={!loading}>
+    <Container
+      scrollView
+      bounce={!loading}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={() => {
+            setRefreshing(true);
+            fetchData().then(() => setRefreshing(false));
+          }}
+        />
+      }>
       <View style={{gap: 12, width: '100%'}}>
         {meal.map((m, i) => {
           const date = dayjs(m.date).format('M월 D일 ddd요일');
