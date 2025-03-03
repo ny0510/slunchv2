@@ -6,14 +6,16 @@ import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 
 interface Props {
   title?: string;
+  titleStyle?: object;
   subtitle?: string;
+  subtitleStyle?: object;
   arrow?: boolean;
   notificationDot?: boolean;
   titleIcon?: React.ReactNode;
   children?: React.ReactNode;
 }
 
-const Card = ({title, subtitle, arrow, titleIcon, children, notificationDot}: Props) => {
+const Card = ({title, titleStyle, subtitle, subtitleStyle, arrow, titleIcon, children, notificationDot}: Props) => {
   return (
     <View style={s.container}>
       {title && (
@@ -21,8 +23,8 @@ const Card = ({title, subtitle, arrow, titleIcon, children, notificationDot}: Pr
           <View style={s.titleContentContainer}>
             {titleIcon}
             {/* <View style={{gap: 2}}> */}
-            <Text style={s.title}>{title}</Text>
-            {subtitle && <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}]}>{subtitle}</Text>}
+            <Text style={[s.title, titleStyle]}>{title}</Text>
+            {subtitle && <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}, subtitleStyle]}>{subtitle}</Text>}
             {/* </View> */}
           </View>
           <View style={s.titleContentContainer}>
