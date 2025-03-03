@@ -26,10 +26,11 @@ export const IntroScreen = () => {
       <LinearGradient colors={['transparent', theme.colors.background]} style={{position: 'absolute', bottom: 0, left: 0, right: 0, height: 250}} />
       <View style={s.introContent}>
         <View style={{gap: 8}}>
-          <SlotMachine list={['🍽️ 급식 뭐 나오지?', '📚 오늘 1교시가,,', '📅 중요한 학사일정은?', '🎈 곧 있을 학교 행사는?']} style={s.introTitle} delay={1000} duration={300} />
+          <SlotMachine list={['🍽️ 급식 뭐 나오지?', '📚 오늘 1교시가,,', '📅 중요한 학사일정은?', '🎈 곧 있을 학교 행사는?']} style={s.introTitle} delay={1500} duration={300} />
           <View>
-            <Text style={[theme.typography.body, {fontFamily: theme.fontWeights.semiBold}]}>챙기기 번거로운 학사일정, 시간표, 급식을 간편하게 확인!</Text>
-            <Text style={[theme.typography.body, {fontFamily: theme.fontWeights.semiBold}]}>전국 익명 커뮤니티에서 자유롭게 소통하세요.</Text>
+            <Text style={[theme.typography.body, {fontFamily: theme.fontWeights.semiBold}]}>챙기기 번거로운 학사일정, 시간표 및 급식을 간편하게</Text>
+            <Text style={[theme.typography.body, {fontFamily: theme.fontWeights.semiBold}]}>확인하세요!</Text>
+            {/* <Text style={[theme.typography.body, {fontFamily: theme.fontWeights.semiBold}]}>전국 익명 커뮤니티에서 자유롭게 소통하세요.</Text> */}
           </View>
         </View>
         <TouchableOpacity style={s.nextButton} onPress={() => navigation.navigate('SchoolSearch')}>
