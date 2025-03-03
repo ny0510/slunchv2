@@ -9,12 +9,12 @@ import {theme} from '@/styles/theme';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 
 const noti = [
-  {
-    title: '알림 1',
-    date: '2025-02-11',
-    type: 'notice',
-    content: '테스트입니다.\nㅁㅁㅁㅁㅁ',
-  },
+  // {
+  //   title: '알림 1',
+  //   date: '2025-02-11',
+  //   type: 'notice',
+  //   content: '테스트입니다.\nㅁㅁㅁㅁㅁ',
+  // },
   {
     title: '공지 1',
     date: '2025-01-11',

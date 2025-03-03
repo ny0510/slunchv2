@@ -3,8 +3,8 @@ import React, {useState} from 'react';
 import {Easing, GestureResponderEvent, TouchableOpacity} from 'react-native';
 
 import TouchableScale from '@/components/TouchableScale';
-import Community from '@/screens/Tab/Community';
 import Home from '@/screens/Tab/Home';
+import Notifications from '@/screens/Tab/Notifications';
 import SchoolCard from '@/screens/Tab/SchoolCard';
 import Settings from '@/screens/Tab/Settings';
 import {theme} from '@/styles/theme';
@@ -14,7 +14,7 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 const BottomTab = createBottomTabNavigator();
 
 const BottomTabs = () => {
-  const [isSunrin, setIsSunrin] = useState(false);
+  const [isSunrin, setIsSunrin] = useState(true);
 
   return (
     <BottomTab.Navigator
@@ -49,7 +49,18 @@ const BottomTabs = () => {
       })}>
       <BottomTab.Screen name="Home" component={Home} options={{title: '홈'}} />
       {isSunrin && <BottomTab.Screen name="SchoolCard" component={SchoolCard} options={{title: '학생증'}} />}
-      <BottomTab.Screen name="Community" component={Community} options={{title: '커뮤니티'}} />
+      <BottomTab.Screen
+        name="Notifications"
+        component={Notifications}
+        options={{
+          title: '알림',
+          tabBarBadge: 1,
+          tabBarBadgeStyle: {
+            fontSize: 12,
+            fontFamily: theme.fontWeights.medium,
+          },
+        }}
+      />
       <BottomTab.Screen name="Settings" component={Settings} options={{title: '설정'}} />
     </BottomTab.Navigator>
   );
@@ -69,8 +80,8 @@ const TabBarIcon = ({route, size, color}: {route: {name: string}; size: number; 
       return <FontAwesome6 name="house" iconStyle="solid" size={size} color={color} />;
     case 'SchoolCard':
       return <FontAwesome6 name="id-card" iconStyle="solid" size={size} color={color} />;
-    case 'Community':
-      return <FontAwesome6 name="users" iconStyle="solid" size={size} color={color} />;
+    case 'Notifications':
+      return <FontAwesome6 name="bell" iconStyle="solid" size={size} color={color} />;
     case 'Settings':
       return <FontAwesome6 name="gear" iconStyle="solid" size={size} color={color} />;
     default:
