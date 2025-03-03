@@ -15,7 +15,7 @@ const toastConfig: ToastConfig = {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 10,
+        marginTop: 14,
         width: Dimensions.get('window').width - 30,
         backgroundColor: theme.colors.card,
         borderColor: theme.colors.border,
