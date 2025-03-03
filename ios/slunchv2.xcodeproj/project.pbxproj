@@ -13,6 +13,7 @@
 		2EF1947FAC744306A24980A2 /* Pretendard-ExtraBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 23F6950B9C214B5CAB64D76A /* Pretendard-ExtraBold.otf */; };
 		465C8D6A1D6E418892C4E38D /* Pretendard-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 5A6AAC50ECCD4143915BBF30 /* Pretendard-Medium.otf */; };
 		56DBB1FC3B8F4A7BB305126C /* Pretendard-Light.otf in Resources */ = {isa = PBXBuildFile; fileRef = D4075B7060F34D30A772AC76 /* Pretendard-Light.otf */; };
+		6DB24E6B2D75EBEA00BC5B73 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 6DB24E6A2D75EBEA00BC5B73 /* GoogleService-Info.plist */; };
 		6DB71DC22D50E5340046DAA0 /* FontAwesome6_Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6DB71DC02D50E5340046DAA0 /* FontAwesome6_Regular.ttf */; };
 		6DB71DC32D50E5340046DAA0 /* FontAwesome6_Solid.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6DB71DC12D50E5340046DAA0 /* FontAwesome6_Solid.ttf */; };
 		6DB71DC42D50E5340046DAA0 /* FontAwesome6_Brands.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6DB71DBF2D50E5340046DAA0 /* FontAwesome6_Brands.ttf */; };
@@ -39,6 +40,7 @@
 		5709B34CF0A7D63546082F79 /* Pods-slunchv2.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-slunchv2.release.xcconfig"; path = "Target Support Files/Pods-slunchv2/Pods-slunchv2.release.xcconfig"; sourceTree = "<group>"; };
 		5A6AAC50ECCD4143915BBF30 /* Pretendard-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-Medium.otf"; path = "../src/assets/fonts/Pretendard-Medium.otf"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-slunchv2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-slunchv2.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6DB24E6A2D75EBEA00BC5B73 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		6DB71DBF2D50E5340046DAA0 /* FontAwesome6_Brands.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = FontAwesome6_Brands.ttf; sourceTree = "<group>"; };
 		6DB71DC02D50E5340046DAA0 /* FontAwesome6_Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = FontAwesome6_Regular.ttf; sourceTree = "<group>"; };
 		6DB71DC12D50E5340046DAA0 /* FontAwesome6_Solid.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = FontAwesome6_Solid.ttf; sourceTree = "<group>"; };
@@ -88,6 +90,7 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
+				6DB24E6A2D75EBEA00BC5B73 /* GoogleService-Info.plist */,
 			);
 			name = slunchv2;
 			sourceTree = "<group>";
@@ -219,6 +222,7 @@
 				6DB71DC22D50E5340046DAA0 /* FontAwesome6_Regular.ttf in Resources */,
 				6DB71DC32D50E5340046DAA0 /* FontAwesome6_Solid.ttf in Resources */,
 				6DB71DC42D50E5340046DAA0 /* FontAwesome6_Brands.ttf in Resources */,
+				6DB24E6B2D75EBEA00BC5B73 /* GoogleService-Info.plist in Resources */,
 				56DBB1FC3B8F4A7BB305126C /* Pretendard-Light.otf in Resources */,
 				465C8D6A1D6E418892C4E38D /* Pretendard-Medium.otf in Resources */,
 				B96F515517C84070900077C5 /* Pretendard-Regular.otf in Resources */,

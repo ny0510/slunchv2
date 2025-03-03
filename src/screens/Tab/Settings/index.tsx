@@ -1,22 +1,31 @@
-import React from 'react';
-import {ScrollView, StyleSheet, Text} from 'react-native';
+import React, {useState} from 'react';
+import {TouchableWithoutFeedback, View} from 'react-native';
 
+import AppInfoCard from './components/AppInfoCard';
+import MyInfoCard from './components/MyInfoCard';
+import ProfileSection from './components/ProfileSection';
+import Card from '@/components/Card';
+import Container from '@/components/Container';
 import {theme} from '@/styles/theme';
 
 const Settings = () => {
+  const [isPressed, setIsPressed] = useState(false);
+
   return (
-    <ScrollView contentContainerStyle={[styles.container]} bounces={false}>
-      <Text style={[theme.typography.subtitle, {color: theme.colors.primaryText}]}>🚧 아직 준비 중인 기능이에요</Text>
-    </ScrollView>
+    <Container scrollView bounce>
+      <TouchableWithoutFeedback onPress={() => setIsPressed(false)}>
+        <View style={{gap: 18, width: '100%'}}>
+          <ProfileSection setIsPressed={setIsPressed} isPressed={isPressed} />
+          <Card title="학교 정보 변경하기" arrow titleStyle={{fontSize: theme.typography.body.fontSize}} />
+          <View style={{gap: 8}}>
+            <MyInfoCard />
+            <AppInfoCard />
+            <Card title="갈려나간 사람들" arrow titleStyle={{fontSize: theme.typography.body.fontSize}} />
+          </View>
+        </View>
+      </TouchableWithoutFeedback>
+    </Container>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
 
 export default Settings;
