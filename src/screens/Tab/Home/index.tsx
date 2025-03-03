@@ -140,7 +140,11 @@ const Home = () => {
           )}
         </HomeCard>
 
-        <HomeCard title="시간표" titleIcon={<FontAwesome6 name="table" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Timetable')}>
+        <HomeCard
+          title="시간표"
+          titleIcon={<FontAwesome6 name="table" size={16} color={theme.colors.primaryText} iconStyle="solid" />}
+          // arrow onPress={() => navigation.navigate('Timetable')}
+        >
           {loading ? (
             <LoadingView height={250} />
           ) : timetable.length === 0 ? (
