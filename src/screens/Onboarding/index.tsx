@@ -251,8 +251,6 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
           );
           AsyncStorage.setItem('class', JSON.stringify({grade: selectedGrade, class: selectedClass}));
 
-          console.log(`grade: ${selectedGrade}, class: ${selectedClass}`);
-
           navigation.reset({
             index: 0,
             routes: [{name: 'Tab'}],

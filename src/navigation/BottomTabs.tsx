@@ -21,7 +21,6 @@ const BottomTabs = () => {
   useEffect(() => {
     const checkSunrin = async () => {
       const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
-      console.log(school);
       setIsSunrin(school.schoolName === '선린인터넷고');
       setLoading(false);
     };
