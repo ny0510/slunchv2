@@ -1,6 +1,5 @@
 import React from 'react';
 import {ActivityIndicator, Easing, ImageBackground, Text, TouchableOpacity, View} from 'react-native';
-import Toast from 'react-native-toast-message';
 
 import TouchableScale from '@/components/TouchableScale';
 import useAuth from '@/hooks/useAuth';
