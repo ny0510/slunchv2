@@ -23,6 +23,7 @@ const Home = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [todayIndex, setTodayIndex] = useState<number>(dayjs().day() - 1);
   const [midnightTrigger, setMidnightTrigger] = useState<boolean>(false);
+  const [mealDayOffset, setMealDayOffset] = useState<number>(0);
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
@@ -41,7 +42,21 @@ const Home = () => {
       const classData: {grade: number; class: number} = JSON.parse((await AsyncStorage.getItem('class')) || '{}');
 
       const timetableResponse = await getTimetable(school.comciganCode, classData.grade, classData.class);
-      const mealResponse = await getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), today.format('DD'), showAllergy, true, true);
+
+      // 급식 데이터를 가져올 때, 오늘 급식이 없으면 3일 뒤까지 데이터를 가져옴
+      let mealResponse = await getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), today.format('DD'), showAllergy, true, true);
+      setMealDayOffset(0);
+      if (mealResponse.length === 0) {
+        for (let i = 1; i <= 3; i++) {
+          const nextDay = today.add(i, 'day');
+          mealResponse = await getMeal(school.neisCode, school.neisRegionCode, nextDay.format('YYYY'), nextDay.format('MM'), nextDay.format('DD'), showAllergy, true, true);
+          if (mealResponse.length > 0) {
+            setMealDayOffset(i);
+            break;
+          }
+        }
+      }
+
       const scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'));
 
       setTimetable(transpose(timetableResponse));
@@ -103,13 +118,28 @@ const Home = () => {
   return (
     <Container scrollView>
       <View style={{gap: 12, width: '100%'}}>
-        <HomeCard title="알림" titleIcon={<FontAwesome6 name="bell" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow notificationDot onPress={() => navigation.navigate('Notifications')} />
+        {/* <HomeCard title="알림" titleIcon={<FontAwesome6 name="bell" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow notificationDot onPress={() => navigation.navigate('Notifications')} /> */}
         <HomeCard title="학사일정" titleIcon={<FontAwesome6 name="calendar" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Schedules')}>
           {loading ? <LoadingView height={100} /> : schedules.length === 0 ? <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}]}>학사일정이 없어요.</Text> : <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />}
         </HomeCard>
+
         <HomeCard title="급식" titleIcon={<FontAwesome6 name="utensils" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Meal')}>
-          {loading ? <LoadingView height={100} /> : meal.length === 0 ? <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}]}>급식 정보가 없어요.</Text> : <FlatList data={meal} renderItem={({item}) => <View>{item.meal.map(renderMealItem)}</View>} scrollEnabled={false} />}
+          {loading ? (
+            <LoadingView height={100} />
+          ) : meal.length === 0 ? (
+            <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}]}>급식 정보가 없어요.</Text>
+          ) : (
+            <View style={{gap: 4}}>
+              <FlatList data={meal} renderItem={({item}) => <View>{item.meal.map(renderMealItem)}</View>} scrollEnabled={false} />
+              {mealDayOffset > 0 && (
+                <Text style={[theme.typography.caption, {color: theme.colors.secondaryText, marginTop: 4}]}>
+                  {mealDayOffset}일 뒤, {dayjs().add(mealDayOffset, 'day').format('dddd')} 급식이에요.
+                </Text>
+              )}
+            </View>
+          )}
         </HomeCard>
+
         <HomeCard title="시간표" titleIcon={<FontAwesome6 name="table" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Timetable')}>
           {loading ? (
             <LoadingView height={250} />
