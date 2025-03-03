@@ -5,8 +5,8 @@ import {theme} from '@/styles/theme';
 
 const Timetable = () => {
   return (
-    <ScrollView contentContainerStyle={[styles.container]}>
-      <Text style={[theme.typography.title, {color: theme.colors.primaryText}]}>시간표</Text>
+    <ScrollView contentContainerStyle={[styles.container]} bounces={false}>
+      <Text style={[theme.typography.subtitle, {color: theme.colors.primaryText}]}>🚧 아직 준비 중인 기능이에요</Text>
     </ScrollView>
   );
 };
