@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Easing, GestureResponderEvent, TouchableOpacity} from 'react-native';
 
 import TouchableScale from '@/components/TouchableScale';
@@ -8,13 +8,30 @@ import Notifications from '@/screens/Tab/Notifications';
 import SchoolCard from '@/screens/Tab/SchoolCard';
 import Settings from '@/screens/Tab/Settings';
 import {theme} from '@/styles/theme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 
 const BottomTab = createBottomTabNavigator();
 
 const BottomTabs = () => {
-  const [isSunrin, setIsSunrin] = useState(true);
+  const [isSunrin, setIsSunrin] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkSunrin = async () => {
+      const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
+      console.log(school);
+      setIsSunrin(school.schoolName === '선린인터넷고');
+      setLoading(false);
+    };
+
+    checkSunrin();
+  }, []);
+
+  if (loading) {
+    return null;
+  }
 
   return (
     <BottomTab.Navigator
@@ -54,7 +71,7 @@ const BottomTabs = () => {
         component={Notifications}
         options={{
           title: '알림',
-          tabBarBadge: 1,
+          // tabBarBadge: 1,
           tabBarBadgeStyle: {
             fontSize: 12,
             fontFamily: theme.fontWeights.medium,
