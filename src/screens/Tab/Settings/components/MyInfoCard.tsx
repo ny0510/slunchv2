@@ -2,13 +2,12 @@ import React from 'react';
 
 import Content from './InfoContent';
 import Card from '@/components/Card';
-import useAuth from '@/hooks/useAuth';
 import {useUser} from '@/hooks/useUser';
 import {theme} from '@/styles/theme';
+import {User} from '@react-native-google-signin/google-signin';
 
-const AppInfoCard = () => {
+const AppInfoCard = ({authUser}: {authUser: User | null}) => {
   const user = useUser();
-  const {user: authUser} = useAuth();
 
   return (
     <Card title="내 정보" titleStyle={{fontSize: theme.typography.body.fontSize}}>

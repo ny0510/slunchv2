@@ -2,13 +2,23 @@ import React from 'react';
 import {ActivityIndicator, Easing, ImageBackground, Text, TouchableOpacity, View} from 'react-native';
 
 import TouchableScale from '@/components/TouchableScale';
-import useAuth from '@/hooks/useAuth';
+// import useAuth from '@/hooks/useAuth';
 import {showToast} from '@/lib/showToast';
 import {theme} from '@/styles/theme';
+import {User} from '@react-native-google-signin/google-signin';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 
-const ProfileSection = ({isPressed, setIsPressed}: {isPressed: boolean; setIsPressed: (isPressed: boolean) => void}) => {
-  const {loading, user, logout, login} = useAuth();
+interface Props {
+  isPressed: boolean;
+  setIsPressed: (isPressed: boolean) => void;
+  loading: boolean;
+  user: User | null;
+  logout: () => Promise<void>;
+  login: () => Promise<void>;
+}
+
+const ProfileSection = ({isPressed, setIsPressed, loading, user, logout, login}: Props) => {
+  // const {loading, user, logout, login} = useAuth();
 
   if (loading) {
     return <ActivityIndicator size="large" color={theme.colors.primaryText} />;
