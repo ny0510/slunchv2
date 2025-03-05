@@ -17,7 +17,7 @@ const Settings = () => {
   return (
     <Container scrollView bounce>
       <TouchableWithoutFeedback onPress={() => setIsPressed(false)}>
-        <View style={{gap: 18, width: '100%', marginTop: 16}}>
+        <View style={{gap: 18, width: '100%', marginVertical: 16}}>
           <ProfileSection setIsPressed={setIsPressed} isPressed={isPressed} />
           <Button
             onPress={() => {
