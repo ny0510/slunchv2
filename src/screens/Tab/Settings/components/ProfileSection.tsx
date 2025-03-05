@@ -30,7 +30,7 @@ const ProfileSection = ({isPressed, setIsPressed}: Props) => {
             setIsPressed(true);
           }
         }}>
-        <ImageBackground src={user && user.user.photo ? user.user.photo : 'https://f.ny64.kr/photos/defaultProfile.png'} style={{width: 150, height: 150, backgroundColor: theme.colors.border, borderRadius: 75}} borderRadius={75}>
+        <ImageBackground src={user && user.user.photo ? user.user.photo : 'https://f.ny64.kr/slunchv2/defaultProfile.png'} style={{width: 150, height: 150, backgroundColor: theme.colors.border, borderRadius: 150 / 2}} borderRadius={150 / 2}>
           {isPressed && (
             <View
               style={{
