@@ -5,6 +5,7 @@ import BottomTabs from '@/navigation/BottomTabs';
 import Meal from '@/screens/Meal';
 import {ClassSelectScreen, IntroScreen, SchoolSearchScreen} from '@/screens/Onboarding';
 import Schedules from '@/screens/Schedules';
+import DeveloperInfo from '@/screens/Tab/Settings/screens/DeveloperInfo';
 import {theme} from '@/styles/theme';
 import {School} from '@/types/api';
 import {createStaticNavigation} from '@react-navigation/native';
@@ -18,7 +19,7 @@ export type RootStackParamList = {
   Notifications: undefined;
   Schedules: undefined;
   Meal: undefined;
-  Timetable: undefined;
+  DeveloperInfo: undefined;
 };
 
 const RootStacks = () => {
@@ -80,6 +81,13 @@ const RootStacks = () => {
             options: {
               headerShown: true,
               title: '급식',
+            },
+          },
+          DeveloperInfo: {
+            screen: DeveloperInfo,
+            options: {
+              headerShown: true,
+              title: '개발자 정보',
             },
           },
         },

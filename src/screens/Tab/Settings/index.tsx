@@ -6,10 +6,13 @@ import MyInfoCard from './components/MyInfoCard';
 import ProfileSection from './components/ProfileSection';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
+import {RootStackParamList} from '@/navigation/RootStacks';
 import {theme} from '@/styles/theme';
+import {NavigationProp, useNavigation} from '@react-navigation/native';
 
 const Settings = () => {
   const [isPressed, setIsPressed] = useState(false);
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   return (
     <Container scrollView bounce>
@@ -20,7 +23,9 @@ const Settings = () => {
           <View style={{gap: 8}}>
             <MyInfoCard />
             <AppInfoCard />
-            <Card title="갈려나간 사람들" arrow titleStyle={{fontSize: theme.typography.body.fontSize}} />
+            <Button onPress={() => navigation.navigate('DeveloperInfo')}>
+              <Card title="갈려나간 사람들" arrow titleStyle={{fontSize: theme.typography.body.fontSize}} />
+            </Button>
           </View>
         </View>
       </TouchableWithoutFeedback>
