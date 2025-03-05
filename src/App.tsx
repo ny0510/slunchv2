@@ -5,6 +5,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import Toast, {ToastConfig} from 'react-native-toast-message';
 
 import Stack from '@/navigation/RootStacks';
+import {AuthProvider} from '@/providers/AuthProvider';
 import {theme} from '@/styles/theme';
 
 const toastConfig: ToastConfig = {
@@ -14,13 +15,13 @@ const toastConfig: ToastConfig = {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
+        // justifyContent: 'center',
         marginTop: 14,
         width: Dimensions.get('window').width - 30,
         backgroundColor: theme.colors.card,
         borderColor: theme.colors.border,
         borderWidth: 1,
-        paddingVertical: 14,
+        padding: 14,
         borderRadius: 18,
       }}>
       <Text
@@ -38,9 +39,11 @@ const App = () => {
   return (
     <GestureHandlerRootView>
       <SafeAreaView style={{flex: 1, backgroundColor: theme.colors.background}}>
-        <StatusBar animated barStyle="light-content" backgroundColor={theme.colors.background} />
-        <Stack />
-        <Toast config={toastConfig} />
+        <AuthProvider>
+          <StatusBar animated barStyle="light-content" backgroundColor={theme.colors.background} />
+          <Stack />
+          <Toast config={toastConfig} />
+        </AuthProvider>
       </SafeAreaView>
     </GestureHandlerRootView>
   );

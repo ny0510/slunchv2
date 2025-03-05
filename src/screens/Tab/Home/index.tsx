@@ -4,9 +4,11 @@ import {ActivityIndicator, Alert, Easing, FlatList, Text, TouchableOpacity, View
 import Midnight from 'react-native-midnight';
 
 import {getMeal, getSchedules, getTimetable} from '@/api';
+import Logo from '@/assets/images/logo.svg';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import TouchableScale from '@/components/TouchableScale';
+import {useUser} from '@/hooks/useUser';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {theme} from '@/styles/theme';
 import {Meal, Schedule, Timetable} from '@/types/api';
@@ -24,6 +26,7 @@ const Home = () => {
   const [todayIndex, setTodayIndex] = useState<number>(dayjs().day() - 1);
   const [midnightTrigger, setMidnightTrigger] = useState<boolean>(false);
   const [mealDayOffset, setMealDayOffset] = useState<number>(0);
+  const user = useUser();
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
@@ -118,6 +121,10 @@ const Home = () => {
   return (
     <Container scrollView>
       <View style={{gap: 12, width: '100%'}}>
+        <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+          <Logo width={32} height={32} />
+          <Text style={[theme.typography.subtitle]}>{user ? user.schoolInfo.schoolName : '학교 정보 없음'}</Text>
+        </View>
         {/* <HomeCard title="알림" titleIcon={<FontAwesome6 name="bell" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow notificationDot onPress={() => navigation.navigate('Notifications')} /> */}
         <HomeCard title="학사일정" titleIcon={<FontAwesome6 name="calendar" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Schedules')}>
           {loading ? <LoadingView height={100} /> : schedules.length === 0 ? <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}]}>학사일정이 없어요.</Text> : <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />}

@@ -8,7 +8,7 @@ interface Props {
   showsHorizontalScrollIndicator?: boolean;
   style?: {};
   children: React.ReactNode;
-  refreshControl?: React.ReactElement; // added refreshControl prop
+  refreshControl?: React.ReactElement;
 }
 
 const Container = ({scrollView = false, bounce = false, showsVerticalScrollIndicator = false, showsHorizontalScrollIndicator = false, style, children, refreshControl}: Props) => {
@@ -26,7 +26,7 @@ const s = StyleSheet.create({
   container: {
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 18,
+    paddingVertical: 12,
   },
 });
 

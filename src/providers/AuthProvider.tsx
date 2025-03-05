@@ -1,9 +1,28 @@
-import {useEffect, useState} from 'react';
+import React, {createContext, useContext, useEffect, useState} from 'react';
+import {ReactNode} from 'react';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {GoogleSignin, User} from '@react-native-google-signin/google-signin';
 
-const useAuth = () => {
+const AuthContext = createContext<{
+  user: User | null;
+  loading: boolean;
+  login: () => Promise<User>;
+  logout: () => Promise<void>;
+}>({
+  user: null,
+  loading: true,
+  login: async () => {
+    throw new Error('login function not implemented');
+  },
+  logout: async () => {
+    throw new Error('logout function not implemented');
+  },
+});
+
+export const useAuth = () => useContext(AuthContext);
+
+export const AuthProvider = ({children}: {children: ReactNode}) => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
 
@@ -57,7 +76,5 @@ const useAuth = () => {
     }
   };
 
-  return {user, loading, login, logout};
+  return <AuthContext.Provider value={{user, loading, login, logout}}>{children}</AuthContext.Provider>;
 };
-
-export default useAuth;

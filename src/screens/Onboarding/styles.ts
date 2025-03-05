@@ -28,7 +28,7 @@ export const style = StyleSheet.create({
   },
   onboardingImage: {
     flex: 1,
-    transform: [{rotate: '-25deg'}, {scale: 1.25}],
+    transform: [{rotate: '-25deg'}, {scale: 1.2}],
   },
   introTitle: {
     color: theme.colors.primaryText,

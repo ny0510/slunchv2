@@ -2,30 +2,25 @@ import React from 'react';
 import {ActivityIndicator, Easing, ImageBackground, Text, TouchableOpacity, View} from 'react-native';
 
 import TouchableScale from '@/components/TouchableScale';
-// import useAuth from '@/hooks/useAuth';
 import {showToast} from '@/lib/showToast';
+import {useAuth} from '@/providers/AuthProvider';
 import {theme} from '@/styles/theme';
-import {User} from '@react-native-google-signin/google-signin';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 
 interface Props {
   isPressed: boolean;
   setIsPressed: (isPressed: boolean) => void;
-  loading: boolean;
-  user: User | null;
-  logout: () => Promise<void>;
-  login: () => Promise<void>;
 }
 
-const ProfileSection = ({isPressed, setIsPressed, loading, user, logout, login}: Props) => {
-  // const {loading, user, logout, login} = useAuth();
+const ProfileSection = ({isPressed, setIsPressed}: Props) => {
+  const {user, loading, logout, login} = useAuth();
 
   if (loading) {
     return <ActivityIndicator size="large" color={theme.colors.primaryText} />;
   }
 
   return (
-    <View style={{alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 16}}>
+    <View style={{alignItems: 'center', justifyContent: 'center', gap: 12}}>
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => {

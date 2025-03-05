@@ -19,9 +19,9 @@ export const IntroScreen = () => {
 
   return (
     <View style={s.introContainer}>
-      <LinearGradient colors={[theme.colors.background, 'transparent']} style={{position: 'absolute', top: 0, left: 0, right: 0, height: 250, zIndex: 10}} />
+      <LinearGradient colors={[theme.colors.background, 'transparent']} style={{position: 'absolute', top: 0, left: 0, right: 0, height: 150, zIndex: 10}} />
       <View style={s.onboardingImageContainer}>
-        <ImageBackground blurRadius={1} source={require('@/assets/images/onboarding.png')} style={s.onboardingImage} />
+        <ImageBackground blurRadius={5} source={require('@/assets/images/onboarding.png')} style={s.onboardingImage} />
       </View>
       <LinearGradient colors={['transparent', theme.colors.background]} style={{position: 'absolute', bottom: 0, left: 0, right: 0, height: 250}} />
       <View style={s.introContent}>
