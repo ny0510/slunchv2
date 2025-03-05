@@ -57,7 +57,6 @@ const SchoolCard = () => {
             </View>
             <View>
               <Text style={[theme.typography.subtitle, {color: theme.colors.secondaryText}]}>{`${grade}학년 ${classNum}반 ${number}번`}</Text>
-              <Text style={[theme.typography.body, {color: theme.colors.secondaryText}]}>{user.user.email}</Text>
             </View>
           </View>
           <View style={{justifyContent: 'center', alignContent: 'center', backgroundColor: theme.colors.border, height: 100, marginHorizontal: -16, borderBottomRightRadius: 12, borderBottomLeftRadius: 12, marginTop: 16, gap: 4}}>
