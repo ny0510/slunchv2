@@ -30,6 +30,7 @@ const RootStacks = () => {
   }
 
   const RootStack = createStackNavigator({
+    initialRouteName: isFirstOpen ? 'Intro' : 'Tab',
     screenOptions: {
       headerShown: false,
       animation: 'slide_from_right',
@@ -55,44 +56,71 @@ const RootStacks = () => {
       headerBackButtonDisplayMode: 'minimal',
       headerBackAccessibilityLabel: '뒤로가기',
     },
-    groups: {
-      FirstLaunch: {
-        if: () => isFirstOpen,
-        navigationKey: 'FirstLaunch',
-        screens: {
-          Intro: IntroScreen,
-          SchoolSearch: SchoolSearchScreen,
-          ClassSelect: ClassSelectScreen,
+    screens: {
+      Intro: IntroScreen,
+      SchoolSearch: SchoolSearchScreen,
+      ClassSelect: ClassSelectScreen,
+      Tab: BottomTabs,
+      Schedules: {
+        screen: Schedules,
+        options: {
+          headerShown: true,
+          title: '학사일정',
         },
       },
-      Tab: {
-        navigationKey: 'Tab',
-        screens: {
-          Tab: BottomTabs,
-          Schedules: {
-            screen: Schedules,
-            options: {
-              headerShown: true,
-              title: '학사일정',
-            },
-          },
-          Meal: {
-            screen: Meal,
-            options: {
-              headerShown: true,
-              title: '급식',
-            },
-          },
-          DeveloperInfo: {
-            screen: DeveloperInfo,
-            options: {
-              headerShown: true,
-              title: '개발자 정보',
-            },
-          },
+      Meal: {
+        screen: Meal,
+        options: {
+          headerShown: true,
+          title: '급식',
+        },
+      },
+      DeveloperInfo: {
+        screen: DeveloperInfo,
+        options: {
+          headerShown: true,
+          title: '개발자 정보',
         },
       },
     },
+    // groups: {
+    //   FirstLaunch: {
+    //     if: () => isFirstOpen,
+    //     navigationKey: 'FirstLaunch',
+    //     screens: {
+    //       Intro: IntroScreen,
+    //       SchoolSearch: SchoolSearchScreen,
+    //       ClassSelect: ClassSelectScreen,
+    //     },
+    //   },
+    // Tab: {
+    //   navigationKey: 'Tab',
+    //   screens: {
+    //     Tab: BottomTabs,
+    //     Schedules: {
+    //       screen: Schedules,
+    //       options: {
+    //         headerShown: true,
+    //         title: '학사일정',
+    //       },
+    //     },
+    //     Meal: {
+    //       screen: Meal,
+    //       options: {
+    //         headerShown: true,
+    //         title: '급식',
+    //       },
+    //     },
+    //     DeveloperInfo: {
+    //       screen: DeveloperInfo,
+    //       options: {
+    //         headerShown: true,
+    //         title: '개발자 정보',
+    //       },
+    //     },
+    //   },
+    // },
+    // },
   });
   const Stack = createStaticNavigation(RootStack);
 

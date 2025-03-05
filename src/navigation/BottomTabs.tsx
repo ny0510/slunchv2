@@ -35,11 +35,11 @@ const BottomTabs = () => {
   return (
     <BottomTab.Navigator
       initialRouteName="Home"
-      backBehavior="initialRoute"
+      backBehavior="none"
       screenOptions={({route}) => ({
         headerShown: false,
         animation: 'shift',
-        // freezeOnBlur: true,
+        freezeOnBlur: true,
         sceneStyle: {backgroundColor: theme.colors.background},
         tabBarStyle: {
           backgroundColor: theme.colors.background,

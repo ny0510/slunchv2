@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {TouchableWithoutFeedback, View} from 'react-native';
+import {Alert, TouchableOpacity, TouchableWithoutFeedback, View} from 'react-native';
 
 import AppInfoCard from './components/AppInfoCard';
 import MyInfoCard from './components/MyInfoCard';
@@ -19,7 +19,20 @@ const Settings = () => {
       <TouchableWithoutFeedback onPress={() => setIsPressed(false)}>
         <View style={{gap: 18, width: '100%', marginTop: 16}}>
           <ProfileSection setIsPressed={setIsPressed} isPressed={isPressed} />
-          <Card title="학교 정보 변경하기" arrow titleStyle={{fontSize: theme.typography.body.fontSize}} />
+          <Button
+            onPress={() => {
+              Alert.alert(
+                '정말로 학교 정보를 변경하시겠습니까?',
+                '',
+                [
+                  {text: '아니요', style: 'cancel'},
+                  {text: '네', onPress: () => navigation.navigate('Intro')},
+                ],
+                {cancelable: false},
+              );
+            }}>
+            <Card title="학교 정보 변경하기" arrow titleStyle={{fontSize: theme.typography.body.fontSize}} />
+          </Button>
           <View style={{gap: 8}}>
             <MyInfoCard />
             <AppInfoCard />
@@ -31,6 +44,10 @@ const Settings = () => {
       </TouchableWithoutFeedback>
     </Container>
   );
+};
+
+const Button = ({children, onPress}: {children: React.ReactNode; onPress: () => void}) => {
+  return <TouchableOpacity onPress={onPress}>{children}</TouchableOpacity>;
 };
 
 export default Settings;
