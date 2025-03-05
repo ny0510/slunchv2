@@ -30,7 +30,7 @@ const ProfileSection = ({isPressed, setIsPressed}: Props) => {
             setIsPressed(true);
           }
         }}>
-        <ImageBackground src={user && user.user.photo ? user.user.photo : 'https://f.ny64.kr/slunchv2/defaultProfile.png'} style={{width: 150, height: 150, backgroundColor: theme.colors.border, borderRadius: 150 / 2}} borderRadius={150 / 2}>
+        <ImageBackground src={user && user.user.photo ? user.user.photo : 'https://f.ny64.kr/photos/defaultProfile.png'} style={{width: 150, height: 150, backgroundColor: theme.colors.border, borderRadius: 75}} borderRadius={75}>
           {isPressed && (
             <View
               style={{
@@ -65,20 +65,12 @@ const ProfileSection = ({isPressed, setIsPressed}: Props) => {
           onPress={() => {
             if (user) {
               logout()
-                .then(() => {
-                  showToast('로그아웃 완료');
-                })
-                .catch(error => {
-                  showToast(`로그아웃에 실패했어요: ${error}`);
-                });
+                .then(() => showToast('로그아웃 완료'))
+                .catch(error => showToast(`로그아웃에 실패했어요:\n${error.message}`));
             } else {
               login()
-                .then(() => {
-                  showToast('로그인 완료');
-                })
-                .catch(error => {
-                  showToast(`로그인에 실패했어요: ${error}`);
-                });
+                .then(() => showToast('로그인 완료'))
+                .catch(error => showToast(`로그인에 실패했어요:\n${error.message}`));
             }
           }}>
           <TouchableOpacity style={{flex: 1}}>

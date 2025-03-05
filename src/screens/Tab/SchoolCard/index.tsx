@@ -74,14 +74,12 @@ const SchoolCard = () => {
                 .then(_user => {
                   if (!_user.user.email.endsWith('@sunrint.hs.kr')) {
                     showToast('선린인터넷고등학교 구글 계정으로 로그인해 주세요.');
-                    logout();
+                    logout().catch(error => showToast(`로그아웃에 실패했어요:\n${error.message}`));
                   } else {
                     showToast('로그인 완료');
                   }
                 })
-                .catch(error => {
-                  showToast(`로그인에 실패했어요:\n${error.message}`);
-                });
+                .catch(error => showToast(`로그인에 실패했어요:\n${error.message}`));
             }}>
             <View style={{flexDirection: 'row', gap: 8, alignItems: 'center'}}>
               <FontAwesome6 name="google" iconStyle="brand" size={22} color={theme.colors.primaryText} />
