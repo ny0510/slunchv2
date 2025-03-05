@@ -46,10 +46,14 @@ const Home = () => {
 
       const timetableResponse = await getTimetable(school.comciganCode, classData.grade, classData.class);
 
-      // 급식 데이터를 가져올 때, 오늘 급식이 없으면 3일 뒤까지 데이터를 가져옴
+      // 오후 12시 30분 이후면 다음 날 급식 정보를 가져옴
+      const isPastNoon = today.hour() > 12 || (today.hour() === 12 && today.minute() >= 30);
+
+      // 급식 정보 가져오기, 최대 3일 뒤까지 시도
       let mealResponse = await getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), today.format('DD'), showAllergy, true, true);
       setMealDayOffset(0);
-      if (mealResponse.length === 0) {
+
+      if (mealResponse.length === 0 || isPastNoon) {
         for (let i = 1; i <= 3; i++) {
           const nextDay = today.add(i, 'day');
           mealResponse = await getMeal(school.neisCode, school.neisRegionCode, nextDay.format('YYYY'), nextDay.format('MM'), nextDay.format('DD'), showAllergy, true, true);
