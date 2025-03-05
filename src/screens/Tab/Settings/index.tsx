@@ -26,7 +26,7 @@ const Settings = () => {
                 '',
                 [
                   {text: '아니요', style: 'cancel'},
-                  {text: '네', onPress: () => navigation.navigate('Intro')},
+                  {text: '네', onPress: () => navigation.navigate('SchoolSearch')},
                 ],
                 {cancelable: false},
               );
