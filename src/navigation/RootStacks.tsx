@@ -5,7 +5,6 @@ import BottomTabs from '@/navigation/BottomTabs';
 import Meal from '@/screens/Meal';
 import {ClassSelectScreen, IntroScreen, SchoolSearchScreen} from '@/screens/Onboarding';
 import Schedules from '@/screens/Schedules';
-import Timetable from '@/screens/Timetable';
 import {theme} from '@/styles/theme';
 import {School} from '@/types/api';
 import {createStaticNavigation} from '@react-navigation/native';
@@ -81,13 +80,6 @@ const RootStacks = () => {
             options: {
               headerShown: true,
               title: '급식',
-            },
-          },
-          Timetable: {
-            screen: Timetable,
-            options: {
-              headerShown: true,
-              title: '시간표',
             },
           },
         },
