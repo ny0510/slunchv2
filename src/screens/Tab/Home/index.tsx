@@ -3,6 +3,7 @@ import React, {ReactNode, useCallback, useEffect, useState} from 'react';
 import {ActivityIndicator, Alert, Easing, FlatList, Text, TouchableOpacity, View} from 'react-native';
 import Midnight from 'react-native-midnight';
 
+import {styles as s} from './styles';
 import {getMeal, getSchedules, getTimetable} from '@/api';
 import Logo from '@/assets/images/logo.svg';
 import Card from '@/components/Card';
@@ -124,8 +125,8 @@ const Home = () => {
 
   return (
     <Container scrollView>
-      <View style={{gap: 12, width: '100%'}}>
-        <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+      <View style={s.container}>
+        <View style={s.header}>
           <Logo width={32} height={32} />
           <Text style={[theme.typography.subtitle]}>{user ? user.schoolInfo.schoolName : '학교 정보 없음'}</Text>
         </View>
@@ -175,7 +176,7 @@ const HomeCard = ({title, titleIcon, arrow, onPress, notificationDot, children}:
 );
 
 const LoadingView = ({height}: {height: number}) => (
-  <View style={{height, justifyContent: 'center', alignItems: 'center'}}>
+  <View style={[s.loadingView, {height}]}>
     <ActivityIndicator size="large" color={theme.colors.primaryText} />
   </View>
 );
@@ -186,7 +187,7 @@ const ScheduleItem = ({item}: {item: Schedule}) => {
   const isSameDay = startDate.isSame(endDate, 'day');
 
   return (
-    <View style={{flexDirection: 'row', alignItems: 'flex-end', gap: 4}}>
+    <View style={s.scheduleItemContainer}>
       <Text style={{color: theme.colors.primaryText, fontFamily: theme.fontWeights.medium, fontSize: 16}}>
         {startDate.format('M/D')}
         {!isSameDay && ` ~ ${endDate.format('M/D')}`}
@@ -198,19 +199,9 @@ const ScheduleItem = ({item}: {item: Schedule}) => {
 };
 
 const TimetableRow = ({item, index, todayIndex}: {item: Timetable[]; index: number; todayIndex: number}) => (
-  <View style={{flexDirection: 'row', gap: 3}}>
+  <View style={s.timetableRow}>
     {item.map((subject, subIndex) => (
-      <View
-        key={`${subject.subject}-${index}-${subIndex}`}
-        style={{
-          flex: 1,
-          backgroundColor: subIndex === todayIndex ? theme.colors.background : theme.colors.card,
-          paddingHorizontal: 2,
-          paddingVertical: 8,
-          borderRadius: 8,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
+      <View key={`${subject.subject}-${index}-${subIndex}`} style={[s.timetableCell, {backgroundColor: subIndex === todayIndex ? theme.colors.background : theme.colors.card}]}>
         <Text
           style={{
             color: subject.changed ? theme.colors.highlightLight : theme.colors.primaryText,
