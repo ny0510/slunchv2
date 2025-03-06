@@ -16,6 +16,14 @@ import {StackScreenProps} from '@react-navigation/stack';
 
 export const IntroScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+
+  const handlePress = () => {
+    if (!isButtonDisabled) {
+      setIsButtonDisabled(true);
+      navigation.navigate('SchoolSearch');
+    }
+  };
 
   return (
     <View style={s.introContainer}>
@@ -32,7 +40,7 @@ export const IntroScreen = () => {
             <Text style={[theme.typography.body, {fontFamily: theme.fontWeights.semiBold}]}>확인하세요!</Text>
           </View>
         </View>
-        <TouchableOpacity style={s.nextButton} onPress={() => navigation.navigate('SchoolSearch')}>
+        <TouchableOpacity style={s.nextButton} onPress={handlePress} disabled={isButtonDisabled}>
           <Text style={s.nextButtonText}>시작하기</Text>
           <FontAwesome6 name="angle-right" iconStyle="solid" size={18} color={theme.colors.primaryText} />
         </TouchableOpacity>
@@ -137,6 +145,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
   const [selectedGrade, setSelectedGrade] = useState<number>(0);
   const [selectedClass, setSelectedClass] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
   const classScrollPickerRef = useRef<any>(null);
 
@@ -188,6 +197,39 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
     setSelectedClass(classList[gradeIndex][index - 1]);
   };
 
+  const handlePress = async () => {
+    if (!isButtonDisabled) {
+      setIsButtonDisabled(true);
+      const response = await neisSchoolSearch(school.schoolName);
+      const neisSchool = response.find(item => item.region.includes(school.region)) || response[0];
+
+      if (!neisSchool) {
+        Alert.alert('학교 정보를 불러오는데 실패했습니다', '다시 시도해주세요');
+        setIsButtonDisabled(false);
+        return;
+      }
+
+      AsyncStorage.setItem('isFirstOpen', 'false');
+      AsyncStorage.setItem(
+        'school',
+        JSON.stringify({
+          schoolName: school.schoolName,
+          comciganCode: school.schoolCode,
+          comciganRegion: school.region,
+          neisCode: neisSchool.schoolCode,
+          neisRegion: neisSchool.region,
+          neisRegionCode: neisSchool.regionCode,
+        }),
+      );
+      AsyncStorage.setItem('class', JSON.stringify({grade: selectedGrade, class: selectedClass}));
+
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'Tab'}],
+      });
+    }
+  };
+
   return (
     <View style={s.inputContainer}>
       <View style={s.inputContentTop}>
@@ -225,36 +267,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
           )}
         </View>
       </View>
-      <TouchableOpacity
-        style={s.nextButton}
-        onPress={async () => {
-          const response = await neisSchoolSearch(school.schoolName);
-          const neisSchool = response.find(item => item.region.includes(school.region)) || response[0];
-
-          if (!neisSchool) {
-            Alert.alert('학교 정보를 불러오는데 실패했습니다', '다시 시도해주세요');
-            return;
-          }
-
-          AsyncStorage.setItem('isFirstOpen', 'false');
-          AsyncStorage.setItem(
-            'school',
-            JSON.stringify({
-              schoolName: school.schoolName,
-              comciganCode: school.schoolCode,
-              comciganRegion: school.region,
-              neisCode: neisSchool.schoolCode,
-              neisRegion: neisSchool.region,
-              neisRegionCode: neisSchool.regionCode,
-            }),
-          );
-          AsyncStorage.setItem('class', JSON.stringify({grade: selectedGrade, class: selectedClass}));
-
-          navigation.reset({
-            index: 0,
-            routes: [{name: 'Tab'}],
-          });
-        }}>
+      <TouchableOpacity style={s.nextButton} onPress={handlePress} disabled={isButtonDisabled}>
         <Text style={s.nextButtonText}>계속하기</Text>
         <FontAwesome6 name="angle-right" iconStyle="solid" size={18} color={theme.colors.primaryText} />
       </TouchableOpacity>
