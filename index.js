@@ -5,6 +5,7 @@ import {setCustomImage, setCustomText, setCustomTouchableOpacity} from 'react-na
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {enableScreens} from 'react-native-screens';
+import {showSplash} from 'react-native-splash-view';
 
 import {name as appName} from './app.json';
 import App from '@/App';
@@ -18,6 +19,7 @@ TextInput.defaultProps.autoCorrect = false;
 TextInput.defaultProps.allowFontScaling = false;
 
 const Root = () => {
+  showSplash();
   enableScreens();
   changeNavigationBarColor('transparent', true);
   dayjs.locale('ko');

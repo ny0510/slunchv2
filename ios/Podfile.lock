@@ -1691,6 +1691,15 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNImageCropPicker (0.42.0):
+    - React-Core
+    - React-RCTImage
+    - RNImageCropPicker/QBImagePickerController (= 0.42.0)
+    - TOCropViewController (~> 2.7.4)
+  - RNImageCropPicker/QBImagePickerController (0.42.0):
+    - React-Core
+    - React-RCTImage
+    - TOCropViewController (~> 2.7.4)
   - RNReanimated (3.17.1):
     - DoubleConversion
     - glog
@@ -1899,6 +1908,28 @@ PODS:
     - ReactCommon/turbomodule/core
     - Yoga
   - SocketRocket (0.7.1)
+  - SplashView (0.0.9):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
+  - TOCropViewController (2.7.4)
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -1978,9 +2009,11 @@ DEPENDENCIES:
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - "RNGoogleSignin (from `../node_modules/@react-native-google-signin/google-signin`)"
+  - RNImageCropPicker (from `../node_modules/react-native-image-crop-picker`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
+  - SplashView (from `../node_modules/react-native-splash-view`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -1990,6 +2023,7 @@ SPEC REPOS:
     - GTMAppAuth
     - GTMSessionFetcher
     - SocketRocket
+    - TOCropViewController
 
 EXTERNAL SOURCES:
   boost:
@@ -2141,12 +2175,16 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-gesture-handler"
   RNGoogleSignin:
     :path: "../node_modules/@react-native-google-signin/google-signin"
+  RNImageCropPicker:
+    :path: "../node_modules/react-native-image-crop-picker"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
     :path: "../node_modules/react-native-screens"
   RNSVG:
     :path: "../node_modules/react-native-svg"
+  SplashView:
+    :path: "../node_modules/react-native-splash-view"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -2229,10 +2267,13 @@ SPEC CHECKSUMS:
   RNDeviceInfo: d863506092aef7e7af3a1c350c913d867d795047
   RNGestureHandler: 8b1080a6db0be82dbca18550d6212b885bfab6b2
   RNGoogleSignin: 5e115ab981ba1a9f5fae37000f49cd996c394df0
+  RNImageCropPicker: b0afedeefd8655254a15c34103718455fde6ce59
   RNReanimated: 86aaf0407803b713a7aa47ac086730f409672b91
   RNScreens: 0d4cb9afe052607ad0aa71f645a88bb7c7f2e64c
   RNSVG: 877cd57c2db63dc9f1fd1bbb5e95506ccd481df6
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
+  SplashView: b7735add925f196c8b0549ec843081340ce88b6d
+  TOCropViewController: 80b8985ad794298fb69d3341de183f33d1853654
   Yoga: 78d74e245ed67bb94275a1316cdc170b9b7fe884
 
 PODFILE CHECKSUM: 4f0d2df92380e4a12afcf4c6c66e34250e1fa5b0

@@ -1474,6 +1474,8 @@
 
     "react-native-skeleton-placeholder": ["react-native-skeleton-placeholder@5.2.4", "", { "peerDependencies": { "@react-native-masked-view/masked-view": "^0.2.8", "react": ">=0.14.8", "react-native": ">=0.50.1", "react-native-linear-gradient": "^2.5.6" } }, "sha512-OZntVq1hU1UX33FltxK2ezT2v9vHIhV8YnEbnMWUCvxT0N9OsgD1qxiHm6qb9YRJVgq2o5z3S7dNPsPnDF/jNg=="],
 
+    "react-native-splash-view": ["react-native-splash-view@0.0.9", "", { "peerDependencies": { "react": "*", "react-native": "*" } }, "sha512-NfPHoKeLfv6t+H7pJf50H6VsrQhfghSBHf8d/olScr1nC6xlrivzRM+dtmY34G1bfo/kq/uVWnmg8N2jIsftpQ=="],
+
     "react-native-svg": ["react-native-svg@15.11.2", "", { "dependencies": { "css-select": "^5.1.0", "css-tree": "^1.1.3", "warn-once": "0.1.1" }, "peerDependencies": { "react": "*", "react-native": "*" } }, "sha512-+YfF72IbWQUKzCIydlijV1fLuBsQNGMT6Da2kFlo1sh+LE3BIm/2Q7AR1zAAR6L0BFLi1WaQPLfFUC9bNZpOmw=="],
 
     "react-native-svg-transformer": ["react-native-svg-transformer@1.5.0", "", { "dependencies": { "@svgr/core": "^8.1.0", "@svgr/plugin-jsx": "^8.1.0", "@svgr/plugin-svgo": "^8.1.0", "path-dirname": "^1.0.2" }, "peerDependencies": { "react-native": ">=0.59.0", "react-native-svg": ">=12.0.0" } }, "sha512-RG5fSWJT7mjCQYocgYFUo1KYPLOoypPVG5LQab+pZZO7m4ciGaQIe0mhok3W4R5jLQsEXKo0u+aQGkZV/bZG7w=="],
