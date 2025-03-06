@@ -87,7 +87,7 @@ const SchoolCard = () => {
             </View>
           </TouchableOpacity>
           <View style={{position: 'absolute', bottom: 32}}>
-            <Text style={[theme.typography.body, {color: theme.colors.secondaryText}]}>선린인터넷고 구글 계정으로 로그인 해 주세요.</Text>
+            <Text style={[theme.typography.body, {color: theme.colors.secondaryText}]}>선린인터넷고 구글 계정으로 로그인해 주세요.</Text>
           </View>
         </View>
       )}

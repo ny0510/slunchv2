@@ -100,7 +100,7 @@ const ProfileSection = ({isPressed, setIsPressed}: Props) => {
       </TouchableOpacity>
       <View style={{alignItems: 'center', justifyContent: 'center'}}>
         <Text style={{color: theme.colors.primaryText, fontFamily: theme.fontWeights.bold, fontSize: 24}}>{user ? user.user.name : '게스트'}</Text>
-        <Text style={{color: theme.colors.secondaryText, fontFamily: theme.fontWeights.medium, fontSize: 16}}>{user ? user.user.email : '로그인 해 주세요'}</Text>
+        <Text style={{color: theme.colors.secondaryText, fontFamily: theme.fontWeights.medium, fontSize: 16}}>{user ? user.user.email : '로그인해 주세요'}</Text>
       </View>
 
       <View style={{width: '100%'}}>

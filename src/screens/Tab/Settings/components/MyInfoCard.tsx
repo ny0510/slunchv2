@@ -14,7 +14,7 @@ const AppInfoCard = () => {
     <Card title="내 정보" titleStyle={{fontSize: theme.typography.body.fontSize}}>
       <Content title="학교" content={user.schoolInfo.schoolName} />
       <Content title="학급" content={`${user.classInfo.grade}학년 ${user.classInfo.class}반`} />
-      <Content title="이메일" content={authUser ? authUser?.user.email : '로그인 해 주세요'} />
+      <Content title="이메일" content={authUser ? authUser?.user.email : '로그인해 주세요'} />
     </Card>
   );
 };
