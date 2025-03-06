@@ -1,8 +1,9 @@
 import React from 'react';
 import {ActivityIndicator, Easing, ImageBackground, Text, TouchableOpacity, View} from 'react-native';
+import ImagePicker, {PickerErrorCode} from 'react-native-image-crop-picker';
 
 import TouchableScale from '@/components/TouchableScale';
-import {showToast} from '@/lib/showToast';
+import {showToast} from '@/lib/toast';
 import {useAuth} from '@/providers/AuthProvider';
 import {theme} from '@/styles/theme';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
@@ -11,6 +12,8 @@ interface Props {
   isPressed: boolean;
   setIsPressed: (isPressed: boolean) => void;
 }
+
+const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
 
 const ProfileSection = ({isPressed, setIsPressed}: Props) => {
   const {user, loading, logout, login} = useAuth();
@@ -23,9 +26,55 @@ const ProfileSection = ({isPressed, setIsPressed}: Props) => {
     <View style={{alignItems: 'center', justifyContent: 'center', gap: 12}}>
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={() => {
+        onPress={async () => {
           if (isPressed) {
-            console.log('Pressed');
+            let selectedImage = await ImagePicker.openPicker({
+              mediaType: 'photo',
+              cropping: false,
+            });
+
+            await ImagePicker.openCropper({
+              path: selectedImage.path,
+              compressImageMaxWidth: 512,
+              compressImageMaxHeight: 512,
+              cropping: true,
+              cropperCircleOverlay: true,
+              forceJpg: true,
+              enableRotationGesture: true,
+              cropperRotateButtonsHidden: true,
+              mediaType: 'photo',
+              writeTempFile: false,
+              cropperToolbarTitle: '사진 편집',
+              loadingLabelText: '로딩 중...',
+              cropperChooseText: '완료',
+              cropperCancelText: '취소',
+              cropperActiveWidgetColor: theme.colors.highlight,
+              cropperStatusBarColor: theme.colors.background,
+              cropperToolbarColor: theme.colors.background,
+              cropperToolbarWidgetColor: theme.colors.primaryText,
+            })
+              .then(image => {
+                if (image.size > MAX_IMAGE_SIZE) {
+                  return showToast('이미지 크기가 너무 커요. (최대 3MB)');
+                }
+                console.log(image);
+                setIsPressed(false);
+              })
+              .catch(error => {
+                console.log(error);
+                const errorCode: PickerErrorCode = error.code;
+                switch (errorCode) {
+                  case 'E_PICKER_CANCELLED':
+                    break;
+                  case 'E_NO_LIBRARY_PERMISSION':
+                    showToast('사진 앨범 접근 권한이 없어요.');
+                    break;
+                  default:
+                    showToast(`사진 선택에 실패했어요:\n${error.message}`);
+                    break;
+                }
+                setIsPressed(false);
+              });
           } else {
             setIsPressed(true);
           }
