@@ -6,10 +6,20 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CACHE_DURATION = 3600000; // 1시간
 
+const isCacheExpired = (timestamp: number) => {
+  const cacheDate = dayjs(timestamp);
+  const now = dayjs();
+  return now.isAfter(cacheDate, 'day');
+};
+
 const getCachedData = async (key: string) => {
   const cachedData = await AsyncStorage.getItem(key);
   if (cachedData) {
     const {data, timestamp} = JSON.parse(cachedData);
+    if (isCacheExpired(timestamp)) {
+      await AsyncStorage.removeItem(key);
+      return null;
+    }
     if (dayjs().diff(dayjs(timestamp)) < CACHE_DURATION) {
       return data;
     }
