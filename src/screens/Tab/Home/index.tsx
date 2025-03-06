@@ -151,7 +151,7 @@ const Home = () => {
           )}
         </HomeCard>
 
-        <HomeCard
+        <Card
           title="시간표"
           titleIcon={<FontAwesome6 name="table" size={16} color={theme.colors.primaryText} iconStyle="solid" />}
           // arrow onPress={() => navigation.navigate('Timetable')}
@@ -163,7 +163,7 @@ const Home = () => {
           ) : (
             <FlatList data={timetable} contentContainerStyle={{gap: 3}} renderItem={({item, index}) => <TimetableRow item={item} index={index} todayIndex={todayIndex} />} scrollEnabled={false} />
           )}
-        </HomeCard>
+        </Card>
       </View>
     </Container>
   );
