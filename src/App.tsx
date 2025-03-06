@@ -2,7 +2,8 @@ import React from 'react';
 import {Dimensions, StatusBar, Text, View} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import Toast, {ToastConfig} from 'react-native-toast-message';
+import {hideSplash} from 'react-native-splash-view';
+import Toast from 'react-native-toast-message';
 
 import Stack from '@/navigation/RootStacks';
 import {AuthProvider} from '@/providers/AuthProvider';
@@ -36,6 +37,12 @@ const toastConfig: ToastConfig = {
   ),
 };
 const App = () => {
+  useEffect(() => {
+    setTimeout(() => {
+      hideSplash();
+    }, 250);
+  }, []);
+
   return (
     <GestureHandlerRootView>
       <SafeAreaView style={{flex: 1, backgroundColor: theme.colors.background}}>
