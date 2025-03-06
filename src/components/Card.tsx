@@ -22,10 +22,8 @@ const Card = ({title, titleStyle, subtitle, subtitleStyle, arrow, titleIcon, chi
         <View style={s.titleRowContainer}>
           <View style={s.titleContentContainer}>
             {titleIcon}
-            {/* <View style={{gap: 2}}> */}
             <Text style={[s.title, titleStyle]}>{title}</Text>
             {subtitle && <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}, subtitleStyle]}>{subtitle}</Text>}
-            {/* </View> */}
           </View>
           <View style={s.titleContentContainer}>
             {notificationDot && <View style={s.notificationDot} />}

@@ -30,7 +30,6 @@ export const IntroScreen = () => {
           <View>
             <Text style={[theme.typography.body, {fontFamily: theme.fontWeights.semiBold}]}>챙기기 번거로운 학사일정, 시간표 및 급식을 간편하게</Text>
             <Text style={[theme.typography.body, {fontFamily: theme.fontWeights.semiBold}]}>확인하세요!</Text>
-            {/* <Text style={[theme.typography.body, {fontFamily: theme.fontWeights.semiBold}]}>전국 익명 커뮤니티에서 자유롭게 소통하세요.</Text> */}
           </View>
         </View>
         <TouchableOpacity style={s.nextButton} onPress={() => navigation.navigate('SchoolSearch')}>
