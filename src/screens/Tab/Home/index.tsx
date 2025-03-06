@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import React, {ReactNode, useCallback, useEffect, useState} from 'react';
-import {ActivityIndicator, Alert, Easing, FlatList, Text, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, Alert, AppState, Easing, FlatList, Text, TouchableOpacity, View} from 'react-native';
 import Midnight from 'react-native-midnight';
 
 import {styles as s} from './styles';
@@ -85,6 +85,17 @@ const Home = () => {
     const listener = Midnight.addListener(() => setMidnightTrigger(prev => !prev));
     return () => listener.remove();
   }, []);
+
+  // 앱이 백그라운드에서 포그라운드로 돌아올 때 데이터를 갱신
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (nextAppState === 'active') {
+        fetchData();
+      }
+    });
+
+    return () => subscription.remove();
+  }, [fetchData]);
 
   useEffect(() => {
     setTodayIndex(dayjs().day() - 1);
