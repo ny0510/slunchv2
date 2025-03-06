@@ -9,12 +9,14 @@ interface Props {
   style?: {};
   children: React.ReactNode;
   refreshControl?: React.ReactElement;
+  scrollViewRef?: React.RefObject<ScrollView>;
+  onContentSizeChange?: () => void;
 }
 
-const Container = ({scrollView = false, bounce = false, showsVerticalScrollIndicator = false, showsHorizontalScrollIndicator = false, style, children, refreshControl}: Props) => {
+const Container = ({scrollView = false, bounce = false, showsVerticalScrollIndicator = false, showsHorizontalScrollIndicator = false, style, children, refreshControl, scrollViewRef, onContentSizeChange}: Props) => {
   if (scrollView) {
     return (
-      <ScrollView contentContainerStyle={[s.container, style]} bounces={bounce} showsVerticalScrollIndicator={showsVerticalScrollIndicator} showsHorizontalScrollIndicator={showsHorizontalScrollIndicator} refreshControl={refreshControl}>
+      <ScrollView ref={scrollViewRef} contentContainerStyle={[s.container, style]} bounces={bounce} showsVerticalScrollIndicator={showsVerticalScrollIndicator} showsHorizontalScrollIndicator={showsHorizontalScrollIndicator} refreshControl={refreshControl} onContentSizeChange={onContentSizeChange}>
         {children}
       </ScrollView>
     );

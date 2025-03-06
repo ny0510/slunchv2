@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
-import React, {useCallback, useEffect, useState} from 'react';
-import {ActivityIndicator, Alert, RefreshControl, Text, View} from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {ActivityIndicator, Alert, RefreshControl, ScrollView, Text, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import {getMeal} from '@/api';
@@ -12,10 +12,12 @@ import {MealItem} from '@/types/meal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Meal = () => {
+  const scrollViewRef = useRef<ScrollView | null>(null);
   const [meal, setMeal] = useState<MealType[]>([]);
-  const [showAllergy, setShowAllergy] = useState<boolean>(true);
+  const [showAllergy, setShowAllergy] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [todayIndex, setTodayIndex] = useState<number>(0);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -28,6 +30,9 @@ const Meal = () => {
 
       const mealResponse = await getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), undefined, showAllergy, true, true);
       setMeal(mealResponse);
+
+      // 오늘 날짜 급식으로 스크롤
+      setTodayIndex(mealResponse.findIndex(m => dayjs(m.date).isSame(today, 'day')));
     } catch (e) {
       const err = e as Error;
 
@@ -47,12 +52,12 @@ const Meal = () => {
       return <Text key={index}>- {mealItem}</Text>;
     }
 
-    const allergyInfo = showAllergy && mealItem.allergy && mealItem.allergy.length > 0 ? ` (${mealItem.allergy.map(allergy => allergy.code).join(', ')})` : '';
+    const allergyInfo = showAllergy && mealItem.allergy && mealItem.allergy.length > 0 ? ` ${mealItem.allergy.map(allergy => allergy.code).join(', ')}` : '';
 
     return (
       <Text key={index}>
         - {mealItem.food}
-        <Text style={theme.typography.small}>{allergyInfo}</Text>
+        <Text style={[theme.typography.small, {color: theme.colors.secondaryText}]}>{allergyInfo}</Text>
       </Text>
     );
   };
@@ -65,6 +70,10 @@ const Meal = () => {
     <Container
       scrollView
       bounce={!loading}
+      scrollViewRef={scrollViewRef}
+      onContentSizeChange={() => {
+        return scrollViewRef.current?.scrollTo({y: todayIndex * 200, animated: true});
+      }}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
