@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {Alert, TouchableOpacity, TouchableWithoutFeedback, View} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {TouchableOpacity, TouchableWithoutFeedback, View} from 'react-native';
 
 import AppInfoCard from './components/AppInfoCard';
 import MyInfoCard from './components/MyInfoCard';
@@ -8,29 +8,25 @@ import Card from '@/components/Card';
 import Container from '@/components/Container';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {theme} from '@/styles/theme';
-import {NavigationProp, useNavigation} from '@react-navigation/native';
+import {NavigationProp, useIsFocused, useNavigation} from '@react-navigation/native';
 
 const Settings = () => {
   const [isPressed, setIsPressed] = useState(false);
+  const isFocused = useIsFocused();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  useEffect(() => {
+    if (!isFocused) {
+      setIsPressed(false);
+    }
+  }, [isFocused]);
 
   return (
     <Container scrollView bounce>
       <TouchableWithoutFeedback onPress={() => setIsPressed(false)}>
         <View style={{gap: 18, width: '100%', marginVertical: 16}}>
           <ProfileSection setIsPressed={setIsPressed} isPressed={isPressed} />
-          <Button
-            onPress={() => {
-              Alert.alert(
-                '정말로 학교 정보를 변경하시겠습니까?',
-                '',
-                [
-                  {text: '아니요', style: 'cancel'},
-                  {text: '네', onPress: () => navigation.navigate('SchoolSearch')},
-                ],
-                {cancelable: false},
-              );
-            }}>
+          <Button onPress={() => navigation.navigate('SchoolSearch')}>
             <Card title="학교 정보 변경하기" arrow titleStyle={{fontSize: theme.typography.body.fontSize}} />
           </Button>
           <View style={{gap: 8}}>
