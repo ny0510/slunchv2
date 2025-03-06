@@ -26,16 +26,9 @@ const setCachedData = async (key: string, data: any) => {
 };
 
 export const comciganSchoolSearch = async (schoolName: string): Promise<School[]> => {
-  const cacheKey = `comciganSchoolSearch_${schoolName}`;
-  const cachedData = await getCachedData(cacheKey);
-  if (cachedData) {
-    return cachedData;
-  }
-
   const response = await httpClient.get('/comcigan/search', {
     params: {schoolName},
   });
-  await setCachedData(cacheKey, response.data);
   return response.data;
 };
 
@@ -68,16 +61,9 @@ export const getTimetable = async (schoolCode: number, grade: number, classNum: 
 };
 
 export const neisSchoolSearch = async (schoolName: string): Promise<School[]> => {
-  const cacheKey = `neisSchoolSearch_${schoolName}`;
-  const cachedData = await getCachedData(cacheKey);
-  if (cachedData) {
-    return cachedData;
-  }
-
   const response = await httpClient.get('/neis/search', {
     params: {schoolName},
   });
-  await setCachedData(cacheKey, response.data);
   return response.data;
 };
 
