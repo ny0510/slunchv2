@@ -3,7 +3,7 @@ import {Text, TouchableOpacity, View} from 'react-native';
 
 import Barcode from './components/Barcode';
 import Container from '@/components/Container';
-import {showToast} from '@/lib/showToast';
+import {showToast} from '@/lib/toast';
 import {useAuth} from '@/providers/AuthProvider';
 import {theme} from '@/styles/theme';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
