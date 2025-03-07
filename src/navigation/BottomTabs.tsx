@@ -35,7 +35,7 @@ const BottomTabs = () => {
   return (
     <BottomTab.Navigator
       initialRouteName="Home"
-      backBehavior="none"
+      backBehavior="firstRoute"
       screenOptions={({route}) => ({
         headerShown: false,
         animation: 'shift',
