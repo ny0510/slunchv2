@@ -47,8 +47,8 @@ const Home = () => {
 
       const timetableResponse = await getTimetable(school.comciganCode, classData.grade, classData.class);
 
-      // 오후 12시 30분 이후면 다음 날 급식 정보를 가져옴
-      const isPastNoon = today.hour() > 12 || (today.hour() === 12 && today.minute() >= 30);
+      // 오후 2시 이후면 다음 날 급식 정보를 가져옴
+      const isPastNoon = today.hour() > 14;
 
       // 급식 정보 가져오기, 최대 3일 뒤까지 시도
       let mealResponse = await getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), today.format('DD'), showAllergy, true, true);
