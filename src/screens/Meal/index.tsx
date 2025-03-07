@@ -32,7 +32,12 @@ const Meal = () => {
       setMeal(mealResponse);
 
       // 오늘 날짜 급식으로 스크롤
-      setTodayIndex(mealResponse.findIndex(m => dayjs(m.date).isSame(today, 'day')));
+      const closestMealIndex = mealResponse.reduce((closestIndex, currentMeal, currentIndex) => {
+        const currentDiff = Math.abs(dayjs(currentMeal.date).diff(today, 'day'));
+        const closestDiff = Math.abs(dayjs(mealResponse[closestIndex].date).diff(today, 'day'));
+        return currentDiff < closestDiff ? currentIndex : closestIndex;
+      }, 0);
+      setTodayIndex(closestMealIndex);
     } catch (e) {
       const err = e as Error;
 
