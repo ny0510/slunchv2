@@ -17,7 +17,6 @@ const Meal = () => {
   const [showAllergy, setShowAllergy] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [todayIndex, setTodayIndex] = useState<number>(0);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -29,15 +28,8 @@ const Meal = () => {
       const today = dayjs();
 
       const mealResponse = await getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), undefined, showAllergy, true, true);
-      setMeal(mealResponse);
-
-      // 오늘 날짜 급식으로 스크롤
-      const closestMealIndex = mealResponse.reduce((closestIndex, currentMeal, currentIndex) => {
-        const currentDiff = Math.abs(dayjs(currentMeal.date).diff(today, 'day'));
-        const closestDiff = Math.abs(dayjs(mealResponse[closestIndex].date).diff(today, 'day'));
-        return currentDiff < closestDiff ? currentIndex : closestIndex;
-      }, 0);
-      setTodayIndex(closestMealIndex);
+      const afterToday = mealResponse.filter(m => dayjs(m.date).isSame(today, 'day') || dayjs(m.date).isAfter(today, 'day'));
+      setMeal(afterToday);
     } catch (e) {
       const err = e as Error;
 
@@ -76,9 +68,6 @@ const Meal = () => {
       scrollView
       bounce={!loading}
       scrollViewRef={scrollViewRef}
-      onContentSizeChange={() => {
-        return scrollViewRef.current?.scrollTo({y: todayIndex * 200, animated: true});
-      }}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
