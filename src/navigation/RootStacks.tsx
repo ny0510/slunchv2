@@ -1,4 +1,5 @@
 import React from 'react';
+import {Platform} from 'react-native';
 
 import {useFirstOpen} from '@/hooks/useFirstOpen';
 import BottomTabs from '@/navigation/BottomTabs';
@@ -33,7 +34,7 @@ const RootStacks = () => {
     initialRouteName: isFirstOpen ? 'Intro' : 'Tab',
     screenOptions: {
       headerShown: false,
-      animation: 'slide_from_right',
+      animation: Platform.OS === 'ios' ? 'slide_from_right' : 'scale_from_center', // ios: slide_from_right, android: scale_from_center
       freezeOnBlur: true,
       cardStyle: {backgroundColor: theme.colors.background},
       headerStatusBarHeight: 0,
@@ -83,44 +84,6 @@ const RootStacks = () => {
         },
       },
     },
-    // groups: {
-    //   FirstLaunch: {
-    //     if: () => isFirstOpen,
-    //     navigationKey: 'FirstLaunch',
-    //     screens: {
-    //       Intro: IntroScreen,
-    //       SchoolSearch: SchoolSearchScreen,
-    //       ClassSelect: ClassSelectScreen,
-    //     },
-    //   },
-    // Tab: {
-    //   navigationKey: 'Tab',
-    //   screens: {
-    //     Tab: BottomTabs,
-    //     Schedules: {
-    //       screen: Schedules,
-    //       options: {
-    //         headerShown: true,
-    //         title: '학사일정',
-    //       },
-    //     },
-    //     Meal: {
-    //       screen: Meal,
-    //       options: {
-    //         headerShown: true,
-    //         title: '급식',
-    //       },
-    //     },
-    //     DeveloperInfo: {
-    //       screen: DeveloperInfo,
-    //       options: {
-    //         headerShown: true,
-    //         title: '개발자 정보',
-    //       },
-    //     },
-    //   },
-    // },
-    // },
   });
   const Stack = createStaticNavigation(RootStack);
 
