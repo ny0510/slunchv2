@@ -4,6 +4,7 @@ import {TouchableOpacity, TouchableWithoutFeedback, View} from 'react-native';
 import AppInfoCard from './components/AppInfoCard';
 import MyInfoCard from './components/MyInfoCard';
 import ProfileSection from './components/ProfileSection';
+import SettingCard from './components/SettingCard';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import {RootStackParamList} from '@/navigation/RootStacks';
@@ -26,15 +27,16 @@ const Settings = () => {
       <TouchableWithoutFeedback onPress={() => setIsPressed(false)}>
         <View style={{gap: 18, width: '100%', marginVertical: 16}}>
           <ProfileSection setIsPressed={setIsPressed} isPressed={isPressed} />
-          <Button onPress={() => navigation.navigate('SchoolSearch')}>
-            <Card title="학교 정보 변경하기" arrow titleStyle={{fontSize: theme.typography.body.fontSize}} />
-          </Button>
           <View style={{gap: 8}}>
+            {/* <Button onPress={() => {}}>
+              <Card title="알림 설정" arrow titleStyle={{fontSize: theme.typography.body.fontSize}} />
+            </Button>
+            <Button onPress={() => navigation.navigate('SchoolSearch')}>
+              <Card title="학교 정보 변경하기" arrow titleStyle={{fontSize: theme.typography.body.fontSize}} />
+            </Button> */}
+            <SettingCard />
             <MyInfoCard />
             <AppInfoCard />
-            <Button onPress={() => navigation.navigate('DeveloperInfo')}>
-              <Card title="갈려나간 사람들" arrow titleStyle={{fontSize: theme.typography.body.fontSize}} />
-            </Button>
           </View>
         </View>
       </TouchableWithoutFeedback>
