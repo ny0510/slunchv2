@@ -6,7 +6,7 @@ import Container from '@/components/Container';
 import {theme} from '@/styles/theme';
 
 const DeveloperCard = ({name, role, profileImage}: {name: string; role: string; profileImage?: string}) => (
-  <View style={{flexDirection: 'row', alignContent: 'center', gap: 12}}>
+  <View style={{flexDirection: 'row', alignContent: 'center', gap: 10}}>
     <ImageBackground src={profileImage || 'https://f.ny64.kr/slunchv2/defaultProfile.png'} style={{width: 48, height: 48, backgroundColor: theme.colors.border, borderRadius: 48 / 2}} borderRadius={48 / 2} />
     <View style={{justifyContent: 'center', gap: 4}}>
       <Text style={[theme.typography.body, {fontFamily: theme.fontWeights.semiBold}]}>{name}</Text>
