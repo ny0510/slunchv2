@@ -16,8 +16,6 @@ const Schedules = () => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
-
     try {
       const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
       const today = dayjs();

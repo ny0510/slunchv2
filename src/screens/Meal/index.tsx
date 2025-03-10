@@ -19,7 +19,6 @@ const Meal = () => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
     const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
     setShowAllergy(settings.showAllergy);
 
