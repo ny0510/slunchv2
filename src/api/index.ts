@@ -1,10 +1,11 @@
 import dayjs from 'dayjs';
 
 import httpClient from './httpClient';
-import {ClassList, Meal, Schedule, School, Timetable} from '@/types/api';
+import {ClassList, Meal, Notification, Schedule, School, Timetable} from '@/types/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CACHE_DURATION = 3600000; // 1시간
+const CACHE_PREFIX = '@cache/';
 
 const isCacheExpired = (timestamp: number) => {
   const cacheDate = dayjs(timestamp);
@@ -13,11 +14,12 @@ const isCacheExpired = (timestamp: number) => {
 };
 
 const getCachedData = async (key: string) => {
-  const cachedData = await AsyncStorage.getItem(key);
+  const cacheKey = `${CACHE_PREFIX}${key}`;
+  const cachedData = await AsyncStorage.getItem(cacheKey);
   if (cachedData) {
     const {data, timestamp} = JSON.parse(cachedData);
     if (isCacheExpired(timestamp)) {
-      await AsyncStorage.removeItem(key);
+      await AsyncStorage.removeItem(cacheKey);
       return null;
     }
     if (dayjs().diff(dayjs(timestamp)) < CACHE_DURATION) {
@@ -28,11 +30,12 @@ const getCachedData = async (key: string) => {
 };
 
 const setCachedData = async (key: string, data: any) => {
+  const cacheKey = `${CACHE_PREFIX}${key}`;
   const cacheEntry = {
     data,
     timestamp: dayjs().valueOf(),
   };
-  await AsyncStorage.setItem(key, JSON.stringify(cacheEntry));
+  await AsyncStorage.setItem(cacheKey, JSON.stringify(cacheEntry));
 };
 
 export const comciganSchoolSearch = async (schoolName: string): Promise<School[]> => {
@@ -43,16 +46,9 @@ export const comciganSchoolSearch = async (schoolName: string): Promise<School[]
 };
 
 export const getClassList = async (schoolCode: number): Promise<ClassList[]> => {
-  const cacheKey = `getClassList_${schoolCode}`;
-  const cachedData = await getCachedData(cacheKey);
-  if (cachedData) {
-    return cachedData;
-  }
-
   const response = await httpClient.get('/comcigan/classList', {
     params: {schoolCode},
   });
-  await setCachedData(cacheKey, response.data);
   return response.data;
 };
 
@@ -119,5 +115,10 @@ export const getSchedules = async (schoolCode: number, regionCode: string, year:
     return [];
   }
   await setCachedData(cacheKey, response.data);
+  return response.data;
+};
+
+export const getNotifications = async (): Promise<Notification[]> => {
+  const response = await httpClient.get('/notifications');
   return response.data;
 };

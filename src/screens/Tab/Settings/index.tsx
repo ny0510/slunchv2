@@ -1,20 +1,17 @@
 import React, {useEffect, useState} from 'react';
-import {TouchableOpacity, TouchableWithoutFeedback, View} from 'react-native';
+import {TouchableWithoutFeedback, View} from 'react-native';
 
 import AppInfoCard from './components/AppInfoCard';
+import DeveloperSettingCard from './components/DeveloperSettingCard';
 import MyInfoCard from './components/MyInfoCard';
 import ProfileSection from './components/ProfileSection';
 import SettingCard from './components/SettingCard';
-import Card from '@/components/Card';
 import Container from '@/components/Container';
-import {RootStackParamList} from '@/navigation/RootStacks';
-import {theme} from '@/styles/theme';
-import {NavigationProp, useIsFocused, useNavigation} from '@react-navigation/native';
+import {useIsFocused} from '@react-navigation/native';
 
 const Settings = () => {
   const [isPressed, setIsPressed] = useState(false);
   const isFocused = useIsFocused();
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   useEffect(() => {
     if (!isFocused) {
@@ -37,6 +34,7 @@ const Settings = () => {
             <SettingCard />
             <MyInfoCard />
             <AppInfoCard />
+            <DeveloperSettingCard />
           </View>
         </View>
       </TouchableWithoutFeedback>
@@ -44,8 +42,8 @@ const Settings = () => {
   );
 };
 
-const Button = ({children, onPress}: {children: React.ReactNode; onPress: () => void}) => {
-  return <TouchableOpacity onPress={onPress}>{children}</TouchableOpacity>;
-};
+// const Button = ({children, onPress}: {children: React.ReactNode; onPress: () => void}) => {
+//   return <TouchableOpacity onPress={onPress}>{children}</TouchableOpacity>;
+// };
 
 export default Settings;
