@@ -2,12 +2,14 @@
 import React, {useEffect, useState} from 'react';
 import {Easing, GestureResponderEvent, TouchableOpacity} from 'react-native';
 
+import {getNotifications} from '@/api';
 import TouchableScale from '@/components/TouchableScale';
 import Home from '@/screens/Tab/Home';
 import Notifications from '@/screens/Tab/Notifications';
 import SchoolCard from '@/screens/Tab/SchoolCard';
 import Settings from '@/screens/Tab/Settings';
 import {theme} from '@/styles/theme';
+import {Notification} from '@/types/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
@@ -17,6 +19,15 @@ const BottomTab = createBottomTabNavigator();
 const BottomTabs = () => {
   const [isSunrin, setIsSunrin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const fetchUnreadCount = async () => {
+    const notifications = await getNotifications();
+    const storedReadNotifications = await AsyncStorage.getItem('readNotifications');
+    const readNotifications = storedReadNotifications ? JSON.parse(storedReadNotifications) : [];
+    const unreadNotifications = notifications.filter((notification: Notification) => !readNotifications.includes(notification.id));
+    setUnreadCount(unreadNotifications.length);
+  };
 
   useEffect(() => {
     const checkSunrin = async () => {
@@ -26,6 +37,7 @@ const BottomTabs = () => {
     };
 
     checkSunrin();
+    fetchUnreadCount();
   }, []);
 
   if (loading) {
@@ -67,16 +79,16 @@ const BottomTabs = () => {
       {isSunrin && <BottomTab.Screen name="SchoolCard" component={SchoolCard} options={{title: '학생증'}} />}
       <BottomTab.Screen
         name="Notifications"
-        component={Notifications}
         options={{
           title: '알림',
-          // tabBarBadge: 1,
+          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
           tabBarBadgeStyle: {
             fontSize: 12,
             fontFamily: theme.fontWeights.medium,
           },
-        }}
-      />
+        }}>
+        {() => <Notifications onReadNotification={fetchUnreadCount} />}
+      </BottomTab.Screen>
       <BottomTab.Screen name="Settings" component={Settings} options={{title: '설정'}} />
     </BottomTab.Navigator>
   );

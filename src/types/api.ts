@@ -35,3 +35,10 @@ export interface Schedule {
   };
   schedule: string;
 }
+
+export interface Notification {
+  id: string;
+  title: string;
+  date: string;
+  content: string;
+}
