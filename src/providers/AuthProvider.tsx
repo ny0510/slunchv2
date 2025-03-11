@@ -67,7 +67,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
   const logout = async () => {
     try {
       await GoogleSignin.signOut();
-      await AsyncStorage.removeItem('googleAuthInfo');
+      await AsyncStorage.multiRemove(['googleAuthInfo', '@cache/getProfileImage']);
       setUser(null);
       console.log('로그아웃 완료');
     } catch (error) {
