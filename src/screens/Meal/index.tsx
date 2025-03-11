@@ -6,6 +6,7 @@ import {FlatList} from 'react-native-gesture-handler';
 import {getMeal} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
+import {clearCache} from '@/lib/cache';
 import {theme} from '@/styles/theme';
 import {Meal as MealType} from '@/types/api';
 import {MealItem} from '@/types/meal';
@@ -43,6 +44,13 @@ const Meal = () => {
     fetchData();
   }, [fetchData]);
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await clearCache('@cache/getMeal');
+    await fetchData();
+    setRefreshing(false);
+  }, [fetchData]);
+
   const renderMealItem = (mealItem: string | MealItem, index: number) => {
     if (typeof mealItem === 'string') {
       return <Text key={index}>- {mealItem}</Text>;
@@ -63,19 +71,7 @@ const Meal = () => {
       <ActivityIndicator size="large" color={theme.colors.primaryText} />
     </View>
   ) : (
-    <Container
-      scrollView
-      bounce={!loading}
-      scrollViewRef={scrollViewRef}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={() => {
-            setRefreshing(true);
-            fetchData().then(() => setRefreshing(false));
-          }}
-        />
-      }>
+    <Container scrollView bounce={!loading} scrollViewRef={scrollViewRef} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
       <View style={{gap: 12, width: '100%'}}>
         {meal.map((m, i) => {
           const date = dayjs(m.date).format('M월 D일 ddd요일');

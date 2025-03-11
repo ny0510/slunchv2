@@ -6,6 +6,7 @@ import {FlatList} from 'react-native-gesture-handler';
 import {getSchedules} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
+import {clearCache} from '@/lib/cache';
 import {theme} from '@/styles/theme';
 import {Schedule as ScheduleType} from '@/types/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -36,23 +37,19 @@ const Schedules = () => {
     fetchData();
   }, [fetchData]);
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await clearCache('@cache/getSchedules');
+    await fetchData();
+    setRefreshing(false);
+  }, [fetchData]);
+
   return loading ? (
     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <ActivityIndicator size="large" color={theme.colors.primaryText} />
     </View>
   ) : (
-    <Container
-      scrollView
-      bounce={!loading}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={() => {
-            setRefreshing(true);
-            fetchData().then(() => setRefreshing(false));
-          }}
-        />
-      }>
+    <Container scrollView bounce={!loading} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
       <View style={{gap: 12, width: '100%'}}>
         {schedules.map((m, i) => {
           return <ScheduleItem key={i} item={m} />;

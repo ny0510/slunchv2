@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import React, {ReactNode, useCallback, useEffect, useState} from 'react';
-import {ActivityIndicator, Alert, AppState, Easing, FlatList, Text, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, Alert, AppState, Easing, FlatList, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
 import Midnight from 'react-native-midnight';
 
 import {styles as s} from './styles';
@@ -10,6 +10,7 @@ import Card from '@/components/Card';
 import Container from '@/components/Container';
 import TouchableScale from '@/components/TouchableScale';
 import {useUser} from '@/hooks/useUser';
+import {clearCache} from '@/lib/cache';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {theme} from '@/styles/theme';
 import {Meal, Schedule, Timetable} from '@/types/api';
@@ -27,6 +28,7 @@ const Home = () => {
   const [todayIndex, setTodayIndex] = useState<number>(dayjs().day() - 1);
   const [midnightTrigger, setMidnightTrigger] = useState<boolean>(false);
   const [mealDayOffset, setMealDayOffset] = useState<number>(0);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   const user = useUser();
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -79,6 +81,13 @@ const Home = () => {
       setLoading(false);
     }
   }, [showAllergy]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await clearCache('@cache/');
+    await fetchData();
+    setRefreshing(false);
+  }, [fetchData]);
 
   // 매일 자정마다 데이터를 갱신
   useEffect(() => {
@@ -135,7 +144,7 @@ const Home = () => {
   };
 
   return (
-    <Container scrollView>
+    <Container bounce scrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
       <View style={s.container}>
         <View style={s.header}>
           <Logo width={32} height={32} />
