@@ -9,9 +9,10 @@ import barcodes from 'jsbarcode/src/barcodes';
 interface BarcodeProps {
   value: string;
   format?: barcodes;
+  fill?: string;
 }
 
-const Barcode = ({value, format = 'CODE128'}: BarcodeProps) => {
+const Barcode = ({value, format = 'CODE128', fill = theme.colors.primaryText}: BarcodeProps) => {
   const [bars, setBars] = useState<any>();
   const [width, setWidth] = useState<number>();
   useEffect(() => {
@@ -30,7 +31,7 @@ const Barcode = ({value, format = 'CODE128'}: BarcodeProps) => {
         alignItems: 'center',
       }}>
       <Svg height={52} width={width}>
-        {bars?.map((bar: string, index: number) => <Path key={index} d={bar} fill={theme.colors.primaryText} />)}
+        {bars?.map((bar: string, index: number) => <Path key={index} d={bar} fill={fill} />)}
       </Svg>
     </View>
   );
