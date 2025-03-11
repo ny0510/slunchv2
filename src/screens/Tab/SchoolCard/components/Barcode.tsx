@@ -10,9 +10,10 @@ interface BarcodeProps {
   value: string;
   format?: barcodes;
   fill?: string;
+  style?: object;
 }
 
-const Barcode = ({value, format = 'CODE128', fill = theme.colors.primaryText}: BarcodeProps) => {
+const Barcode = ({value, format = 'CODE128', fill = theme.colors.primaryText, style}: BarcodeProps) => {
   const [bars, setBars] = useState<any>();
   const [width, setWidth] = useState<number>();
   useEffect(() => {
@@ -26,10 +27,7 @@ const Barcode = ({value, format = 'CODE128', fill = theme.colors.primaryText}: B
     }
   }, [format, value]);
   return (
-    <View
-      style={{
-        alignItems: 'center',
-      }}>
+    <View style={[style, {alignItems: 'center'}]}>
       <Svg height={52} width={width}>
         {bars?.map((bar: string, index: number) => <Path key={index} d={bar} fill={fill} />)}
       </Svg>
