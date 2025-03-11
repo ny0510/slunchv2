@@ -27,6 +27,7 @@ const BottomTabs = () => {
     const readNotifications = storedReadNotifications ? JSON.parse(storedReadNotifications) : [];
     const unreadNotifications = notifications.filter((notification: Notification) => !readNotifications.includes(notification.id));
     setUnreadCount(unreadNotifications.length);
+    return unreadNotifications.length;
   };
 
   useEffect(() => {
