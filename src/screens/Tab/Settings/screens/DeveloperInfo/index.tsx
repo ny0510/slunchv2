@@ -1,3 +1,4 @@
+import {API_BASE_URL} from '@env';
 import React from 'react';
 import {ImageBackground, Text, View} from 'react-native';
 
@@ -7,7 +8,7 @@ import {theme} from '@/styles/theme';
 
 const DeveloperCard = ({name, role, profileImage}: {name: string; role: string; profileImage?: string}) => (
   <View style={{flexDirection: 'row', alignContent: 'center', gap: 10}}>
-    <ImageBackground src={profileImage || 'https://f.ny64.kr/slunchv2/defaultProfile.png'} style={{width: 48, height: 48, backgroundColor: theme.colors.border, borderRadius: 48 / 2}} borderRadius={48 / 2} />
+    <ImageBackground src={profileImage || `${API_BASE_URL}/public/default_profile.png`} style={{width: 48, height: 48, backgroundColor: theme.colors.border, borderRadius: 48 / 2}} borderRadius={48 / 2} />
     <View style={{justifyContent: 'center', gap: 4}}>
       <Text style={[theme.typography.body, {fontFamily: theme.fontWeights.semiBold}]}>{name}</Text>
       <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}]}>{role}</Text>
@@ -27,8 +28,8 @@ const DeveloperCardList = ({title, developers}: {title: string; developers: {nam
 
 const DeveloperInfo = () => {
   const data = {
-    developers: [{name: '김가온', role: 'Frontend, Backend', profileImage: 'https://f.ny64.kr/slunchv2/ny64.png'}],
-    specialThanks: [{name: '설지원', role: 'Some Backend, Server and more', profileImage: 'https://f.ny64.kr/slunchv2/misile.png'}],
+    developers: [{name: '김가온', role: 'Frontend, Backend', profileImage: `${API_BASE_URL}/public/ny64.png`}],
+    specialThanks: [{name: '설지원', role: 'Backend, Server', profileImage: `${API_BASE_URL}/public/misile.png`}],
   };
 
   return (

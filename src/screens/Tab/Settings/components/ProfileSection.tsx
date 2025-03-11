@@ -1,3 +1,4 @@
+import {API_BASE_URL} from '@env';
 import React from 'react';
 import {ActivityIndicator, Easing, Image, Text, TouchableOpacity, View} from 'react-native';
 
@@ -15,7 +16,7 @@ const ProfileSection = () => {
 
   return (
     <View style={{alignItems: 'center', justifyContent: 'center', gap: 12}}>
-      <Image src={user && user.user.photo ? user.user.photo : 'https://f.ny64.kr/photos/defaultProfile.png'} style={{width: 150, height: 150, backgroundColor: theme.colors.border, borderRadius: 75}} borderRadius={75} />
+      <Image src={user && user.user.photo ? user.user.photo : `${API_BASE_URL}/public/default_profile.png`} style={{width: 150, height: 150, backgroundColor: theme.colors.border, borderRadius: 75}} borderRadius={75} />
       <View style={{alignItems: 'center', justifyContent: 'center'}}>
         <Text style={{color: theme.colors.primaryText, fontFamily: theme.fontWeights.bold, fontSize: 24}}>{user ? user.user.name : '게스트'}</Text>
         <Text style={{color: theme.colors.secondaryText, fontFamily: theme.fontWeights.medium, fontSize: 16}}>{user ? user.user.email : '로그인해 주세요'}</Text>
