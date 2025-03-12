@@ -15,8 +15,8 @@ import {createStackNavigator} from '@react-navigation/stack';
 export type RootStackParamList = {
   Tab: undefined;
   Intro: undefined;
-  SchoolSearch: undefined;
-  ClassSelect: {school: School};
+  SchoolSearch: {isFirstOpen?: boolean};
+  ClassSelect: {school: School; isFirstOpen?: boolean};
   Notifications: undefined;
   Schedules: undefined;
   Meal: undefined;

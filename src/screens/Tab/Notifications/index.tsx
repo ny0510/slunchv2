@@ -28,19 +28,33 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
     }
   };
 
+  const fetchFirstOpenDate = async () => {
+    try {
+      const storedFirstOpenDate = await AsyncStorage.getItem('firstOpenDate');
+      return storedFirstOpenDate ? dayjs(storedFirstOpenDate) : null;
+    } catch (e) {
+      console.error('Error fetching first open date:', e);
+      return null;
+    }
+  };
+
   const fetchData = useCallback(async () => {
     try {
       const notifications = await getNotifications();
+      const firstOpenDate = await fetchFirstOpenDate();
+      const readNotificationsBeforeFirstOpen = notifications.filter(notification => firstOpenDate && dayjs(notification.date).isBefore(firstOpenDate)).map(notification => notification.id);
+
       setNoti(notifications);
       await fetchReadNotifications();
+      setReadNotifications(prevReadNotifications => [...new Set([...prevReadNotifications, ...readNotificationsBeforeFirstOpen])]);
+      await AsyncStorage.setItem('readNotifications', JSON.stringify([...new Set([...readNotifications, ...readNotificationsBeforeFirstOpen])]));
       onReadNotification();
     } catch (e) {
       const err = e as Error;
-
       Alert.alert('데이터를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.', '오류 메시지: ' + err.message);
       console.error('Error fetching data:', err);
     }
-  }, [onReadNotification]);
+  }, [onReadNotification, readNotifications]);
 
   useEffect(() => {
     fetchData();

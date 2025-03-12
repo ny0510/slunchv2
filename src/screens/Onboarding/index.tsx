@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import React, {useEffect, useRef, useState} from 'react';
 import {ActivityIndicator, Alert, FlatList, ImageBackground, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -21,7 +22,7 @@ export const IntroScreen = () => {
   const handlePress = () => {
     if (!isButtonDisabled) {
       setIsButtonDisabled(true);
-      navigation.navigate('SchoolSearch');
+      navigation.navigate('SchoolSearch', {isFirstOpen: true});
     }
   };
 
@@ -49,8 +50,9 @@ export const IntroScreen = () => {
   );
 };
 
-export const SchoolSearchScreen = () => {
+export const SchoolSearchScreen = ({route}: StackScreenProps<RootStackParamList, 'SchoolSearch'>) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const {isFirstOpen = true} = route.params;
 
   const [inputText, setInputText] = useState('');
   const [schoolList, setSchoolList] = useState<School[]>([]);
@@ -123,7 +125,7 @@ export const SchoolSearchScreen = () => {
               data={schoolList}
               keyExtractor={item => item.schoolCode.toString()}
               renderItem={({item}) => (
-                <TouchableOpacity style={s.schoolFlatListItem} onPress={() => navigation.navigate('ClassSelect', {school: item})}>
+                <TouchableOpacity style={s.schoolFlatListItem} onPress={() => navigation.navigate('ClassSelect', {school: item, isFirstOpen: isFirstOpen})}>
                   <Text style={s.schoolFlatListNameText}>{item.schoolName}</Text>
                   <Text style={s.schoolFlatListAddrText}>{item.region}</Text>
                 </TouchableOpacity>
@@ -138,7 +140,7 @@ export const SchoolSearchScreen = () => {
 
 export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 'ClassSelect'>) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const {school} = route.params;
+  const {school, isFirstOpen = true} = route.params;
 
   const [gradeList, setGradeList] = useState<number[]>([]);
   const [classList, setClassList] = useState<number[][]>([]);
@@ -209,7 +211,11 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
         return;
       }
 
-      AsyncStorage.setItem('isFirstOpen', 'false');
+      if (isFirstOpen) {
+        AsyncStorage.setItem('isFirstOpen', 'false');
+        AsyncStorage.setItem('firstOpenDate', dayjs().format('YYYY-MM-DD'));
+      }
+
       AsyncStorage.setItem(
         'school',
         JSON.stringify({
