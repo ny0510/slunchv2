@@ -1,6 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
-import dayjs from 'dayjs';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Easing, GestureResponderEvent, TouchableOpacity} from 'react-native';
 
 import {getNotifications} from '@/api';
@@ -22,26 +21,13 @@ const BottomTabs = () => {
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const fetchUnreadCount = useCallback(async () => {
+  const fetchUnreadCount = async () => {
     const notifications = await getNotifications();
     const storedReadNotifications = await AsyncStorage.getItem('readNotifications');
     const readNotifications = storedReadNotifications ? JSON.parse(storedReadNotifications) : [];
-    const firstOpenDate = await fetchFirstOpenDate();
-    const readNotificationsBeforeFirstOpen = notifications.filter(notification => firstOpenDate && dayjs(notification.date).isBefore(firstOpenDate)).map(notification => notification.id);
-    const allReadNotifications = [...new Set([...readNotifications, ...readNotificationsBeforeFirstOpen])];
-    const unreadNotifications = notifications.filter((notification: Notification) => !allReadNotifications.includes(notification.id));
+    const unreadNotifications = notifications.filter((notification: Notification) => !readNotifications.includes(notification.id));
     setUnreadCount(unreadNotifications.length);
     return unreadNotifications.length;
-  }, []);
-
-  const fetchFirstOpenDate = async () => {
-    try {
-      const storedFirstOpenDate = await AsyncStorage.getItem('firstOpenDate');
-      return storedFirstOpenDate ? dayjs(storedFirstOpenDate) : null;
-    } catch (e) {
-      console.error('Error fetching first open date:', e);
-      return null;
-    }
   };
 
   useEffect(() => {
@@ -53,7 +39,7 @@ const BottomTabs = () => {
 
     checkSunrin();
     fetchUnreadCount();
-  }, [fetchUnreadCount]);
+  }, []);
 
   if (loading) {
     return null;
