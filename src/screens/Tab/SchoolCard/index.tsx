@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import {Text, TouchableOpacity, TouchableWithoutFeedback, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
-import Modal from 'react-native-modal';
+// import Modal from 'react-native-modal';
 import Animated, {interpolate, useAnimatedStyle, useSharedValue, withSpring} from 'react-native-reanimated';
 
 import Barcode from './components/Barcode';
@@ -9,7 +9,7 @@ import Container from '@/components/Container';
 import {showToast} from '@/lib/toast';
 import {useAuth} from '@/providers/AuthProvider';
 import {theme} from '@/styles/theme';
-import DeviceBrightness from '@adrianso/react-native-device-brightness';
+// import DeviceBrightness from '@adrianso/react-native-device-brightness';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {useIsFocused} from '@react-navigation/native';
 import {useKeepAwake} from '@sayem314/react-native-keep-awake';
@@ -24,8 +24,8 @@ const SchoolCard = () => {
   const [number, setNumber] = useState<string>('');
   const [generation, setGeneration] = useState<number>(0);
   const [barcodeValue, setBarcodeValue] = useState<string>('');
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [originalBrightness, setOriginalBrightness] = useState<number | null>(null);
+  // const [isModalVisible, setIsModalVisible] = useState(false);
+  // const [originalBrightness, setOriginalBrightness] = useState<number | null>(null);
   useKeepAwake();
 
   const rotateX = useSharedValue(0);
@@ -60,19 +60,19 @@ const SchoolCard = () => {
     }
   }, [user]);
 
-  const handleBarcodePress = async () => {
-    const currentBrightness = await DeviceBrightness.getBrightnessLevel();
-    setOriginalBrightness(currentBrightness);
-    await DeviceBrightness.setBrightnessLevel(1);
-    setIsModalVisible(true);
-  };
+  // const handleBarcodePress = async () => {
+  //   const currentBrightness = await DeviceBrightness.getBrightnessLevel();
+  //   setOriginalBrightness(currentBrightness);
+  //   await DeviceBrightness.setBrightnessLevel(1);
+  //   setIsModalVisible(true);
+  // };
 
-  const handleCloseModal = async () => {
-    setIsModalVisible(false);
-    if (originalBrightness !== null) {
-      await DeviceBrightness.setBrightnessLevel(originalBrightness);
-    }
-  };
+  // const handleCloseModal = async () => {
+  //   setIsModalVisible(false);
+  //   if (originalBrightness !== null) {
+  //     await DeviceBrightness.setBrightnessLevel(originalBrightness);
+  //   }
+  // };
 
   const isSunrinEmail = user && user.user && user.user.email.endsWith('@sunrint.hs.kr');
 
@@ -103,7 +103,7 @@ const SchoolCard = () => {
 
   return (
     <>
-      <Modal isVisible={isModalVisible} onBackdropPress={handleCloseModal} onBackButtonPress={handleCloseModal}>
+      {/* <Modal isVisible={isModalVisible} onBackdropPress={handleCloseModal} onBackButtonPress={handleCloseModal}>
         <TouchableWithoutFeedback onPress={() => setIsModalVisible(false)}>
           <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
             <Barcode
@@ -117,7 +117,7 @@ const SchoolCard = () => {
             />
           </View>
         </TouchableWithoutFeedback>
-      </Modal>
+      </Modal> */}
       <Container style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
         {user && user.user && isSunrinEmail ? (
           <GestureDetector gesture={gesture}>
@@ -134,12 +134,12 @@ const SchoolCard = () => {
                   <Text style={[theme.typography.subtitle, {color: theme.colors.secondaryText}]}>{`${grade}학년 ${classNum}반 ${number}번`}</Text>
                 </View>
               </View>
-              <TouchableOpacity onPress={handleBarcodePress}>
-                <View style={{justifyContent: 'center', alignContent: 'center', backgroundColor: theme.colors.border, height: 100, marginHorizontal: -16, borderBottomRightRadius: 12, borderBottomLeftRadius: 12, marginTop: 16, gap: 4}}>
-                  <Barcode value={barcodeValue} format={'CODE128'} />
-                  <Text style={[theme.typography.caption, {textAlign: 'center', color: theme.colors.secondaryText}]}>{barcodeValue}</Text>
-                </View>
-              </TouchableOpacity>
+              {/* <TouchableOpacity onPress={handleBarcodePress}> */}
+              <View style={{justifyContent: 'center', alignContent: 'center', backgroundColor: theme.colors.border, height: 100, marginHorizontal: -16, borderBottomRightRadius: 12, borderBottomLeftRadius: 12, marginTop: 16, gap: 4}}>
+                <Barcode value={barcodeValue} format={'CODE128'} />
+                <Text style={[theme.typography.caption, {textAlign: 'center', color: theme.colors.secondaryText}]}>{barcodeValue}</Text>
+              </View>
+              {/* </TouchableOpacity> */}
             </Animated.View>
           </GestureDetector>
         ) : (
