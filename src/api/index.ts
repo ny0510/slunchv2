@@ -4,7 +4,7 @@ import httpClient from './httpClient';
 import {ClassList, Meal, Notification, Schedule, School, Timetable} from '@/types/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const CACHE_DURATION = 3600000; // 1시간
+const CACHE_DURATION = 3 * 60 * 60 * 1000; // 3 hours
 const CACHE_PREFIX = '@cache/';
 
 const isCacheExpired = (timestamp: number) => {
@@ -53,7 +53,7 @@ export const getClassList = async (schoolCode: number): Promise<ClassList[]> => 
 };
 
 export const getTimetable = async (schoolCode: number, grade: number, classNum: number): Promise<Timetable[][]> => {
-  const cacheKey = `getTimetable_${schoolCode}_${grade}_${classNum}`;
+  const cacheKey = `timetable_${schoolCode}_${grade}_${classNum}`;
   const cachedData = await getCachedData(cacheKey);
   if (cachedData) {
     return cachedData;
@@ -74,7 +74,7 @@ export const neisSchoolSearch = async (schoolName: string): Promise<School[]> =>
 };
 
 export const getMeal = async (schoolCode: number, regionCode: string, year: string, month: string, day?: string, showAllergy: boolean = false, showOrigin: boolean = false, showNutrition: boolean = false): Promise<Meal[]> => {
-  const cacheKey = `getMeal_${schoolCode}_${regionCode}_${year}_${month}_${day}`;
+  const cacheKey = `meal_${schoolCode}_${regionCode}_${year}_${month}_${day}`;
   const cachedData = await getCachedData(cacheKey);
   if (cachedData) {
     return cachedData;
@@ -101,7 +101,7 @@ export const getMeal = async (schoolCode: number, regionCode: string, year: stri
 };
 
 export const getSchedules = async (schoolCode: number, regionCode: string, year: string, month: string, day?: string): Promise<Schedule[]> => {
-  const cacheKey = `getSchedules_${schoolCode}_${regionCode}_${year}_${month}`;
+  const cacheKey = `schedules_${schoolCode}_${regionCode}_${year}_${month}`;
   const cachedData = await getCachedData(cacheKey);
   if (cachedData) {
     return cachedData;
