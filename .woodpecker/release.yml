@@ -13,7 +13,7 @@ steps:
       - npm install -g yarn
       - yarn install
       - cd android
-      - ./gradlew assembleProductionRelease
+      - ./gradlew assembleRelease
       - mkdir artifacts
       - cp "app/build/outputs/apk/production/release/app-production-release.apk" "../app.apk"
     environment:
