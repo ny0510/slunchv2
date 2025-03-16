@@ -7,10 +7,13 @@ import ScrollPicker from 'react-native-wheel-scrollview-picker';
 import {style as s} from './styles';
 import {comciganSchoolSearch, getClassList, neisSchoolSearch} from '@/api';
 import SlotMachine from '@/components/SlotMachine';
+import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {theme} from '@/styles/theme';
 import {School} from '@/types/api';
+import notifee, {AuthorizationStatus} from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 import {StackScreenProps} from '@react-navigation/stack';
@@ -25,6 +28,10 @@ export const IntroScreen = () => {
       navigation.navigate('SchoolSearch', {isFirstOpen: true});
     }
   };
+
+  useEffect(() => {
+    analytics().logScreenView({screen_name: '인트로 스크린', screen_class: 'Intro'});
+  }, []);
 
   return (
     <View style={s.introContainer}>
@@ -59,6 +66,10 @@ export const SchoolSearchScreen = ({route}: StackScreenProps<RootStackParamList,
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    analytics().logScreenView({screen_name: '학교 검색 스크린', screen_class: 'SchoolSearch'});
+  }, []);
+
+  useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       const fetchSchools = async () => {
         const query = inputText.replace(/\s+/g, '').trim();
@@ -87,6 +98,19 @@ export const SchoolSearchScreen = ({route}: StackScreenProps<RootStackParamList,
 
     return () => clearTimeout(delayDebounceFn);
   }, [inputText]);
+
+  useEffect(() => {
+    const checkPermission = async () => {
+      if (isFirstOpen) {
+        const settings = await notifee.requestPermission();
+        if (settings.authorizationStatus !== AuthorizationStatus.AUTHORIZED) {
+          showToast('알림 권한이 거부되었어요.\n급식 알림을 받으려면 설정에서 권한을 허용해주세요.', 3000);
+        }
+      }
+    };
+
+    checkPermission();
+  }, [isFirstOpen]);
 
   return (
     <View style={s.inputContainer}>
@@ -152,6 +176,10 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
   const classScrollPickerRef = useRef<any>(null);
 
   useEffect(() => {
+    analytics().logScreenView({screen_name: '학급 선택 스크린', screen_class: 'ClassSelect'});
+  }, []);
+
+  useEffect(() => {
     const fetchClassList = async () => {
       try {
         const response = await getClassList(Number(school.schoolCode));
@@ -206,7 +234,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
       const neisSchool = response.find(item => item.region.includes(school.region)) || response[0];
 
       if (!neisSchool) {
-        Alert.alert('학교 정보를 불러오는데 실패했습니다', '다시 시도해주세요');
+        Alert.alert('학교 정보를 불러오는데 실패했습니다', '다시 시도해주세요.');
         setIsButtonDisabled(false);
         return;
       }

@@ -10,6 +10,7 @@ import {clearCache} from '@/lib/cache';
 import {theme} from '@/styles/theme';
 import {Schedule as ScheduleType} from '@/types/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import analytics from '@react-native-firebase/analytics';
 
 const Schedules = () => {
   const [schedules, setSchedules] = useState<ScheduleType[]>([]);
@@ -31,6 +32,10 @@ const Schedules = () => {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    analytics().logScreenView({screen_name: '학사일정 상세 페이지', screen_class: 'Schedules'});
   }, []);
 
   useEffect(() => {
