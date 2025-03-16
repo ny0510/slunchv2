@@ -53,13 +53,17 @@ const Meal = () => {
 
   const renderMealItem = (mealItem: string | MealItem, index: number) => {
     if (typeof mealItem === 'string') {
-      return <Text key={index}>- {mealItem}</Text>;
+      return (
+        <Text key={index} style={[theme.typography.body, {fontFamily: theme.fontWeights.light}]}>
+          - {mealItem}
+        </Text>
+      );
     }
 
     const allergyInfo = showAllergy && mealItem.allergy && mealItem.allergy.length > 0 ? ` ${mealItem.allergy.map(allergy => allergy.code).join(', ')}` : '';
 
     return (
-      <Text key={index}>
+      <Text key={index} style={[theme.typography.body, {fontFamily: theme.fontWeights.light}]}>
         - {mealItem.food}
         <Text style={[theme.typography.small, {color: theme.colors.secondaryText}]}>{allergyInfo}</Text>
       </Text>
