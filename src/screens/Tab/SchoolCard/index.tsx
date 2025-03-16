@@ -153,20 +153,22 @@ const SchoolCard = () => {
           </TouchableOpacity>
         </View>
       )}
-      <Modal visible={isModalVisible} transparent={true}>
-        <TouchableOpacity
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            transform: [{rotate: '90deg'}, {scale: 2.5}],
-          }}
-          onPress={handleCloseModal}
-          activeOpacity={1}>
-          <Barcode value={barcodeValue} format={'CODE128'} fill={theme.colors.white} />
-        </TouchableOpacity>
-      </Modal>
+      <View style={{elevation: 0, zIndex: 0}}>
+        <Modal visible={isModalVisible} transparent={true}>
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              transform: [{rotate: '90deg'}, {scale: 2.5}],
+            }}
+            onPress={handleCloseModal}
+            activeOpacity={1}>
+            <Barcode value={barcodeValue} format={'CODE128'} fill={theme.colors.white} />
+          </TouchableOpacity>
+        </Modal>
+      </View>
     </Container>
   );
 };
