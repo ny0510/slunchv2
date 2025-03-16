@@ -103,7 +103,7 @@ const SchoolCard = () => {
 
   return (
     <>
-      <Modal isVisible={isModalVisible} onBackdropPress={handleCloseModal} onBackButtonPress={handleCloseModal}>
+      <Modal isVisible={isModalVisible} onBackdropPress={handleCloseModal} onBackButtonPress={handleCloseModal} animationIn={'fadeIn'} animationOut={'fadeOut'}>
         <TouchableWithoutFeedback onPress={() => setIsModalVisible(false)}>
           <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
             <Barcode
@@ -111,8 +111,7 @@ const SchoolCard = () => {
               format={'CODE128'}
               fill={theme.colors.white}
               style={{
-                transform: [{scale: 1.5}],
-                // transform: [{rotate: '90deg'}, {scale: 2.5}],
+                transform: [{rotate: '90deg'}, {scale: 2.5}],
               }}
             />
           </View>
