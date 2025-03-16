@@ -16,6 +16,7 @@ import {theme} from '@/styles/theme';
 import {Meal, Schedule, Timetable} from '@/types/api';
 import {MealItem} from '@/types/meal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 
@@ -89,6 +90,10 @@ const Home = () => {
     await fetchData();
     setRefreshing(false);
   }, [fetchData]);
+
+  useEffect(() => {
+    analytics().logScreenView({screen_name: '홈', screen_class: 'Home'});
+  }, []);
 
   // 매일 자정마다 데이터를 갱신
   useEffect(() => {

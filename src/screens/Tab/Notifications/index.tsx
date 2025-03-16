@@ -9,6 +9,7 @@ import TouchableScale from '@/components/TouchableScale';
 import {theme} from '@/styles/theme';
 import {Notification} from '@/types/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 
 const Notifications = ({onReadNotification}: {onReadNotification: () => void}) => {
@@ -41,6 +42,10 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
       console.error('Error fetching data:', err);
     }
   }, [onReadNotification]);
+
+  useEffect(() => {
+    analytics().logScreenView({screen_name: '알림 페이지', screen_class: 'Notifications'});
+  }, []);
 
   useEffect(() => {
     fetchData();

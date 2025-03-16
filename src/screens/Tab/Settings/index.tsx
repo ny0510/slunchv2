@@ -7,8 +7,13 @@ import MyInfoCard from './components/MyInfoCard';
 import ProfileSection from './components/ProfileSection';
 import SettingCard from './components/SettingCard';
 import Container from '@/components/Container';
+import analytics from '@react-native-firebase/analytics';
 
 const Settings = () => {
+  useEffect(() => {
+    analytics().logScreenView({screen_name: '설정 페이지', screen_class: 'Settings'});
+  }, []);
+
   return (
     <Container scrollView bounce>
       <View style={{gap: 18, width: '100%', marginVertical: 16}}>

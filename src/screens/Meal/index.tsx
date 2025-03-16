@@ -11,6 +11,7 @@ import {theme} from '@/styles/theme';
 import {Meal as MealType} from '@/types/api';
 import {MealItem} from '@/types/meal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import analytics from '@react-native-firebase/analytics';
 
 const Meal = () => {
   const scrollViewRef = useRef<ScrollView | null>(null);
@@ -39,6 +40,10 @@ const Meal = () => {
       setLoading(false);
     }
   }, [showAllergy]);
+
+  useEffect(() => {
+    analytics().logScreenView({screen_name: '급식 상세 페이지', screen_class: 'Meal'});
+  }, []);
 
   useEffect(() => {
     fetchData();

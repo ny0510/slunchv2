@@ -9,6 +9,7 @@ import {showToast} from '@/lib/toast';
 import {useAuth} from '@/providers/AuthProvider';
 import {theme} from '@/styles/theme';
 import DeviceBrightness from '@adrianso/react-native-device-brightness';
+import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {useIsFocused} from '@react-navigation/native';
 import {useKeepAwake} from '@sayem314/react-native-keep-awake';
@@ -29,6 +30,10 @@ const SchoolCard = () => {
 
   const rotateX = useSharedValue(0);
   const rotateY = useSharedValue(0);
+
+  useEffect(() => {
+    analytics().logScreenView({screen_name: '학생증 페이지', screen_class: 'SchoolCard'});
+  }, []);
 
   useEffect(() => {
     if (user && user.user) {
