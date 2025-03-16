@@ -17,6 +17,8 @@ steps:
       - mkdir artifacts
       - cp "app/build/outputs/apk/production/release/app-production-release.apk" "../app.apk"
     environment:
+      API_BASE_URL:
+        from_secret: endpoint
       KEYSTORE_BASE64:
         from_secret: keystore
       RN_UPLOAD_STORE_PASSWORD:
