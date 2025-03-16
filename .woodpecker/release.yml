@@ -1,0 +1,29 @@
+when:
+  - branch: main
+    event: tag
+
+steps:
+  - name: build
+    image: reactnativecommunity/react-native-android
+    commands:
+      - echo $KEYSTORE_BASE64 | base64 -di > keystore
+      - export RN_UPLOAD_STORE_FILE=$(pwd)/keystore
+      - npm i
+      - cd android
+      - ./gradlew assembleProductionRelease
+      - mkdir artifacts
+      - cp "app/build/outputs/apk/production/release/app-production-release.apk" "../app.apk"
+    environment:
+      KEYSTORE_BASE64:
+        from_secret: keystore
+      RN_UPLOAD_STORE_PASSWORD:
+        from_secret: keystore_password
+      RN_UPLOAD_KEY_ALIAS: "shared_keystore"
+      RN_UPLOAD_KEY_PASSWORD:
+        from_secret: keystore_password
+  - name: publish
+    image: woodpeckerci/plugin-release
+    settings:
+      files:
+        - 'app.apk'
+
