@@ -29,8 +29,8 @@ const Home = () => {
   const [midnightTrigger, setMidnightTrigger] = useState<boolean>(false);
   const [mealDayOffset, setMealDayOffset] = useState<number>(0);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const user = useUser();
 
+  const user = useUser();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const getSettings = async () => {
@@ -67,7 +67,8 @@ const Home = () => {
         }
       }
 
-      const scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'));
+      let scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'));
+      scheduleResponse = scheduleResponse.filter(schedule => dayjs(schedule.date.start).isAfter(today));
 
       setTimetable(transpose(timetableResponse));
       setMeal(mealResponse);
@@ -113,13 +114,17 @@ const Home = () => {
 
   const renderMealItem = (mealItem: string | MealItem, index: number) => {
     if (typeof mealItem === 'string') {
-      return <Text key={index}>- {mealItem}</Text>;
+      return (
+        <Text key={index} style={[theme.typography.body, {fontFamily: theme.fontWeights.light}]}>
+          - {mealItem}
+        </Text>
+      );
     }
 
     const allergyInfo = showAllergy && mealItem.allergy && mealItem.allergy.length > 0 ? ` (${mealItem.allergy.map(allergy => allergy.code).join(', ')})` : '';
 
     return (
-      <Text key={index}>
+      <Text key={index} style={[theme.typography.body, {fontFamily: theme.fontWeights.light}]}>
         - {mealItem.food}
         <Text style={theme.typography.small}>{allergyInfo}</Text>
       </Text>
