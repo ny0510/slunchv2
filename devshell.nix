@@ -44,7 +44,6 @@ with pkgs;
       gradle
       jdk17
       aapt
-      # here is where I'd add nodejs and yarn 
     ];
   }
 

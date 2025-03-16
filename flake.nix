@@ -32,20 +32,26 @@
         };
 
         androidConfig = {
-          defaultBuildToolsVersion = "34.0.0"; # This value can be passed to the devshell in the future
+          defaultBuildToolsVersion = "35.0.0"; # This value can be passed to the devshell in the future
           sdkPkgs = android.sdk.${system} (sdkPkgs:
             with sdkPkgs; [
               # Useful packages for building and testing.
+              build-tools-35-0-0
               build-tools-34-0-0
               cmdline-tools-latest
               emulator
               platform-tools
-              platforms-android-34
+              platforms-android-35
+              platforms-android-31
 
               # Other useful packages for a development environment.
-              ndk-26-1-10909125
+              ndk-29-0-13113456
               # skiaparser-3
-              sources-android-34
+              sources-android-35
+
+              system-images-android-35-google-apis-x86-64
+              system-images-android-35-google-apis-playstore-x86-64
+              cmake-3-22-1
             ]);
         };
       in {
