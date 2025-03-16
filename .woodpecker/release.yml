@@ -9,8 +9,8 @@ steps:
     commands:
       - echo $KEYSTORE_BASE64 | base64 -di > keystore
       - export RN_UPLOAD_STORE_FILE=$(pwd)/keystore
-      - "curl -o- https://fnm.vercel.app/install | bash"
-      - fnm install 22
+      - n install 20.18
+      - npm install -g yarn
       - yarn install
       - cd android
       - ./gradlew assembleProductionRelease
