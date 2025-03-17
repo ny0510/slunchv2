@@ -28,7 +28,7 @@ steps:
       RN_UPLOAD_KEY_PASSWORD:
         from_secret: keystore_password
       GOOGLE_SERVICES_JSON:
-        from_secret: google_services
+        from_secret: google_service
   - name: publish
     image: woodpeckerci/plugin-release
     settings:
