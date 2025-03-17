@@ -10,7 +10,7 @@ steps:
       - echo $KEYSTORE_BASE64 | base64 -di > keystore
       - export RN_UPLOAD_STORE_FILE=$(pwd)/keystore
       - "curl -fsSL https://bun.sh/install | bash"
-      - bun install
+      - $HOME/.bun/bin/bun install
       - cd android
       - ./gradlew assembleRelease
       - mkdir artifacts
