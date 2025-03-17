@@ -13,10 +13,11 @@ steps:
       - 'curl -fsSL https://bun.sh/install | bash'
       - $HOME/.bun/bin/bun install
       - cd android
-      - ./gradlew assembleRelease
-      - mkdir artifacts
-      - cp "app/build/outputs/apk/production/release/app-release.apk" "../app.apk"
-      - cp "app/build/outputs/apk/production/release/app-release.aab" "../app.aab"
+      - ./gradlew app:assembleRelease
+      - ./gradlew app:bundleRelease
+      # - mkdir artifacts
+      - cp "app/build/outputs/apk/release/app-release.apk" "../app.apk"
+      - cp "app/build/outputs/bundle/release/app-release.aab" "../app.aab"
     environment:
       API_BASE_URL:
         from_secret: endpoint
