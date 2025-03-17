@@ -9,13 +9,13 @@ steps:
     commands:
       - echo $KEYSTORE_BASE64 | base64 -di > keystore
       - export RN_UPLOAD_STORE_FILE=$(pwd)/keystore
-      - n install 20.18
-      - npm install -g yarn
-      - yarn install
+      - "curl -fsSL https://bun.sh/install | bash"
+      - bun install
       - cd android
       - ./gradlew assembleRelease
       - mkdir artifacts
-      - cp "app/build/outputs/apk/production/release/app-production-release.apk" "../app.apk"
+      - cp "app/build/outputs/apk/production/release/app-release.apk" "../app.apk"
+      - cp "app/build/outputs/apk/production/release/app-release.aab" "../app.aab"
     environment:
       API_BASE_URL:
         from_secret: endpoint
@@ -31,4 +31,5 @@ steps:
     settings:
       files:
         - 'app.apk'
+        - 'app.aab'
 
