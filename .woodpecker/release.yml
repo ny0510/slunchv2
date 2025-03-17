@@ -8,8 +8,9 @@ steps:
     image: reactnativecommunity/react-native-android
     commands:
       - echo $KEYSTORE_BASE64 | base64 -di > keystore
+      - echo $GOOGLE_SERVICES_JSON | base64 -di > android/app/google-services.json
       - export RN_UPLOAD_STORE_FILE=$(pwd)/keystore
-      - "curl -fsSL https://bun.sh/install | bash"
+      - 'curl -fsSL https://bun.sh/install | bash'
       - $HOME/.bun/bin/bun install
       - cd android
       - ./gradlew assembleRelease
@@ -23,13 +24,14 @@ steps:
         from_secret: keystore
       RN_UPLOAD_STORE_PASSWORD:
         from_secret: keystore_password
-      RN_UPLOAD_KEY_ALIAS: "shared_keystore"
+      RN_UPLOAD_KEY_ALIAS: 'shared_keystore'
       RN_UPLOAD_KEY_PASSWORD:
         from_secret: keystore_password
+      GOOGLE_SERVICES_JSON:
+        from_secret: google_services
   - name: publish
     image: woodpeckerci/plugin-release
     settings:
       files:
         - 'app.apk'
         - 'app.aab'
-
