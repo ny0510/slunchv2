@@ -31,10 +31,10 @@ export const toastConfig: ToastConfig = {
   ),
 };
 
-export const showToast = (message: string) => {
+export const showToast = (message: string, time: number = 2000) => {
   Toast.show({
     type: 'customToast',
     text1: message,
-    visibilityTime: 2000,
+    visibilityTime: time,
   });
 };

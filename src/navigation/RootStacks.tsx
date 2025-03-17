@@ -7,6 +7,7 @@ import Meal from '@/screens/Meal';
 import {ClassSelectScreen, IntroScreen, SchoolSearchScreen} from '@/screens/Onboarding';
 import Schedules from '@/screens/Schedules';
 import DeveloperInfo from '@/screens/Tab/Settings/screens/DeveloperInfo';
+import Notification from '@/screens/Tab/Settings/screens/Notification';
 import {theme} from '@/styles/theme';
 import {School} from '@/types/api';
 import {createStaticNavigation} from '@react-navigation/native';
@@ -21,6 +22,7 @@ export type RootStackParamList = {
   Schedules: undefined;
   Meal: undefined;
   DeveloperInfo: undefined;
+  Notification: undefined;
 };
 
 const RootStacks = () => {
@@ -81,6 +83,13 @@ const RootStacks = () => {
         options: {
           headerShown: true,
           title: '개발자 정보',
+        },
+      },
+      Notification: {
+        screen: Notification,
+        options: {
+          headerShown: true,
+          title: '알림 설정',
         },
       },
     },

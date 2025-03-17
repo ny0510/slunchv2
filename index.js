@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
-import React, {useEffect} from 'react';
-import {AppRegistry, BackHandler, Platform, Text, TextInput, ToastAndroid} from 'react-native';
+import React from 'react';
+import {AppRegistry, Text, TextInput} from 'react-native';
 import {setCustomImage, setCustomText, setCustomTouchableOpacity} from 'react-native-global-props';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -9,7 +9,9 @@ import {showSplash} from 'react-native-splash-view';
 
 import {name as appName} from './app.json';
 import App from '@/App';
+import {sendNotification} from '@/lib/notification';
 import {theme} from '@/styles/theme';
+import messaging from '@react-native-firebase/messaging';
 import 'dayjs/locale/ko';
 
 Text.defaultProps = Text.defaultProps || {};
@@ -17,38 +19,13 @@ Text.defaultProps.allowFontScaling = false;
 TextInput.defaultProps = TextInput.defaultProps || {};
 TextInput.defaultProps.autoCorrect = false;
 TextInput.defaultProps.allowFontScaling = false;
+global.RNFB_SILENCE_MODULAR_DEPRECATION_WARNINGS = true;
 
-let backPressedOnce = false;
-
-const Root = () => {
+const Root = ({isHeadless}) => {
   showSplash();
   enableScreens();
   changeNavigationBarColor('transparent', true);
   dayjs.locale('ko');
-
-  useEffect(() => {
-    if (Platform.OS === 'android') {
-      const backAction = () => {
-        if (backPressedOnce) {
-          BackHandler.exitApp();
-          return true;
-        }
-
-        backPressedOnce = true;
-        ToastAndroid.show('뒤로가기를 한 번 더 누르면 종료돼요.', ToastAndroid.SHORT);
-
-        setTimeout(() => {
-          backPressedOnce = false;
-        }, 2000);
-
-        return true;
-      };
-
-      const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
-
-      return () => backHandler.remove();
-    }
-  }, []);
 
   setCustomText({
     style: {
@@ -64,11 +41,21 @@ const Root = () => {
     hitSlop: {top: 10, bottom: 10, left: 10, right: 10},
   });
 
+  if (isHeadless) {
+    return null;
+  }
+
   return (
     <SafeAreaProvider>
       <App />
     </SafeAreaProvider>
   );
 };
+
+messaging().setBackgroundMessageHandler(async remoteMessage => {
+  console.log(`[FCM] Message received in background: ${JSON.stringify(remoteMessage)}`);
+  const {title, body} = remoteMessage.notification || {};
+  await sendNotification(title, body);
+});
 
 AppRegistry.registerComponent(appName, () => Root);
