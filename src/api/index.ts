@@ -1,33 +1,9 @@
 import dayjs from 'dayjs';
 
 import httpClient from './httpClient';
+import {CACHE_PREFIX, getCachedData} from '@/lib/cache';
 import {ClassList, Meal, Notification, Schedule, School, Timetable} from '@/types/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const CACHE_DURATION = 3 * 60 * 60 * 1000; // 3 hours
-const CACHE_PREFIX = '@cache/';
-
-const isCacheExpired = (timestamp: number) => {
-  const cacheDate = dayjs(timestamp);
-  const now = dayjs();
-  return now.isAfter(cacheDate, 'day');
-};
-
-const getCachedData = async (key: string) => {
-  const cacheKey = `${CACHE_PREFIX}${key}`;
-  const cachedData = await AsyncStorage.getItem(cacheKey);
-  if (cachedData) {
-    const {data, timestamp} = JSON.parse(cachedData);
-    if (isCacheExpired(timestamp)) {
-      await AsyncStorage.removeItem(cacheKey);
-      return null;
-    }
-    if (dayjs().diff(dayjs(timestamp)) < CACHE_DURATION) {
-      return data;
-    }
-  }
-  return null;
-};
 
 const setCachedData = async (key: string, data: any) => {
   const cacheKey = `${CACHE_PREFIX}${key}`;
