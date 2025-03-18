@@ -52,10 +52,10 @@ const Root = ({isHeadless}) => {
   );
 };
 
-messaging().setBackgroundMessageHandler(async remoteMessage => {
-  console.log(`[FCM] Message received in background: ${JSON.stringify(remoteMessage)}`);
-  const {title, body} = remoteMessage.notification || {};
-  await sendNotification(title, body);
-});
+// messaging().setBackgroundMessageHandler(async remoteMessage => {
+//   console.log(`[FCM] Message received in background: ${JSON.stringify(remoteMessage)}`);
+//   const {title, body} = remoteMessage.notification ?? {};
+//   await sendNotification(title, body);
+// });
 
 AppRegistry.registerComponent(appName, () => Root);

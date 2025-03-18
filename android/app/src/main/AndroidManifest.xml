@@ -24,6 +24,10 @@
           android:name="com.google.firebase.messaging.default_notification_priority"
           android:value="high"
           tools:replace="android:value" />
+      <meta-data
+          android:name="com.google.firebase.messaging.default_notification_icon"
+          android:resource="@mipmap/ic_launcher_round"
+          tools:replace="android:resource" />
       
       <activity
         android:name=".MainActivity"

@@ -22,6 +22,8 @@ export const sendNotification = async (title: string | undefined, body: string |
         id: 'default',
       },
       color: theme.colors.highlight,
+      timestamp: new Date().getTime(),
+      showTimestamp: true,
     },
   });
 };
