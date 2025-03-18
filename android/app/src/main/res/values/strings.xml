@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">NYL</string>
+    <string name="widget_timetable_single_description">오늘 시간표를 확인해요.</string>
 </resources>

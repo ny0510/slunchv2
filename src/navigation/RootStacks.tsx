@@ -8,6 +8,7 @@ import {ClassSelectScreen, IntroScreen, SchoolSearchScreen} from '@/screens/Onbo
 import Schedules from '@/screens/Schedules';
 import DeveloperInfo from '@/screens/Tab/Settings/screens/DeveloperInfo';
 import Notification from '@/screens/Tab/Settings/screens/Notification';
+import Widget from '@/screens/Tab/Settings/screens/Widget';
 import {theme} from '@/styles/theme';
 import {School} from '@/types/api';
 import {createStaticNavigation} from '@react-navigation/native';
@@ -23,6 +24,7 @@ export type RootStackParamList = {
   Meal: undefined;
   DeveloperInfo: undefined;
   Notification: undefined;
+  Widget: undefined;
 };
 
 const RootStacks = () => {
@@ -90,6 +92,13 @@ const RootStacks = () => {
         options: {
           headerShown: true,
           title: '알림 설정',
+        },
+      },
+      Widget: {
+        screen: Widget,
+        options: {
+          headerShown: true,
+          title: '위젯 추가',
         },
       },
     },

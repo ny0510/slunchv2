@@ -23,5 +23,22 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
+
+      <service
+        android:name="com.reactnativeandroidwidget.RNWidgetCollectionService"
+        android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+      <receiver
+        android:name=".TimetableSingle"
+        android:exported="false"
+        android:label="오늘 시간표">
+        <intent-filter>
+          <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+          <action android:name="kr.ny64.slunchv2.WIDGET_CLICK" />
+        </intent-filter>
+        <meta-data
+          android:name="android.appwidget.provider"
+          android:resource="@xml/widgetprovider_timetable_single" />
+      </receiver>
     </application>
 </manifest>

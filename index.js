@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import React from 'react';
 import {AppRegistry, Text, TextInput} from 'react-native';
+import {registerWidgetTaskHandler} from 'react-native-android-widget';
 import {setCustomImage, setCustomText, setCustomTouchableOpacity} from 'react-native-global-props';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -11,6 +12,7 @@ import {name as appName} from './app.json';
 import App from '@/App';
 import {sendNotification} from '@/lib/notification';
 import {theme} from '@/styles/theme';
+import {widgetTaskHandler} from '@/widgetTaskHandler';
 import messaging from '@react-native-firebase/messaging';
 import 'dayjs/locale/ko';
 
@@ -59,3 +61,4 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
 });
 
 AppRegistry.registerComponent(appName, () => Root);
+registerWidgetTaskHandler(widgetTaskHandler);
