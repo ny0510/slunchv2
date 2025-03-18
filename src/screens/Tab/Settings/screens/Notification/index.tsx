@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Alert, Text, View} from 'react-native';
+import {Alert, Text, TouchableOpacity, View} from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import {FlatList} from 'react-native-gesture-handler';
 import {Switch} from 'react-native-switch';
@@ -11,7 +11,7 @@ import Card from '@/components/Card';
 import Container from '@/components/Container';
 import {showToast} from '@/lib/toast';
 import {theme} from '@/styles/theme';
-import BottomSheet, {BottomSheetBackdrop, BottomSheetView} from '@gorhom/bottom-sheet';
+import BottomSheet, {BottomSheetBackdrop, BottomSheetView, TouchableWithoutFeedback} from '@gorhom/bottom-sheet';
 import notifee, {AuthorizationStatus} from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
@@ -21,6 +21,8 @@ const Notification = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [time, setTime] = useState<Date>(dayjs().set('hour', 7).set('minute', 30).toDate());
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const [keywords, setKeywords] = useState<string[]>([]);
+  const [selectedKeyword, setSelectedKeyword] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchNotiSettings = async () => {
@@ -53,6 +55,27 @@ const Notification = () => {
     };
     fetchNotiSettings();
   }, []);
+
+  useEffect(() => {
+    const fetchKeywords = async () => {
+      try {
+        const storedKeywords = await AsyncStorage.getItem('keywords');
+        if (storedKeywords !== null) {
+          setKeywords(JSON.parse(storedKeywords));
+        }
+      } catch (error) {
+        console.error('Failed to fetch keywords:', error);
+      }
+    };
+    fetchKeywords();
+  }, []);
+
+  useEffect(() => {
+    const saveKeywords = async () => {
+      await AsyncStorage.setItem('keywords', JSON.stringify(keywords));
+    };
+    saveKeywords();
+  }, [keywords]);
 
   const updateTime = useCallback(async () => {
     setIsProcessing(true);
@@ -157,8 +180,30 @@ const Notification = () => {
     [updateTime],
   );
 
+  const handleKeywordPress = async (keyword: string) => {
+    if (selectedKeyword === keyword) {
+      const newKeywords = keywords.filter(item => item !== keyword);
+      setKeywords(newKeywords);
+      await AsyncStorage.setItem('keywords', JSON.stringify(newKeywords));
+      setSelectedKeyword(null);
+    } else {
+      setSelectedKeyword(keyword);
+    }
+  };
+
+  const handleOutsideClick = () => {
+    setSelectedKeyword(null);
+  };
+
+  const handleAddKeyword = async () => {
+    const newKeyword = '새 키워드' + (keywords.length + 1);
+    const newKeywords = [...keywords, newKeyword];
+    setKeywords(newKeywords);
+    await AsyncStorage.setItem('keywords', JSON.stringify(newKeywords));
+  };
+
   return (
-    <>
+    <TouchableWithoutFeedback onPress={handleOutsideClick} style={{height: '100%'}}>
       <Container scrollView bounce style={{gap: 8}}>
         <Card title="급식 알림" titleStyle={{fontSize: theme.typography.body.fontSize}}>
           <View style={{gap: 8, marginTop: 8}}>
@@ -184,6 +229,42 @@ const Notification = () => {
             <Content title="알림 시간 변경" arrow onPress={openBottomSheet} disabled={!isEnabled} arrowText={dayjs(time).format('A hh:mm')} />
           </View>
         </Card>
+        <Card title="급식 키워드 알림" titleStyle={{fontSize: theme.typography.body.fontSize}}>
+          <View style={{gap: 16, marginTop: 8}}>
+            {keywords.length > 0 ? (
+              <FlatList
+                scrollEnabled={false}
+                data={keywords}
+                contentContainerStyle={{flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start', gap: 8, flexGrow: 1}}
+                keyExtractor={item => item}
+                renderItem={({item}) => (
+                  <TouchableWithoutFeedback onPress={() => handleKeywordPress(item)}>
+                    <View
+                      style={{
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        paddingHorizontal: 8,
+                        paddingVertical: 4,
+                        borderRadius: 12,
+                        borderWidth: 1,
+                        borderColor: theme.colors.highlight,
+                        opacity: selectedKeyword === item ? 0.5 : 1,
+                      }}>
+                      <Text style={[theme.typography.body]}>{item}</Text>
+                    </View>
+                  </TouchableWithoutFeedback>
+                )}
+              />
+            ) : (
+              <Text style={[theme.typography.caption, {color: theme.colors.secondaryText, alignSelf: 'center'}]}>설정된 키워드가 없어요.</Text>
+            )}
+            <TouchableOpacity onPress={handleAddKeyword} activeOpacity={0.7}>
+              <View style={{backgroundColor: theme.colors.background, padding: 8, borderRadius: 12, justifyContent: 'center', alignItems: 'center'}}>
+                <Text style={[theme.typography.body]}>+ 추가</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </Card>
       </Container>
 
       <BottomSheet
@@ -199,7 +280,7 @@ const Notification = () => {
           <DatePicker mode="time" date={time} theme="dark" dividerColor={theme.colors.secondaryText} onDateChange={setTime} />
         </BottomSheetView>
       </BottomSheet>
-    </>
+    </TouchableWithoutFeedback>
   );
 };
 
