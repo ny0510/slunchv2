@@ -2,7 +2,6 @@ import dayjs from 'dayjs';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Alert, Text, View} from 'react-native';
 import DatePicker from 'react-native-date-picker';
-import {FlatList} from 'react-native-gesture-handler';
 import {Switch} from 'react-native-switch';
 
 import Content from '../../components/Content';
@@ -28,7 +27,7 @@ const Notification = () => {
         const storedState = await AsyncStorage.getItem('isNotiEnabled');
         const storedTime = await AsyncStorage.getItem('notiTime');
         let isEnabledState = false;
-        let notificationTime = new Date();
+        let notificationTime = dayjs().set('hour', 7).set('minute', 30).toDate();
 
         if (storedState !== null) {
           isEnabledState = JSON.parse(storedState);
