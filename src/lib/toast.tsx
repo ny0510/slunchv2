@@ -2,7 +2,7 @@ import React from 'react';
 import {Dimensions, Text, View} from 'react-native';
 import Toast, {ToastConfig} from 'react-native-toast-message';
 
-import {theme} from '../styles/theme';
+import {theme} from '@/styles/theme';
 
 export const toastConfig: ToastConfig = {
   customToast: ({text1}: {text1?: string}) => (

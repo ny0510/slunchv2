@@ -1,27 +1,83 @@
 import dayjs from 'dayjs';
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Alert, Text, View} from 'react-native';
 import DatePicker from 'react-native-date-picker';
+import {FlatList} from 'react-native-gesture-handler';
 import {Switch} from 'react-native-switch';
 
 import Content from '../../components/Content';
+import {addFcmToken, checkFcmToken, editFcmTime, removeFcmToken} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import {showToast} from '@/lib/toast';
 import {theme} from '@/styles/theme';
 import BottomSheet, {BottomSheetBackdrop, BottomSheetView} from '@gorhom/bottom-sheet';
 import notifee, {AuthorizationStatus} from '@notifee/react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
 
 const Notification = () => {
   const [isEnabled, setIsEnabled] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [time, setTime] = useState<Date>(new Date());
+  const [time, setTime] = useState<Date>(dayjs().set('hour', 7).set('minute', 30).toDate());
   const bottomSheetRef = useRef<BottomSheet>(null);
 
-  const handleSubscription = async (subscribe: boolean) => {
-    const fcmToken = await messaging().getToken();
+  useEffect(() => {
+    const fetchNotiSettings = async () => {
+      try {
+        const storedState = await AsyncStorage.getItem('isNotiEnabled');
+        const storedTime = await AsyncStorage.getItem('notiTime');
+        let isEnabledState = false;
+        let notificationTime = new Date();
+
+        if (storedState !== null) {
+          isEnabledState = JSON.parse(storedState);
+        } else {
+          const fcmToken = await messaging()
+            .registerDeviceForRemoteMessages()
+            .then(() => messaging().getToken());
+          const check = await checkFcmToken(fcmToken);
+          isEnabledState = check;
+          await AsyncStorage.setItem('isNotiEnabled', JSON.stringify(check));
+        }
+
+        if (storedTime !== null) {
+          notificationTime = new Date(JSON.parse(storedTime));
+        }
+
+        setIsEnabled(isEnabledState);
+        setTime(notificationTime);
+      } catch (error) {
+        console.error('Failed to fetch notification settings:', error);
+      }
+    };
+    fetchNotiSettings();
+  }, []);
+
+  const updateTime = useCallback(async () => {
+    setIsProcessing(true);
     try {
+      const fcmToken = await messaging()
+        .registerDeviceForRemoteMessages()
+        .then(() => messaging().getToken());
+
+      await editFcmTime(fcmToken, dayjs(time).format('HH:mm'));
+      await AsyncStorage.setItem('notiTime', JSON.stringify(time));
+      showToast(`매일 ${dayjs(time).format('A hh:mm')}에 알림을 받아요.`);
+    } catch (e) {
+      const error = e as Error;
+
+      showToast(`알림 시간 변경에 실패했어요:\n${error.message}`);
+    }
+    setIsProcessing(false);
+  }, [time]);
+
+  const handleSubscription = async (subscribe: boolean) => {
+    try {
+      const fcmToken = await messaging()
+        .registerDeviceForRemoteMessages()
+        .then(() => messaging().getToken());
+
       if (subscribe) {
         const settings = await notifee.requestPermission();
         const batteryOptimization = await notifee.isBatteryOptimizationEnabled();
@@ -51,12 +107,20 @@ const Notification = () => {
           );
           return false;
         }
-        // 서버에 fcmToken을 보내서 구독
-        showToast('매일 아침 급식 알림이 설정되었어요.');
+
+        const check = await checkFcmToken(fcmToken);
+        if (check) {
+          showToast('이미 알림이 설정되어 있어요.');
+          return false;
+        }
+        await addFcmToken(fcmToken, dayjs(time).format('HH:mm'));
+
+        showToast(`매일 ${dayjs(time).format('A hh:mm')}에 급식 알림을 받아요.`);
       } else {
-        // 서버에 fcmToken을 보내서 구독 해지
+        await removeFcmToken(fcmToken);
         showToast('매일 아침 급식 알림이 해제되었어요.');
       }
+      await AsyncStorage.setItem('isNotiEnabled', JSON.stringify(subscribe));
       return true;
     } catch (e) {
       const error = e as Error;
@@ -72,6 +136,8 @@ const Notification = () => {
     const success = await handleSubscription(newState);
     if (!success) {
       setIsEnabled(!newState);
+    } else {
+      await AsyncStorage.setItem('isNotiEnabled', JSON.stringify(newState));
     }
     setIsProcessing(false);
   };
@@ -82,10 +148,19 @@ const Notification = () => {
 
   const renderBackdrop = useCallback((props: any) => <BottomSheetBackdrop {...props} pressBehavior="close" disappearsOnIndex={-1} />, []);
 
+  const handleSheetChanges = useCallback(
+    (index: number) => {
+      if (index === -1) {
+        updateTime();
+      }
+    },
+    [updateTime],
+  );
+
   return (
     <>
       <Container scrollView bounce style={{gap: 8}}>
-        <Card title="매일 아침 급식 알림" titleStyle={{fontSize: theme.typography.body.fontSize}}>
+        <Card title="급식 알림" titleStyle={{fontSize: theme.typography.body.fontSize}}>
           <View style={{gap: 8, marginTop: 8}}>
             <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
               <Text style={theme.typography.body}>알림 받기</Text>
@@ -110,7 +185,15 @@ const Notification = () => {
           </View>
         </Card>
       </Container>
-      <BottomSheet backdropComponent={renderBackdrop} ref={bottomSheetRef} index={-1} enablePanDownToClose backgroundStyle={{backgroundColor: theme.colors.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}} handleIndicatorStyle={{backgroundColor: theme.colors.secondaryText}}>
+
+      <BottomSheet
+        backdropComponent={renderBackdrop}
+        ref={bottomSheetRef}
+        index={-1}
+        enablePanDownToClose
+        onChange={handleSheetChanges}
+        backgroundStyle={{backgroundColor: theme.colors.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}}
+        handleIndicatorStyle={{backgroundColor: theme.colors.secondaryText}}>
         <BottomSheetView style={{padding: 18, backgroundColor: theme.colors.card, justifyContent: 'center', alignItems: 'center'}}>
           <Text style={[theme.typography.subtitle, {fontFamily: theme.fontWeights.semiBold, alignSelf: 'flex-start'}]}>알림 시간 변경</Text>
           <DatePicker mode="time" date={time} theme="dark" dividerColor={theme.colors.secondaryText} onDateChange={setTime} />

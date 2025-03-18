@@ -86,3 +86,23 @@ export const getNotifications = async (): Promise<Notification[]> => {
   const response = await httpClient.get('/notifications');
   return response.data;
 };
+
+export const addFcmToken = async (fcmToken: string, time: string): Promise<void> => {
+  const response = await httpClient.post('/fcm', {token: fcmToken, time});
+  return response.data;
+};
+
+export const removeFcmToken = async (fcmToken: string): Promise<void> => {
+  const response = await httpClient.delete('/fcm', {data: {token: fcmToken}});
+  return response.data;
+};
+
+export const checkFcmToken = async (fcmToken: string): Promise<boolean> => {
+  const response = await httpClient.get('/fcm', {params: {token: fcmToken}});
+  return response.status === 200;
+};
+
+export const editFcmTime = async (fcmToken: string, time: string): Promise<void> => {
+  const response = await httpClient.put('/fcm', {token: fcmToken, time});
+  return response.data;
+};

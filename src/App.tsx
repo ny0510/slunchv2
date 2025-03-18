@@ -87,9 +87,9 @@ const App = () => {
         <AuthProvider>
           <StatusBar animated barStyle="light-content" backgroundColor={theme.colors.background} />
           <Stack />
-          <Toast config={toastConfig} />
         </AuthProvider>
       </SafeAreaView>
+      <Toast config={toastConfig} />
     </GestureHandlerRootView>
   );
 };
