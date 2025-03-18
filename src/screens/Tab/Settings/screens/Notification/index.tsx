@@ -1,8 +1,7 @@
 import dayjs from 'dayjs';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Alert, Text, TouchableOpacity, View} from 'react-native';
+import {Alert, FlatList, Text, TouchableOpacity, View} from 'react-native';
 import DatePicker from 'react-native-date-picker';
-import {FlatList} from 'react-native-gesture-handler';
 import {Switch} from 'react-native-switch';
 
 import Content from '../../components/Content';
