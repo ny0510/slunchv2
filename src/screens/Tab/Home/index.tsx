@@ -11,6 +11,7 @@ import Container from '@/components/Container';
 import TouchableScale from '@/components/TouchableScale';
 import {useUser} from '@/hooks/useUser';
 import {clearCache} from '@/lib/cache';
+import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {theme} from '@/styles/theme';
 import {Meal, Schedule, Timetable} from '@/types/api';
@@ -77,7 +78,7 @@ const Home = () => {
     } catch (e) {
       const err = e as Error;
 
-      Alert.alert('데이터를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.', '오류 메시지: ' + err.message);
+      showToast('데이터를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.');
       console.error('Error fetching data:', err);
     } finally {
       setLoading(false);

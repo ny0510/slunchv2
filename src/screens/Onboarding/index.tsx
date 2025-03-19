@@ -81,7 +81,7 @@ export const SchoolSearchScreen = ({route}: StackScreenProps<RootStackParamList,
           } catch (e) {
             const err = e as Error;
 
-            Alert.alert('학교 정보를 불러오는데 실패했습니다. 다시 시도해주세요.', '오류 메시지: ' + err.message);
+            showToast('학교를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.');
             console.error('Error fetching schools:', err);
             setSchoolList([]);
           } finally {
@@ -193,7 +193,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
       } catch (e) {
         const err = e as Error;
 
-        Alert.alert('학급 정보를 불러오는데 실패했습니다. 다시 시도해주세요.', '오류 메시지: ' + err.message);
+        showToast('학급을 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.');
         console.error('Error fetching class list:', err);
       } finally {
         setIsLoading(false);
@@ -234,7 +234,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
       const neisSchool = response.find(item => item.region.includes(school.region)) || response[0];
 
       if (!neisSchool) {
-        Alert.alert('학교 정보를 불러오는데 실패했습니다', '다시 시도해주세요.');
+        showToast('학교 정보를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.');
         setIsButtonDisabled(false);
         return;
       }

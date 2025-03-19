@@ -7,6 +7,7 @@ import {getSchedules} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import {clearCache} from '@/lib/cache';
+import {showToast} from '@/lib/toast';
 import {theme} from '@/styles/theme';
 import {Schedule as ScheduleType} from '@/types/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -27,7 +28,7 @@ const Schedules = () => {
     } catch (e) {
       const err = e as Error;
 
-      Alert.alert('데이터를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.', '오류 메시지: ' + err.message);
+      showToast('학사일정을 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.');
       console.error('Error fetching data:', err);
     } finally {
       setLoading(false);
