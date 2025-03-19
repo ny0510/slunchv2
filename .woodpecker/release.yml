@@ -11,10 +11,11 @@ steps:
 
   - name: build
     image: reactnativecommunity/react-native-android
-    volumes: [ /home/misile/al1s/cache/gradle:/woodpecker/src/github.com/NY0510/slunchv2/android/.gradle ]
+    volumes: [/home/misile/al1s/cache/gradle:/woodpecker/src/github.com/NY0510/slunchv2/android/.gradle]
     commands:
       - echo $KEYSTORE_BASE64 | base64 -di > keystore
       - echo $GOOGLE_SERVICES_JSON | base64 -di > android/app/google-services.json
+      - echo "API_BASE_URL='$API_BASE_URL'" > .env
       - export RN_UPLOAD_STORE_FILE=$(pwd)/keystore
       - cd android
       - ./gradlew app:assembleRelease -Dorg.gradle.parallel.threads=24
@@ -34,6 +35,8 @@ steps:
         from_secret: keystore_password
       GOOGLE_SERVICES_JSON:
         from_secret: google_service
+      API_BASE_URL:
+        from_secret: api_base_url
   - name: publish
     image: woodpeckerci/plugin-release
     settings:
@@ -43,6 +46,6 @@ steps:
         - 'sha256sum.txt'
       api_key:
         from_secret: GITHUB_API_KEY
-        checksum: "sha256"
+        checksum: 'sha256'
         generate-release-notes: true
         draft: true
