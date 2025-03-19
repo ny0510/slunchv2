@@ -45,7 +45,7 @@ const Home = () => {
 
     try {
       const today = dayjs();
-      const school = user.schoolInfo;
+      const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
       const classData: {grade: number; class: number} = JSON.parse((await AsyncStorage.getItem('class')) || '{}');
 
       const timetableResponse = await getTimetable(school.comciganCode, classData.grade, classData.class);
@@ -82,7 +82,7 @@ const Home = () => {
     } finally {
       setLoading(false);
     }
-  }, [showAllergy, user.schoolInfo]);
+  }, [showAllergy]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
