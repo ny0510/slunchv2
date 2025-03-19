@@ -33,6 +33,9 @@ steps:
         from_secret: keystore_password
       GOOGLE_SERVICES_JSON:
         from_secret: google_service
+    cache:
+      paths:
+        - android/.gradle
   - name: publish
     image: woodpeckerci/plugin-release
     settings:
@@ -42,6 +45,6 @@ steps:
         - 'sha256sum.txt'
       api_key:
         from_secret: GITHUB_API_KEY
-        checksum: "sha256"
+        checksum: 'sha256'
         generate-release-notes: true
         draft: true
