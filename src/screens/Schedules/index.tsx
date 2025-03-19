@@ -6,10 +6,10 @@ import {FlatList} from 'react-native-gesture-handler';
 import {getSchedules} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
+import {useUser} from '@/hooks/useUser';
 import {clearCache} from '@/lib/cache';
 import {theme} from '@/styles/theme';
 import {Schedule as ScheduleType} from '@/types/api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
 
 const Schedules = () => {
@@ -17,9 +17,11 @@ const Schedules = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
+  const user = useUser();
+
   const fetchData = useCallback(async () => {
     try {
-      const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
+      const school = user.schoolInfo;
       const today = dayjs();
 
       const scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'));
@@ -32,7 +34,7 @@ const Schedules = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user.schoolInfo]);
 
   useEffect(() => {
     analytics().logScreenView({screen_name: '학사일정 상세 페이지', screen_class: 'Schedules'});

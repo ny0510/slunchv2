@@ -8,6 +8,7 @@ import Content from '../../components/Content';
 import {addFcmToken, checkFcmToken, editFcmTime, removeFcmToken} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
+import {useUser} from '@/hooks/useUser';
 import {showToast} from '@/lib/toast';
 import {theme} from '@/styles/theme';
 import BottomSheet, {BottomSheetBackdrop, BottomSheetView} from '@gorhom/bottom-sheet';
@@ -20,6 +21,8 @@ const Notification = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [time, setTime] = useState<Date>(dayjs().set('hour', 7).set('minute', 30).toDate());
   const bottomSheetRef = useRef<BottomSheet>(null);
+
+  const user = useUser();
 
   useEffect(() => {
     const fetchNotiSettings = async () => {
@@ -60,7 +63,7 @@ const Notification = () => {
         .registerDeviceForRemoteMessages()
         .then(() => messaging().getToken());
 
-      await editFcmTime(fcmToken, dayjs(time).format('HH:mm'));
+      await editFcmTime(fcmToken, dayjs(time).format('HH:mm'), String(user.schoolInfo.neisCode), user.schoolInfo.neisRegionCode);
       await AsyncStorage.setItem('notiTime', JSON.stringify(time));
       showToast(`매일 ${dayjs(time).format('A hh:mm')}에 알림을 받아요.`);
     } catch (e) {
@@ -69,7 +72,7 @@ const Notification = () => {
       showToast(`알림 시간 변경에 실패했어요:\n${error.message}`);
     }
     setIsProcessing(false);
-  }, [time]);
+  }, [time, user.schoolInfo.neisCode, user.schoolInfo.neisRegionCode]);
 
   const handleSubscription = async (subscribe: boolean) => {
     try {
@@ -112,7 +115,7 @@ const Notification = () => {
           showToast('이미 알림이 설정되어 있어요.');
           return false;
         }
-        await addFcmToken(fcmToken, dayjs(time).format('HH:mm'));
+        await addFcmToken(fcmToken, dayjs(time).format('HH:mm'), String(user.schoolInfo.neisCode), user.schoolInfo.neisRegionCode);
 
         showToast(`매일 ${dayjs(time).format('A hh:mm')}에 급식 알림을 받아요.`);
       } else {

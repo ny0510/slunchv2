@@ -2,7 +2,7 @@ export interface UserSchoolInfo {
   schoolName: string;
   comciganCode: number;
   comciganRegion: string;
-  neisCode: string;
+  neisCode: number;
   neisRegion: string;
   neisRegionCode: string;
 }

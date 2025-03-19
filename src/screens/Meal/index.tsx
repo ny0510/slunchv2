@@ -6,6 +6,7 @@ import {FlatList} from 'react-native-gesture-handler';
 import {getMeal} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
+import {useUser} from '@/hooks/useUser';
 import {clearCache} from '@/lib/cache';
 import {theme} from '@/styles/theme';
 import {Meal as MealType} from '@/types/api';
@@ -20,12 +21,14 @@ const Meal = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
+  const user = useUser();
+
   const fetchData = useCallback(async () => {
     const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
     setShowAllergy(settings.showAllergy);
 
     try {
-      const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
+      const school = user.schoolInfo;
       const today = dayjs();
 
       const mealResponse = await getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), undefined, showAllergy, true, true);
@@ -39,7 +42,7 @@ const Meal = () => {
     } finally {
       setLoading(false);
     }
-  }, [showAllergy]);
+  }, [showAllergy, user.schoolInfo]);
 
   useEffect(() => {
     analytics().logScreenView({screen_name: '급식 상세 페이지', screen_class: 'Meal'});

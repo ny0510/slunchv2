@@ -87,8 +87,8 @@ export const getNotifications = async (): Promise<Notification[]> => {
   return response.data;
 };
 
-export const addFcmToken = async (fcmToken: string, time: string): Promise<void> => {
-  const response = await httpClient.post('/fcm', {token: fcmToken, time});
+export const addFcmToken = async (fcmToken: string, time: string, schoolCode: string, regionCode: string): Promise<void> => {
+  const response = await httpClient.post('/fcm', {token: fcmToken, time, schoolCode, regionCode});
   return response.data;
 };
 
@@ -102,7 +102,7 @@ export const checkFcmToken = async (fcmToken: string): Promise<boolean> => {
   return response.status === 200;
 };
 
-export const editFcmTime = async (fcmToken: string, time: string): Promise<void> => {
-  const response = await httpClient.put('/fcm', {token: fcmToken, time});
+export const editFcmTime = async (fcmToken: string, time: string, schoolCode: string, regionCode: string): Promise<void> => {
+  const response = await httpClient.put('/fcm', {token: fcmToken, time, schoolCode, regionCode});
   return response.data;
 };
