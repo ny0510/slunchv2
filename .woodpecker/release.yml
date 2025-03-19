@@ -11,13 +11,14 @@ steps:
 
   - name: build
     image: reactnativecommunity/react-native-android
+    volumes: [ /home/misile/al1s/cache/gradle:./android/.gradle ]
     commands:
       - echo $KEYSTORE_BASE64 | base64 -di > keystore
       - echo $GOOGLE_SERVICES_JSON | base64 -di > android/app/google-services.json
       - export RN_UPLOAD_STORE_FILE=$(pwd)/keystore
       - cd android
-      - ./gradlew app:assembleRelease
-      - ./gradlew app:bundleRelease
+      - ./gradlew app:assembleRelease -Dorg.gradle.parallel.threads=24
+      - ./gradlew app:bundleRelease -Dorg.gradle.parallel.threads=24
       # - mkdir artifacts
       - cp "app/build/outputs/apk/release/app-release.apk" "../app.apk"
       - cp "app/build/outputs/bundle/release/app-release.aab" "../app.aab"
