@@ -23,10 +23,10 @@ export const IntroScreen = () => {
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
   const handlePress = () => {
-    if (!isButtonDisabled) {
-      setIsButtonDisabled(true);
-      navigation.navigate('SchoolSearch', {isFirstOpen: true});
-    }
+    // if (!isButtonDisabled) {
+    setIsButtonDisabled(true);
+    navigation.navigate('SchoolSearch', {isFirstOpen: true});
+    // }
   };
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export const IntroScreen = () => {
             <Text style={[theme.typography.body, {fontFamily: theme.fontWeights.semiBold}]}>확인하세요!</Text>
           </View>
         </View>
-        <TouchableOpacity style={s.nextButton} onPress={handlePress} disabled={isButtonDisabled}>
+        <TouchableOpacity style={s.nextButton} onPress={handlePress}>
           <Text style={s.nextButtonText}>시작하기</Text>
           <FontAwesome6 name="angle-right" iconStyle="solid" size={18} color={theme.colors.primaryText} />
         </TouchableOpacity>
