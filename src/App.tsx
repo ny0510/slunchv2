@@ -31,25 +31,30 @@ const App = () => {
   }, []);
 
   const updateCheck = useCallback(async () => {
-    const res = await VersionCheck.needUpdate({depth: 2});
-    console.log(`Update needed: ${res.isNeeded}`);
-    if (res.isNeeded) {
-      Alert.alert(
-        '새로운 버전이 출시되었습니다',
-        '앱을 업데이트 해주세요',
-        [
-          {
-            text: '업데이트',
-            onPress: () => {
-              Linking.openURL(res.storeUrl);
-              setTimeout(updateCheck, 1000);
+    try {
+      const res = await VersionCheck.needUpdate({depth: 2});
+      console.log(`Update needed: ${res.isNeeded}`);
+      if (res.isNeeded) {
+        Alert.alert(
+          '새로운 버전이 출시되었습니다',
+          '앱을 업데이트 해주세요',
+          [
+            {
+              text: '업데이트',
+              onPress: () => {
+                Linking.openURL(res.storeUrl);
+                setTimeout(updateCheck, 1000);
+              },
             },
+          ],
+          {
+            cancelable: false,
           },
-        ],
-        {
-          cancelable: false,
-        },
-      );
+        );
+      }
+    } catch (e) {
+      const erorr = e as Error;
+      console.error(`Update check failed: ${erorr.message}`);
     }
   }, []);
 
