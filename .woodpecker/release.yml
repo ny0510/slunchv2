@@ -35,11 +35,7 @@ steps:
 
   - name: build
     image: reactnativecommunity/react-native-android
-    volumes: [
-        /home/misile/al1s/cache/gradle:/woodpecker/src/github.com/NY0510/slunchv2/android/.gradle
-        /home/misile/al1s/cache/global_cache:/root/.gradle
-        /home/misile/al1s/cache/node_modules:/woodpecker/src/github.com/NY0510/slunchv2/node_modules,
-      ]
+    volumes: [/home/misile/al1s/cache/gradle:/woodpecker/src/github.com/NY0510/slunchv2/android/.gradle, /home/misile/al1s/cache/global_cache:/root/.gradle, /home/misile/al1s/cache/node_modules:/woodpecker/src/github.com/NY0510/slunchv2/node_modules]
     commands:
       - cd android
       - ./gradlew app:assembleRelease -Dorg.gradle.parallel.threads=24
