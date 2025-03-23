@@ -1,6 +1,7 @@
 import React from 'react';
 import {Platform} from 'react-native';
 
+import Loading from '@/components/Loading';
 import {useFirstOpen} from '@/hooks/useFirstOpen';
 import BottomTabs from '@/navigation/BottomTabs';
 import Meal from '@/screens/Meal';
@@ -29,7 +30,7 @@ const RootStacks = () => {
   const isFirstOpen = useFirstOpen();
 
   if (isFirstOpen === null) {
-    return null;
+    return <Loading fullScreen />;
   }
 
   const RootStack = createStackNavigator({

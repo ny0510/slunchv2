@@ -9,9 +9,7 @@ import {showSplash} from 'react-native-splash-view';
 
 import {name as appName} from './app.json';
 import App from '@/App';
-import {sendNotification} from '@/lib/notification';
 import {theme} from '@/styles/theme';
-import messaging from '@react-native-firebase/messaging';
 import 'dayjs/locale/ko';
 
 Text.defaultProps = Text.defaultProps || {};

@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import React, {ReactNode, useCallback, useEffect, useState} from 'react';
-import {ActivityIndicator, Alert, AppState, Easing, FlatList, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
+import {AppState, Easing, FlatList, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
 import Midnight from 'react-native-midnight';
 
 import {styles as s} from './styles';
@@ -8,6 +8,7 @@ import {getMeal, getSchedules, getTimetable} from '@/api';
 import Logo from '@/assets/images/logo.svg';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
+import Loading from '@/components/Loading';
 import TouchableScale from '@/components/TouchableScale';
 import {useUser} from '@/hooks/useUser';
 import {clearCache} from '@/lib/cache';
@@ -208,7 +209,7 @@ const HomeCard = ({title, titleIcon, arrow, onPress, notificationDot, children}:
 
 const LoadingView = ({height}: {height: number}) => (
   <View style={[s.loadingView, {height}]}>
-    <ActivityIndicator size="large" color={theme.colors.primaryText} />
+    <Loading />
   </View>
 );
 

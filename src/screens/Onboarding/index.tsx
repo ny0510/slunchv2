@@ -1,11 +1,12 @@
 import dayjs from 'dayjs';
 import React, {useEffect, useRef, useState} from 'react';
-import {ActivityIndicator, Alert, FlatList, ImageBackground, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {FlatList, ImageBackground, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import ScrollPicker from 'react-native-wheel-scrollview-picker';
 
 import {style as s} from './styles';
 import {comciganSchoolSearch, getClassList, neisSchoolSearch} from '@/api';
+import Loading from '@/components/Loading';
 import SlotMachine from '@/components/SlotMachine';
 import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
@@ -133,7 +134,7 @@ export const SchoolSearchScreen = ({route}: StackScreenProps<RootStackParamList,
           </View>
           {isLoading ? (
             <View style={s.centerView}>
-              <ActivityIndicator size="large" color={theme.colors.primaryText} />
+              <Loading />
             </View>
           ) : schoolList.length === 0 && inputText.length > 0 ? (
             <View style={s.centerView}>
@@ -274,7 +275,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
         <View style={s.inputContent}>
           {isLoading ? (
             <View style={s.centerView}>
-              <ActivityIndicator size="large" color={theme.colors.primaryText} />
+              <Loading />
             </View>
           ) : (
             <View style={s.scrollPickerContainer}>

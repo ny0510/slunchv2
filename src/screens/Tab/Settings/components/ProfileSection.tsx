@@ -1,7 +1,8 @@
 import {API_BASE_URL} from '@env';
 import React from 'react';
-import {ActivityIndicator, Easing, Image, Text, TouchableOpacity, View} from 'react-native';
+import {Easing, Image, Text, TouchableOpacity, View} from 'react-native';
 
+import Loading from '@/components/Loading';
 import TouchableScale from '@/components/TouchableScale';
 import {showToast} from '@/lib/toast';
 import {useAuth} from '@/providers/AuthProvider';
@@ -11,7 +12,7 @@ const ProfileSection = () => {
   const {user, loading, logout, login} = useAuth();
 
   if (loading) {
-    return <ActivityIndicator size="large" color={theme.colors.primaryText} />;
+    return <Loading />;
   }
 
   return (

@@ -1,11 +1,12 @@
 import dayjs from 'dayjs';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {ActivityIndicator, Alert, RefreshControl, ScrollView, Text, View} from 'react-native';
+import {RefreshControl, ScrollView, Text, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import {getMeal} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
+import Loading from '@/components/Loading';
 import {clearCache} from '@/lib/cache';
 import {showToast} from '@/lib/toast';
 import {theme} from '@/styles/theme';
@@ -77,9 +78,7 @@ const Meal = () => {
   };
 
   return loading ? (
-    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <ActivityIndicator size="large" color={theme.colors.primaryText} />
-    </View>
+    <Loading fullScreen />
   ) : (
     <Container scrollView bounce={!loading} scrollViewRef={scrollViewRef} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
       <View style={{gap: 12, width: '100%'}}>
