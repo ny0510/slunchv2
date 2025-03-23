@@ -18,6 +18,7 @@ Sentry.init({
   dsn: 'https://6a5152bf71c0a9190c0375c506b21dd1@o4509012689879040.ingest.us.sentry.io/4509012691451904',
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
+  tracesSampleRate: 0.1,
   integrations: [
     Sentry.mobileReplayIntegration({
       maskAllText: false,
