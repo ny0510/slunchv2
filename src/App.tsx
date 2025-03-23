@@ -1,5 +1,5 @@
-import React, {useCallback, useEffect} from 'react';
-import {Alert, BackHandler, Linking, Platform, StatusBar, ToastAndroid} from 'react-native';
+import React, {useCallback, useEffect, useRef} from 'react';
+import {Alert, AppState, BackHandler, Linking, Platform, StatusBar, ToastAndroid} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {hideSplash} from 'react-native-splash-view';
@@ -27,9 +27,9 @@ Sentry.init({
   ],
 });
 
-let backPressedOnce = false;
-
 const App = () => {
+  const backPressedOnce = useRef(false);
+
   useEffect(() => {
     setTimeout(() => {
       hideSplash();
@@ -49,7 +49,6 @@ const App = () => {
               text: '업데이트',
               onPress: () => {
                 Linking.openURL(res.storeUrl);
-                setTimeout(updateCheck, 1000);
               },
             },
           ],
@@ -65,7 +64,13 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    updateCheck();
+    const checkOnForeground = AppState.addEventListener('change', state => {
+      if (state === 'active') {
+        updateCheck();
+      }
+    });
+
+    return () => checkOnForeground.remove();
   }, [updateCheck]);
 
   useEffect(() => {
@@ -75,22 +80,25 @@ const App = () => {
       await sendNotification(title, body);
     });
 
-    return unsubscribe;
+    return () => {
+      console.log('[FCM] Unsubscribing from message listener');
+      unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
       const backAction = () => {
-        if (backPressedOnce) {
+        if (backPressedOnce.current) {
           BackHandler.exitApp();
           return true;
         }
-        backPressedOnce = true;
+        backPressedOnce.current = true;
 
         ToastAndroid.show('뒤로가기를 한 번 더 누르면 종료돼요.', ToastAndroid.SHORT);
 
         setTimeout(() => {
-          backPressedOnce = false;
+          backPressedOnce.current = false;
         }, 2000);
 
         return true;

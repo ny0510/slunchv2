@@ -105,13 +105,13 @@ const Home = () => {
 
   // 앱이 백그라운드에서 포그라운드로 돌아올 때 데이터를 갱신
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', nextAppState => {
+    const checkOnForeground = AppState.addEventListener('change', nextAppState => {
       if (nextAppState === 'active') {
         fetchData();
       }
     });
 
-    return () => subscription.remove();
+    return () => checkOnForeground.remove();
   }, [fetchData]);
 
   useEffect(() => {
