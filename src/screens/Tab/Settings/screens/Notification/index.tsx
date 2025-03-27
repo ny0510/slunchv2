@@ -24,29 +24,37 @@ const Notification = () => {
 
   const user = useUser();
 
+  const initializeNotificationSettings = useCallback(async () => {
+    const storedState = await AsyncStorage.getItem('isNotiEnabled');
+    const storedTime = await AsyncStorage.getItem('notiTime');
+    let isEnabledState = false;
+    let notificationTime = dayjs().set('hour', 7).set('minute', 30).toDate();
+
+    if (storedState !== null) {
+      isEnabledState = JSON.parse(storedState);
+    } else {
+      const fcmToken = await getFcmToken();
+      const check = await checkFcmToken(fcmToken);
+      isEnabledState = check;
+      await AsyncStorage.setItem('isNotiEnabled', JSON.stringify(check));
+    }
+
+    if (storedTime !== null) {
+      notificationTime = new Date(JSON.parse(storedTime));
+    }
+
+    return {isEnabledState, notificationTime};
+  }, []);
+
+  const getFcmToken = async () => {
+    await messaging().registerDeviceForRemoteMessages();
+    return messaging().getToken();
+  };
+
   useEffect(() => {
     const fetchNotiSettings = async () => {
       try {
-        const storedState = await AsyncStorage.getItem('isNotiEnabled');
-        const storedTime = await AsyncStorage.getItem('notiTime');
-        let isEnabledState = false;
-        let notificationTime = dayjs().set('hour', 7).set('minute', 30).toDate();
-
-        if (storedState !== null) {
-          isEnabledState = JSON.parse(storedState);
-        } else {
-          const fcmToken = await messaging()
-            .registerDeviceForRemoteMessages()
-            .then(() => messaging().getToken());
-          const check = await checkFcmToken(fcmToken);
-          isEnabledState = check;
-          await AsyncStorage.setItem('isNotiEnabled', JSON.stringify(check));
-        }
-
-        if (storedTime !== null) {
-          notificationTime = new Date(JSON.parse(storedTime));
-        }
-
+        const {isEnabledState, notificationTime} = await initializeNotificationSettings();
         setIsEnabled(isEnabledState);
         setTime(notificationTime);
       } catch (error) {
@@ -54,21 +62,17 @@ const Notification = () => {
       }
     };
     fetchNotiSettings();
-  }, []);
+  }, [initializeNotificationSettings]);
 
   const updateTime = useCallback(async () => {
     setIsProcessing(true);
     try {
-      const fcmToken = await messaging()
-        .registerDeviceForRemoteMessages()
-        .then(() => messaging().getToken());
-
+      const fcmToken = await getFcmToken();
       await editFcmTime(fcmToken, dayjs(time).format('HH:mm'), String(user.schoolInfo.neisCode), user.schoolInfo.neisRegionCode);
       await AsyncStorage.setItem('notiTime', JSON.stringify(time));
       showToast(`매일 ${dayjs(time).format('A hh:mm')}에 알림을 받아요.`);
     } catch (e) {
       const error = e as Error;
-
       showToast(`알림 시간 변경에 실패했어요:\n${error.message}`);
     }
     setIsProcessing(false);
@@ -76,9 +80,8 @@ const Notification = () => {
 
   const handleSubscription = async (subscribe: boolean) => {
     try {
-      const fcmToken = await messaging()
-        .registerDeviceForRemoteMessages()
-        .then(() => messaging().getToken());
+      const fcmToken = await getFcmToken();
+      console.log(`[FCM] Token: ${fcmToken}`);
 
       if (subscribe) {
         const settings = await notifee.requestPermission();
@@ -116,7 +119,6 @@ const Notification = () => {
           return false;
         }
         await addFcmToken(fcmToken, dayjs(time).format('HH:mm'), String(user.schoolInfo.neisCode), user.schoolInfo.neisRegionCode);
-
         showToast(`매일 ${dayjs(time).format('A hh:mm')}에 급식 알림을 받아요.`);
       } else {
         await removeFcmToken(fcmToken);
@@ -145,7 +147,9 @@ const Notification = () => {
   };
 
   const openBottomSheet = () => {
-    bottomSheetRef.current?.expand();
+    if (bottomSheetRef.current) {
+      bottomSheetRef.current.snapToIndex(0);
+    }
   };
 
   const renderBackdrop = useCallback((props: any) => <BottomSheetBackdrop {...props} pressBehavior="close" disappearsOnIndex={-1} />, []);

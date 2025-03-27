@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {Alert, AppState, BackHandler, Linking, Platform, StatusBar, ToastAndroid} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -29,81 +29,54 @@ Sentry.init({
 });
 
 const App = () => {
-  const backPressedOnce = useRef(false);
+  const backPressedOnceRef = useRef(false);
 
   useEffect(() => {
-    setTimeout(() => {
-      hideSplash();
-    }, 250);
+    setTimeout(hideSplash, 250);
   }, []);
 
-  const updateCheck = useCallback(async () => {
+  const checkForUpdate = async () => {
     try {
       const res = await VersionCheck.needUpdate({depth: 2});
-      console.log(`Update needed: ${res.isNeeded}`);
       if (res.isNeeded) {
-        Alert.alert(
-          '새로운 버전이 출시되었습니다',
-          '앱을 업데이트 해주세요',
-          [
-            {
-              text: '업데이트',
-              onPress: () => {
-                Linking.openURL(res.storeUrl);
-              },
-            },
-          ],
-          {
-            cancelable: false,
-          },
-        );
+        Alert.alert('새로운 버전이 출시되었습니다', '앱을 업데이트 해주세요', [{text: '업데이트', onPress: () => Linking.openURL(res.storeUrl)}], {cancelable: false});
       }
     } catch (e) {
-      const erorr = e as Error;
-      console.error(`Update check failed: ${erorr.message}`);
+      console.error(`Update check failed: ${(e as Error).message}`);
     }
-  }, []);
+  };
 
   useEffect(() => {
-    const checkOnForeground = AppState.addEventListener('change', state => {
+    const listener = AppState.addEventListener('change', state => {
       if (state === 'active') {
-        updateCheck();
+        checkForUpdate();
       }
     });
-
-    return () => checkOnForeground.remove();
-  }, [updateCheck]);
+    return () => listener.remove();
+  }, []);
 
   useEffect(() => {
     const unsubscribe = messaging().onMessage(async remoteMessage => {
-      console.log(`[FCM] Message received: ${JSON.stringify(remoteMessage)}`);
       const {title, body} = remoteMessage.notification ?? {};
       await sendNotification(title, body);
     });
 
-    return () => {
-      console.log('[FCM] Unsubscribing from message listener');
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
       const backAction = () => {
-        if (backPressedOnce.current) {
+        if (backPressedOnceRef.current) {
           BackHandler.exitApp();
           return true;
         }
-        backPressedOnce.current = true;
-
+        backPressedOnceRef.current = true;
         ToastAndroid.show('뒤로가기를 한 번 더 누르면 종료돼요.', ToastAndroid.SHORT);
-
-        setTimeout(() => {
-          backPressedOnce.current = false;
-        }, 2000);
-
+        setTimeout(() => (backPressedOnceRef.current = false), 2000);
         return true;
       };
+
       const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
       return () => backHandler.remove();
     }
