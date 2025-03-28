@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import React from 'react';
+import React, {useEffect} from 'react';
 import {AppRegistry, Text, TextInput} from 'react-native';
 import {setCustomImage, setCustomText, setCustomTouchableOpacity} from 'react-native-global-props';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
@@ -10,6 +10,8 @@ import {showSplash} from 'react-native-splash-view';
 import {name as appName} from './app.json';
 import App from '@/App';
 import {theme} from '@/styles/theme';
+import notifee from '@notifee/react-native';
+import analytics from '@react-native-firebase/analytics';
 import 'dayjs/locale/ko';
 
 Text.defaultProps = Text.defaultProps || {};
@@ -38,6 +40,17 @@ const Root = ({isHeadless}) => {
     activeOpacity: 0.85,
     hitSlop: {top: 10, bottom: 10, left: 10, right: 10},
   });
+
+  useEffect(() => {
+    notifee.getInitialNotification().then(remoteMessage => {
+      if (remoteMessage) {
+        analytics().logEvent('notification_open', {
+          title: remoteMessage.notification?.title,
+          body: remoteMessage.notification?.body,
+        });
+      }
+    });
+  }, []);
 
   if (isHeadless) {
     return null;
