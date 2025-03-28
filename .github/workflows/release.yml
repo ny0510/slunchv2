@@ -20,4 +20,4 @@ jobs:
           packageName: kr.ny64.slunchv2
           releaseFiles: app.aab
           status: draft
-  
+          releaseName: ${{ github.event.release.tag_name }}
