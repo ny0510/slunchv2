@@ -18,20 +18,25 @@ import analytics from '@react-native-firebase/analytics';
 const Meal = () => {
   const scrollViewRef = useRef<ScrollView | null>(null);
   const [meal, setMeal] = useState<MealType[]>([]);
+  const [currentDate, setCurrentDate] = useState(dayjs());
   const [showAllergy, setShowAllergy] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
   const fetchData = useCallback(async () => {
     const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
+    const today = dayjs();
     setShowAllergy(settings.showAllergy);
 
     try {
       const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
-      const today = dayjs();
 
       const mealResponse = await getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), undefined, showAllergy, true, true);
       const afterToday = mealResponse.filter(m => dayjs(m.date).isSame(today, 'day') || dayjs(m.date).isAfter(today, 'day'));
+      if (afterToday.length === 0) {
+        showToast('급식이 없습니다.');
+        return;
+      }
       setMeal(afterToday);
     } catch (e) {
       const err = e as Error;
@@ -43,6 +48,25 @@ const Meal = () => {
     }
   }, [showAllergy]);
 
+  const fetchNextMonthData = useCallback(async () => {
+    try {
+      const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
+      const nextMonth = currentDate.add(1, 'month');
+
+      const mealResponse = await getMeal(school.neisCode, school.neisRegionCode, nextMonth.format('YYYY'), nextMonth.format('MM'), undefined, showAllergy, true, true);
+
+      setMeal(prevMeal => [...prevMeal, ...mealResponse]);
+      if (!mealResponse.length) {
+        showToast('더 이상 급식이 없습니다.');
+      }
+      setCurrentDate(nextMonth);
+    } catch (e) {
+      const err = e as Error;
+      showToast('다음 달 급식을 불러오는 중 오류가 발생했습니다.');
+      console.error('Error fetching next month data:', err);
+    }
+  }, [currentDate, showAllergy]);
+
   useEffect(() => {
     analytics().logScreenView({screen_name: '급식 상세 페이지', screen_class: 'Meal'});
   }, []);
@@ -53,7 +77,7 @@ const Meal = () => {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await clearCache('@cache/getMeal');
+    await clearCache('@cache/meal');
     await fetchData();
     setRefreshing(false);
   }, [fetchData]);
@@ -80,7 +104,19 @@ const Meal = () => {
   return loading ? (
     <Loading fullScreen />
   ) : (
-    <Container scrollView bounce={!loading} scrollViewRef={scrollViewRef} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+    <Container
+      scrollView
+      bounce={!loading}
+      scrollViewRef={scrollViewRef}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      onScroll={async (event: any) => {
+        const y = event.nativeEvent.contentOffset.y;
+        const height = event.nativeEvent.layoutMeasurement.height;
+        const contentHeight = event.nativeEvent.contentSize.height;
+        if (y + height >= contentHeight - 20) {
+          await fetchNextMonthData();
+        }
+      }}>
       <View style={{gap: 12, width: '100%'}}>
         {meal.map((m, i) => {
           const date = dayjs(m.date).format('M월 D일 ddd요일');

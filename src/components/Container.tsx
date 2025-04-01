@@ -10,12 +10,21 @@ interface Props {
   children: React.ReactNode;
   refreshControl?: React.ReactElement;
   scrollViewRef?: React.RefObject<ScrollView>;
+  onScroll?: (event: any) => void;
 }
 
-const Container = ({scrollView = false, bounce = false, showsVerticalScrollIndicator = false, showsHorizontalScrollIndicator = false, style, children, refreshControl, scrollViewRef}: Props) => {
+const Container = ({scrollView = false, bounce = false, showsVerticalScrollIndicator = false, showsHorizontalScrollIndicator = false, style, children, refreshControl, scrollViewRef, onScroll}: Props) => {
   if (scrollView) {
     return (
-      <ScrollView ref={scrollViewRef} contentContainerStyle={[s.container, style]} bounces={bounce} showsVerticalScrollIndicator={showsVerticalScrollIndicator} showsHorizontalScrollIndicator={showsHorizontalScrollIndicator} refreshControl={refreshControl}>
+      <ScrollView
+        ref={scrollViewRef}
+        contentContainerStyle={[s.container, style]}
+        bounces={bounce}
+        showsVerticalScrollIndicator={showsVerticalScrollIndicator}
+        showsHorizontalScrollIndicator={showsHorizontalScrollIndicator}
+        refreshControl={refreshControl}
+        onScroll={onScroll}
+        scrollEventThrottle={16}>
         {children}
       </ScrollView>
     );

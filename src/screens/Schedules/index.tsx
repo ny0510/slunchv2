@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
-import React, {useCallback, useEffect, useState} from 'react';
-import {RefreshControl, Text, View} from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {RefreshControl, ScrollView, Text, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import {getSchedules} from '@/api';
@@ -15,9 +15,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
 
 const Schedules = () => {
+  const scrollViewRef = useRef<ScrollView | null>(null);
   const [schedules, setSchedules] = useState<ScheduleType[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [currentDate, setCurrentDate] = useState(dayjs());
 
   const fetchData = useCallback(async () => {
     try {
@@ -25,6 +27,11 @@ const Schedules = () => {
       const today = dayjs();
 
       const scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'));
+      if (scheduleResponse.length === 0) {
+        showToast(`${today.format('M')}월 학사일정이 없어, 다음 달 학사일정을 불러왔어요.`);
+        fetchNextMonthData();
+        return;
+      }
       setSchedules(scheduleResponse);
     } catch (e) {
       const err = e as Error;
@@ -36,6 +43,24 @@ const Schedules = () => {
     }
   }, []);
 
+  const fetchNextMonthData = useCallback(async () => {
+    try {
+      const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
+      const nextMonth = currentDate.add(1, 'month');
+
+      const scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, nextMonth.format('YYYY'), nextMonth.format('MM'));
+      setSchedules(prevSchedules => [...prevSchedules, ...scheduleResponse]);
+      if (!scheduleResponse.length) {
+        showToast('더 이상 학사일정이 없습니다.');
+      }
+      setCurrentDate(nextMonth);
+    } catch (e) {
+      const err = e as Error;
+      showToast('다음 달 학사일정을 불러오는 중 오류가 발생했습니다.');
+      console.error('Error fetching next month data:', err);
+    }
+  }, [currentDate]);
+
   useEffect(() => {
     analytics().logScreenView({screen_name: '학사일정 상세 페이지', screen_class: 'Schedules'});
   }, []);
@@ -46,7 +71,7 @@ const Schedules = () => {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await clearCache('@cache/getSchedules');
+    await clearCache('@cache/schedules');
     await fetchData();
     setRefreshing(false);
   }, [fetchData]);
@@ -54,7 +79,19 @@ const Schedules = () => {
   return loading ? (
     <Loading fullScreen />
   ) : (
-    <Container scrollView bounce={!loading} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+    <Container
+      scrollView
+      bounce={!loading}
+      scrollViewRef={scrollViewRef}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      onScroll={async (event: any) => {
+        const y = event.nativeEvent.contentOffset.y;
+        const height = event.nativeEvent.layoutMeasurement.height;
+        const contentHeight = event.nativeEvent.contentSize.height;
+        if (y + height >= contentHeight - 20) {
+          await fetchNextMonthData();
+        }
+      }}>
       <View style={{gap: 12, width: '100%'}}>
         {schedules.map((m, i) => {
           return <ScheduleItem key={i} item={m} />;
