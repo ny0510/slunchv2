@@ -47,8 +47,14 @@ const Notification = () => {
   }, []);
 
   const getFcmToken = async () => {
+    const storedToken = await AsyncStorage.getItem('fcmToken');
+    if (storedToken) {
+      return storedToken;
+    }
     await messaging().registerDeviceForRemoteMessages();
-    return messaging().getToken();
+    const newToken = await messaging().getToken();
+    await AsyncStorage.setItem('fcmToken', newToken);
+    return newToken;
   };
 
   useEffect(() => {

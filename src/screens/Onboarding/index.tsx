@@ -5,7 +5,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import ScrollPicker from 'react-native-wheel-scrollview-picker';
 
 import {style as s} from './styles';
-import {comciganSchoolSearch, getClassList, neisSchoolSearch} from '@/api';
+import {comciganSchoolSearch, getClassList, neisSchoolSearch, removeFcmToken} from '@/api';
 import Loading from '@/components/Loading';
 import SlotMachine from '@/components/SlotMachine';
 import {showToast} from '@/lib/toast';
@@ -257,6 +257,22 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
         }),
       );
       AsyncStorage.setItem('class', JSON.stringify({grade: selectedGrade, class: selectedClass}));
+
+      // 학급 정보 변경되면 알림 해제
+      try {
+        const storedToken = await AsyncStorage.getItem('fcmToken');
+        const isNotiEnabled = await AsyncStorage.getItem('isNotiEnabled');
+        const isNotiEnabledParsed = isNotiEnabled ? JSON.parse(isNotiEnabled) : false;
+
+        if (isNotiEnabledParsed && storedToken) {
+          await removeFcmToken(storedToken);
+          await AsyncStorage.setItem('isNotiEnabled', JSON.stringify(false));
+
+          showToast('학교 정보가 변경되어 알림이 해제되었어요.');
+        }
+      } catch (e) {
+        console.error('Error removing FCM token:', e);
+      }
 
       navigation.reset({
         index: 0,
