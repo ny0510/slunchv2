@@ -6,8 +6,8 @@ import {hideSplash} from 'react-native-splash-view';
 import Toast from 'react-native-toast-message';
 import VersionCheck from 'react-native-version-check';
 
-import {toastConfig} from './lib/toast';
 import {sendNotification} from '@/lib/notification';
+import {toastConfig} from '@/lib/toast';
 import Stack from '@/navigation/RootStacks';
 import {AuthProvider} from '@/providers/AuthProvider';
 import {theme} from '@/styles/theme';

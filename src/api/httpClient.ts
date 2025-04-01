@@ -18,7 +18,7 @@ httpClient.interceptors.response.use(
   response => response,
   error => {
     if (error.message === 'Network Error') {
-      Alert.alert('네트워크 오류', '인터넷 연결을 확인해주세요.');
+      return Alert.alert('네트워크 오류', '인터넷 연결을 확인해주세요.');
     }
     return Promise.reject(error);
   },
