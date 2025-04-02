@@ -108,6 +108,7 @@ const Meal = () => {
       scrollView
       bounce={!loading}
       scrollViewRef={scrollViewRef}
+      style={{height: '100%'}}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       onScroll={async (event: any) => {
         const y = event.nativeEvent.contentOffset.y;
@@ -118,15 +119,21 @@ const Meal = () => {
         }
       }}>
       <View style={{gap: 12, width: '100%'}}>
-        {meal.map((m, i) => {
-          const date = dayjs(m.date).format('M월 D일 ddd요일');
+        {meal?.length > 0 ? (
+          meal.map((m, i) => {
+            const date = dayjs(m.date).format('M월 D일 ddd요일');
 
-          return (
-            <Card key={i} title={date}>
-              <FlatList data={m.meal} renderItem={({item, index}) => renderMealItem(item, index)} scrollEnabled={false} />
-            </Card>
-          );
-        })}
+            return (
+              <Card key={i} title={date}>
+                <FlatList data={m.meal} renderItem={({item, index}) => renderMealItem(item, index)} scrollEnabled={false} />
+              </Card>
+            );
+          })
+        ) : (
+          <View style={{alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
+            <Text style={{color: theme.colors.primaryText, fontFamily: theme.fontWeights.light, fontSize: 16}}>급식 데이터가 없어요.</Text>
+          </View>
+        )}
       </View>
     </Container>
   );

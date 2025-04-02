@@ -66,6 +66,7 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
     <Container
       scrollView
       bounce
+      style={{height: '100%'}}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -76,31 +77,37 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
         />
       }>
       <View style={{gap: 16, width: '100%'}}>
-        {noti.map((item, index) => {
-          const date = dayjs(item.date).format('MM월 DD일');
-          const isNew = !readNotifications.includes(item.id);
-          const icon = <FontAwesome6 name="bullhorn" size={16} color={theme.colors.primaryText} iconStyle="solid" />;
+        {noti?.length > 0 ? (
+          noti.map((item, index) => {
+            const date = dayjs(item.date).format('MM월 DD일');
+            const isNew = !readNotifications.includes(item.id);
+            const icon = <FontAwesome6 name="bullhorn" size={16} color={theme.colors.primaryText} iconStyle="solid" />;
 
-          return (
-            <TouchableScale key={index} pressInEasing={Easing.elastic(0.5)} pressOutEasing={Easing.elastic(0.5)} pressInDuration={200} pressOutDuration={200} scaleTo={0.98} onPress={() => handlePress(index, item.id)}>
-              <TouchableOpacity>
-                <Card title={item.title} titleIcon={icon} subtitle={date} arrow notificationDot={isNew}>
-                  {expandedIndices.includes(index) && (
-                    <Text
-                      style={{
-                        color: theme.colors.primaryText,
-                        fontFamily: theme.fontWeights.regular,
-                        fontSize: 16,
-                        lineHeight: 24,
-                      }}>
-                      {item.content}
-                    </Text>
-                  )}
-                </Card>
-              </TouchableOpacity>
-            </TouchableScale>
-          );
-        })}
+            return (
+              <TouchableScale key={index} pressInEasing={Easing.elastic(0.5)} pressOutEasing={Easing.elastic(0.5)} pressInDuration={200} pressOutDuration={200} scaleTo={0.98} onPress={() => handlePress(index, item.id)}>
+                <TouchableOpacity>
+                  <Card title={item.title} titleIcon={icon} subtitle={date} arrow notificationDot={isNew}>
+                    {expandedIndices.includes(index) && (
+                      <Text
+                        style={{
+                          color: theme.colors.primaryText,
+                          fontFamily: theme.fontWeights.regular,
+                          fontSize: 16,
+                          lineHeight: 24,
+                        }}>
+                        {item.content}
+                      </Text>
+                    )}
+                  </Card>
+                </TouchableOpacity>
+              </TouchableScale>
+            );
+          })
+        ) : (
+          <View style={{alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
+            <Text style={{color: theme.colors.primaryText, fontFamily: theme.fontWeights.light, fontSize: 16}}>알림이 없습니다.</Text>
+          </View>
+        )}
       </View>
     </Container>
   );

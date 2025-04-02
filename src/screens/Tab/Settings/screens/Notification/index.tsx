@@ -58,7 +58,7 @@ const Notification = () => {
   };
 
   useEffect(() => {
-    const fetchNotiSettings = async () => {
+    (async () => {
       try {
         const {isEnabledState, notificationTime} = await initializeNotificationSettings();
         setIsEnabled(isEnabledState);
@@ -66,8 +66,7 @@ const Notification = () => {
       } catch (error) {
         console.error('Failed to fetch notification settings:', error);
       }
-    };
-    fetchNotiSettings();
+    })();
   }, [initializeNotificationSettings]);
 
   const updateTime = useCallback(async () => {

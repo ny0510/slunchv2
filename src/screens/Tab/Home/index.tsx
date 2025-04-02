@@ -71,7 +71,7 @@ const Home = () => {
       }
 
       let scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'));
-      scheduleResponse = scheduleResponse.filter(schedule => dayjs(schedule.date.start).isAfter(today));
+      scheduleResponse = scheduleResponse?.length > 0 ? scheduleResponse.filter(schedule => dayjs(schedule.date.start).isAfter(today)) : [];
 
       setTimetable(transpose(timetableResponse));
       setMeal(mealResponse);
@@ -159,7 +159,7 @@ const Home = () => {
     <Container bounce scrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
       <View style={s.container}>
         <View style={s.header}>
-          <Logo width={32} height={32} />
+          <Logo width={24} height={24} />
           <Text style={[theme.typography.subtitle]}>{user ? user.schoolInfo.schoolName : '학교 정보 없음'}</Text>
         </View>
         <HomeCard title="학사일정" titleIcon={<FontAwesome6 name="calendar" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Schedules')}>
