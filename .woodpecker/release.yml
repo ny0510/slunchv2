@@ -52,4 +52,3 @@ steps:
         from_secret: GITHUB_API_KEY
         checksum: 'sha256'
         generate-release-notes: true
-        draft: true

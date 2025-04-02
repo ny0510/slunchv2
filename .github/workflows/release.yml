@@ -7,6 +7,9 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: wait for upload
+        run: sleep 30
+
       - name: get artifact
         uses: dsaltares/fetch-gh-release-asset@master
         with:
