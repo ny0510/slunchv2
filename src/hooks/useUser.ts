@@ -8,15 +8,13 @@ export const useUser = () => {
   const [classInfo, setClassInfo] = useState<UserClassInfo>({} as UserClassInfo);
 
   useEffect(() => {
-    const fetchData = async () => {
+    (async () => {
       const classData = await AsyncStorage.getItem('class');
       const schoolData = await AsyncStorage.getItem('school');
 
       setClassInfo(classData ? JSON.parse(classData) : {});
       setSchoolInfo(schoolData ? JSON.parse(schoolData) : {});
-    };
-
-    fetchData();
+    })();
   }, []);
 
   return {schoolInfo, classInfo};
