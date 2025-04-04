@@ -11,7 +11,7 @@ brew install cocoapods
 brew install yarn
 
 pwd
-cd ..
+cd ../..
 yarn
 
 cd ios
