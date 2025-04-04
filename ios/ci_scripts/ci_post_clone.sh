@@ -3,6 +3,8 @@
 pwd
 cd ../../
 
+ls -al
+
 echo $SENTRY_PROPERTIES | base64 -d > ios/sentry.properties
 echo $GOOGLE_SERVICES_JSON | base64 -d > ios/GoogleService-Info.plist
 echo "API_BASE_URL='$API_BASE_URL'" > .env
