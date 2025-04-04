@@ -66,7 +66,6 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
     <Container
       scrollView
       bounce
-      style={{height: '100%'}}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -104,7 +103,7 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
             );
           })
         ) : (
-          <View style={{alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
+          <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
             <Text style={{color: theme.colors.primaryText, fontFamily: theme.fontWeights.light, fontSize: 16}}>알림이 없습니다.</Text>
           </View>
         )}

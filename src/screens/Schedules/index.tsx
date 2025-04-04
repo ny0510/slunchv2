@@ -82,7 +82,6 @@ const Schedules = () => {
     <Container
       scrollView
       bounce={!loading}
-      style={{height: '100%'}}
       scrollViewRef={scrollViewRef}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       onScroll={async (event: any) => {
@@ -99,7 +98,7 @@ const Schedules = () => {
             return <ScheduleItem key={i} item={m} />;
           })
         ) : (
-          <View style={{alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
+          <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
             <Text style={{color: theme.colors.primaryText, fontFamily: theme.fontWeights.light, fontSize: 16}}>학사일정 데이터가 없어요.</Text>
             <Text style={{color: theme.colors.primaryText, fontFamily: theme.fontWeights.light, fontSize: 16}}>학교에서 제공하지 않는 경우도 있어요.</Text>
           </View>

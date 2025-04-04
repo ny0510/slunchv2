@@ -108,7 +108,6 @@ const Meal = () => {
       scrollView
       bounce={!loading}
       scrollViewRef={scrollViewRef}
-      style={{height: '100%'}}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       onScroll={async (event: any) => {
         const y = event.nativeEvent.contentOffset.y;
@@ -130,7 +129,7 @@ const Meal = () => {
             );
           })
         ) : (
-          <View style={{alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
+          <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
             <Text style={{color: theme.colors.primaryText, fontFamily: theme.fontWeights.light, fontSize: 16}}>급식 데이터가 없어요.</Text>
           </View>
         )}
