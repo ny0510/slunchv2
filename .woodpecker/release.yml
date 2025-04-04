@@ -22,8 +22,8 @@ steps:
       - export RN_UPLOAD_STORE_FILE=$(pwd)/keystore
 
       - cd android
-      - ./gradlew app:assembleRelease -Dorg.gradle.parallel.threads=24
-      - ./gradlew app:bundleRelease -Dorg.gradle.parallel.threads=24
+      - ./gradlew app:assembleRelease -Dorg.gradle.parallel.threads=48
+      - ./gradlew app:bundleRelease -Dorg.gradle.parallel.threads=48
       # - mkdir artifacts
       - cp "app/build/outputs/apk/release/app-release.apk" "../app.apk"
       - cp "app/build/outputs/bundle/release/app-release.aab" "../app.aab"
