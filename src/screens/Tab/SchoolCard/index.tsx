@@ -26,6 +26,8 @@ const SchoolCard = () => {
   const [barcodeValue, setBarcodeValue] = useState<string>('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [originalBrightness, setOriginalBrightness] = useState<number | null>(null);
+  const [isDemoUser, setIsDemoUser] = useState(false);
+  const [isSunrinEmail, setIsSunrinEmail] = useState(false);
   useKeepAwake();
 
   const rotateX = useSharedValue(0);
@@ -36,6 +38,26 @@ const SchoolCard = () => {
   }, []);
 
   useEffect(() => {
+    if (user && user.user) {
+      setIsDemoUser(user.user.email === 'nyl.demo.64@gmail.com');
+      setIsSunrinEmail(user.user.email.endsWith('@sunrint.hs.kr'));
+    } else {
+      setIsDemoUser(false);
+      setIsSunrinEmail(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (isDemoUser) {
+      setName('Demo User');
+      setGrade('1');
+      setClassNum('1');
+      setNumber('1');
+      setGeneration(0);
+      setBarcodeValue('DEMO123456');
+      return;
+    }
+
     if (user && user.user) {
       const userEmail = user.user.email || '';
       const userName = user.user.name || '';
@@ -62,7 +84,7 @@ const SchoolCard = () => {
       setGeneration(_generation);
       setBarcodeValue(_barcodeValue);
     }
-  }, [user]);
+  }, [user, isDemoUser]);
 
   const handleBarcodePress = async () => {
     const currentBrightness = await DeviceBrightness.getBrightnessLevel();
@@ -78,8 +100,6 @@ const SchoolCard = () => {
     setIsModalVisible(false);
   };
 
-  const isSunrinEmail = user && user.user && user.user.email.endsWith('@sunrint.hs.kr');
-
   const gesture = Gesture.Pan()
     .onUpdate(event => {
       rotateX.value = interpolate(event.translationY, [-80, 80], [-10, 10]);
@@ -92,11 +112,6 @@ const SchoolCard = () => {
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{perspective: 1000}, {rotateX: `${rotateX.value}deg`}, {rotateY: `${rotateY.value}deg`}],
-    shadowColor: theme.colors.border,
-    shadowOffset: {width: 8, height: 8},
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    elevation: 8,
     borderWidth: 1,
     borderColor: theme.colors.border,
   }));
@@ -107,12 +122,25 @@ const SchoolCard = () => {
 
   return (
     <Container style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
-      {user && user.user && isSunrinEmail ? (
+      {user && user.user && (isSunrinEmail || isDemoUser) ? (
         <GestureDetector gesture={gesture}>
           <Animated.View
             style={[
               animatedStyle,
-              {justifyContent: 'space-between', aspectRatio: 3 / 3.7, backgroundColor: theme.colors.card, width: '85%', borderRadius: 12, padding: 16, paddingTop: 26, paddingBottom: 0, shadowColor: '#000', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.3, shadowRadius: 6},
+              {
+                justifyContent: 'space-between',
+                aspectRatio: 3 / 3.7,
+                backgroundColor: theme.colors.card,
+                width: '85%',
+                borderRadius: 12,
+                padding: 16,
+                paddingTop: 26,
+                paddingBottom: 0,
+                shadowColor: '#000',
+                shadowOffset: {width: 0, height: 4},
+                shadowOpacity: 0.3,
+                shadowRadius: 6,
+              },
             ]}>
             <View>
               <Text style={[theme.typography.caption]}>선린인터넷고등학교 모바일 학생증</Text>
@@ -142,7 +170,11 @@ const SchoolCard = () => {
               logout();
               login()
                 .then(_user => {
-                  if (!_user.user.email.endsWith('@sunrint.hs.kr')) {
+                  const email = _user?.user?.email ?? '';
+                  const isSunrin = email.endsWith('@sunrint.hs.kr');
+                  const isDemo = email === 'nyl.demo.64@gmail.com';
+
+                  if (!(isSunrin || isDemo)) {
                     showToast('선린인터넷고등학교 구글 계정으로 로그인해 주세요.');
                     logout().catch(error => showToast(`로그아웃에 실패했어요:\n${error.message}`));
                   } else {
