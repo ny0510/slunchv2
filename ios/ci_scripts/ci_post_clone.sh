@@ -24,3 +24,9 @@ bun install
 cd ios
 pod update hermes-engine --no-repo-update
 pod install
+
+ls -al
+cd ..
+cat ios/sentry.properties
+cat ios/GoogleService-Info.plist
+cat .env
