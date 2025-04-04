@@ -8,8 +8,7 @@ echo $GOOGLE_SERVICES_JSON | base64 -di > ios/GoogleService-Info.plist
 echo "API_BASE_URL='$API_BASE_URL'" > .env
 
 export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
-brew install oven-sh/bun/bun
-brew install rbenv
+brew install oven-sh/bun/bun rbenv node
 rbenv install 3.4.1
 rbenv global 3.4.1
 rbenv rehash
