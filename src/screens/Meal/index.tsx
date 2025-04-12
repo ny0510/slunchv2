@@ -108,7 +108,7 @@ const Meal = () => {
       scrollView
       bounce={!loading}
       scrollViewRef={scrollViewRef}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.secondaryText} />}
       onScroll={async (event: any) => {
         const y = event.nativeEvent.contentOffset.y;
         const height = event.nativeEvent.layoutMeasurement.height;

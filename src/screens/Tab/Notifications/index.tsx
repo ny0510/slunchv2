@@ -73,6 +73,7 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
             setRefreshing(true);
             fetchData().then(() => setRefreshing(false));
           }}
+          tintColor={theme.colors.secondaryText}
         />
       }>
       <View style={{gap: 16, width: '100%'}}>
