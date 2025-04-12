@@ -2,17 +2,20 @@ import dayjs from 'dayjs';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {RefreshControl, ScrollView, Text, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
+import {Easing} from 'react-native-reanimated';
 
 import {getMeal} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
+import TouchableScale from '@/components/TouchableScale';
 import {clearCache} from '@/lib/cache';
 import {showToast} from '@/lib/toast';
 import {theme} from '@/styles/theme';
 import {Meal as MealType} from '@/types/api';
 import {MealItem} from '@/types/meal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Clipboard from '@react-native-clipboard/clipboard';
 import analytics from '@react-native-firebase/analytics';
 
 const Meal = () => {
@@ -22,6 +25,14 @@ const Meal = () => {
   const [showAllergy, setShowAllergy] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [schoolName, setSchoolName] = useState<string>('알 수 없음');
+
+  useEffect(() => {
+    (async () => {
+      const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
+      setSchoolName(school.schoolName);
+    })();
+  }, []);
 
   const fetchData = useCallback(async () => {
     const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
@@ -121,11 +132,36 @@ const Meal = () => {
         {meal?.length > 0 ? (
           meal.map((m, i) => {
             const date = dayjs(m.date).format('M월 D일 ddd요일');
+            const mealText = m.meal
+              .map((item: string | MealItem) => {
+                if (typeof item === 'string') {
+                  return `- ${item}`;
+                }
+                return `- ${item.food}${showAllergy && item.allergy && item.allergy.length > 0 ? ` ${item.allergy.map(allergy => allergy.code).join(', ')}` : ''}`;
+              })
+              .join('\n');
 
             return (
-              <Card key={i} title={date}>
-                <FlatList data={m.meal} renderItem={({item, index}) => renderMealItem(item, index)} scrollEnabled={false} />
-              </Card>
+              <TouchableScale
+                key={i}
+                pressInEasing={Easing.elastic(0.5)}
+                pressOutEasing={Easing.elastic(0.5)}
+                pressInDuration={100}
+                pressOutDuration={100}
+                scaleTo={0.98}
+                onPress={() => {
+                  Clipboard.setString(`🍴${schoolName} ${date} 급식\n\n${mealText}`);
+                  showToast('클립보드에 복사되었어요.');
+                  analytics().logEvent('meal_copy', {
+                    date: m.date,
+                    meal: mealText,
+                    school: schoolName,
+                  });
+                }}>
+                <Card title={date}>
+                  <FlatList data={m.meal} renderItem={({item, index}) => renderMealItem(item, index)} scrollEnabled={false} />
+                </Card>
+              </TouchableScale>
             );
           })
         ) : (
