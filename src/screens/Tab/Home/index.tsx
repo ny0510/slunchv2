@@ -50,37 +50,49 @@ const Home = () => {
       const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
       const classData: {grade: number; class: number} = JSON.parse((await AsyncStorage.getItem('class')) || '{}');
 
-      const timetableResponse = await getTimetable(school.comciganCode, classData.grade, classData.class);
-
-      // 오후 2시 이후면 다음 날 급식 정보를 가져옴
-      const isPastNoon = today.hour() > 14;
-
-      // 급식 정보 가져오기, 최대 3일 뒤까지 시도
-      let mealResponse = await getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), today.format('DD'), showAllergy, true, true);
-      setMealDayOffset(0);
-
-      if (mealResponse.length === 0 || isPastNoon) {
-        for (let i = 1; i <= 3; i++) {
-          const nextDay = today.add(i, 'day');
-          mealResponse = await getMeal(school.neisCode, school.neisRegionCode, nextDay.format('YYYY'), nextDay.format('MM'), nextDay.format('DD'), showAllergy, true, true);
-          if (mealResponse.length > 0) {
-            setMealDayOffset(i);
-            break;
-          }
-        }
+      let timetableResponse = [];
+      try {
+        timetableResponse = await getTimetable(school.comciganCode, classData.grade, classData.class);
+        setTimetable(transpose(timetableResponse));
+      } catch (e) {
+        console.error('Error fetching timetable:', e);
+        showToast('시간표를 불러오는 중 오류가 발생했습니다.');
       }
 
-      let scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'));
-      scheduleResponse = scheduleResponse?.length > 0 ? scheduleResponse.filter(schedule => dayjs(schedule.date.start).isAfter(today)) : [];
+      let mealResponse = [];
+      try {
+        const isPastNoon = today.hour() > 14;
+        mealResponse = await getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), today.format('DD'), showAllergy, true, true);
+        setMealDayOffset(0);
 
-      setTimetable(transpose(timetableResponse));
-      setMeal(mealResponse);
-      setSchedules(scheduleResponse);
+        if (mealResponse.length === 0 || isPastNoon) {
+          for (let i = 1; i <= 3; i++) {
+            const nextDay = today.add(i, 'day');
+            mealResponse = await getMeal(school.neisCode, school.neisRegionCode, nextDay.format('YYYY'), nextDay.format('MM'), nextDay.format('DD'), showAllergy, true, true);
+            if (mealResponse.length > 0) {
+              setMealDayOffset(i);
+              break;
+            }
+          }
+        }
+        setMeal(mealResponse);
+      } catch (e) {
+        console.error('Error fetching meal:', e);
+        showToast('급식을 불러오는 중 오류가 발생했습니다.');
+      }
+
+      let scheduleResponse = [];
+      try {
+        scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'));
+        scheduleResponse = scheduleResponse?.length > 0 ? scheduleResponse.filter(schedule => dayjs(schedule.date.start).isAfter(today)) : [];
+        setSchedules(scheduleResponse);
+      } catch (e) {
+        console.error('Error fetching schedules:', e);
+        showToast('학사일정을 불러오는 중 오류가 발생했습니다.');
+      }
     } catch (e) {
-      const err = e as Error;
-
+      console.error('Unexpected error:', e);
       showToast('데이터를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.');
-      console.error('Error fetching data:', err);
     } finally {
       setLoading(false);
     }
@@ -156,7 +168,7 @@ const Home = () => {
   };
 
   return (
-    <Container bounce scrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+    <Container bounce scrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.secondaryText} />}>
       <View style={s.container}>
         <View style={s.header}>
           <Logo width={24} height={24} />
@@ -187,7 +199,7 @@ const Home = () => {
           {loading ? (
             <LoadingView height={250} />
           ) : timetable.length === 0 ? (
-            <Text style={{color: theme.colors.secondaryText}}>이번주 시간표가 없어요.</Text>
+            <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}]}>이번주 시간표가 없어요.</Text>
           ) : (
             <FlatList data={timetable} contentContainerStyle={{gap: 3}} renderItem={({item, index}) => <TimetableRow item={item} index={index} todayIndex={todayIndex} />} scrollEnabled={false} />
           )}
