@@ -61,7 +61,7 @@ const DeveloperSettingCard = () => {
                 text: '네',
                 onPress: async () => {
                   await AsyncStorage.clear();
-                  Alert.alert('앱 데이터 삭제', '앱 데이터가 삭제되었어요. 앱을 재시작해주세요.');
+                  navigation.reset({routes: [{name: 'Intro'}]});
                 },
               },
             ]);
