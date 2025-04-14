@@ -24,7 +24,7 @@ export const IntroScreen = () => {
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
   const handlePress = () => {
-    setIsButtonDisabled(true);
+    // setIsButtonDisabled(true);
     navigation.navigate('SchoolSearch', {isFirstOpen: true});
   };
 
