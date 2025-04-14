@@ -42,7 +42,7 @@ const DeveloperSettingCard = () => {
                 text: '네',
                 onPress: async () => {
                   await clearCache('@cache/');
-                  Alert.alert('캐시 삭제', '캐시가 삭제되었어요.');
+                  Alert.alert('캐시 삭제', '캐시가 삭제되었어요.', [{text: '확인'}]);
                 },
               },
             ]);
@@ -53,10 +53,7 @@ const DeveloperSettingCard = () => {
           arrow
           onPress={async () => {
             Alert.alert('앱 데이터 삭제', '앱 데이터를 삭제하시겠습니까?', [
-              {
-                text: '아니요',
-                style: 'cancel',
-              },
+              {text: '아니요', style: 'cancel'},
               {
                 text: '네',
                 onPress: async () => {
