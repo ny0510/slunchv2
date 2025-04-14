@@ -38,7 +38,7 @@ export const IntroScreen = () => {
         text: '네',
         onPress: () => {
           navigation.navigate('Tab');
-          AsyncStorage.setItem('demoMode', 'true');
+          AsyncStorage.setItem('demoMode', JSON.stringify(true));
           AsyncStorage.setItem(
             'school',
             JSON.stringify({
@@ -283,6 +283,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
         }),
       );
       AsyncStorage.setItem('class', JSON.stringify({grade: selectedGrade, class: selectedClass}));
+      AsyncStorage.setItem('demoMode', JSON.stringify(false));
 
       // 학급 정보 변경되면 알림 해제
       try {
