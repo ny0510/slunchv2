@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import React, {useEffect, useRef, useState} from 'react';
-import {FlatList, ImageBackground, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {Alert, FlatList, ImageBackground, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import ScrollPicker from 'react-native-wheel-scrollview-picker';
 
@@ -24,10 +24,36 @@ export const IntroScreen = () => {
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
   const handlePress = () => {
-    // if (!isButtonDisabled) {
     setIsButtonDisabled(true);
     navigation.navigate('SchoolSearch', {isFirstOpen: true});
-    // }
+  };
+
+  const handleLongPress = () => {
+    Alert.alert('데모 모드', '데모 모드에서는 학교를 선택할 수 없어요.\n계속하시겠습니까?', [
+      {
+        text: '아니요',
+        style: 'cancel',
+      },
+      {
+        text: '네',
+        onPress: () => {
+          navigation.navigate('Tab');
+          AsyncStorage.setItem('demoMode', 'true');
+          AsyncStorage.setItem(
+            'school',
+            JSON.stringify({
+              schoolName: '선린인터넷고',
+              comciganCode: '41896',
+              comciganRegion: '서울',
+              neisCode: '7010536',
+              neisRegion: '서울특별시교육청',
+              neisRegionCode: 'B10',
+            }),
+          );
+          AsyncStorage.setItem('class', JSON.stringify({grade: 1, class: 1}));
+        },
+      },
+    ]);
   };
 
   useEffect(() => {
@@ -49,7 +75,7 @@ export const IntroScreen = () => {
             <Text style={[theme.typography.body, {fontFamily: theme.fontWeights.semiBold}]}>확인하세요!</Text>
           </View>
         </View>
-        <TouchableOpacity style={s.nextButton} onPress={handlePress}>
+        <TouchableOpacity style={s.nextButton} onPress={handlePress} onLongPress={handleLongPress} delayLongPress={2000}>
           <Text style={s.nextButtonText}>시작하기</Text>
           <FontAwesome6 name="angle-right" iconStyle="solid" size={18} color={theme.colors.primaryText} />
         </TouchableOpacity>

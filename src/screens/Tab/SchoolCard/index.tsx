@@ -9,6 +9,7 @@ import {showToast} from '@/lib/toast';
 import {useAuth} from '@/providers/AuthProvider';
 import {theme} from '@/styles/theme';
 import DeviceBrightness from '@adrianso/react-native-device-brightness';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {useIsFocused} from '@react-navigation/native';
@@ -38,13 +39,16 @@ const SchoolCard = () => {
   }, []);
 
   useEffect(() => {
-    if (user && user.user) {
-      setIsDemoUser(user.user.email === 'nyl.demo.64@gmail.com');
-      setIsSunrinEmail(user.user.email.endsWith('@sunrint.hs.kr'));
-    } else {
-      setIsDemoUser(false);
-      setIsSunrinEmail(false);
-    }
+    (async () => {
+      const demoMode = JSON.parse((await AsyncStorage.getItem('demoMode')) || 'false');
+      setIsDemoUser(demoMode);
+
+      if (user && user.user) {
+        setIsSunrinEmail(user.user.email.endsWith('@sunrint.hs.kr'));
+      } else {
+        setIsSunrinEmail(false);
+      }
+    })();
   }, [user]);
 
   useEffect(() => {
@@ -122,7 +126,7 @@ const SchoolCard = () => {
 
   return (
     <Container style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
-      {user && user.user && (isSunrinEmail || isDemoUser) ? (
+      {isDemoUser || (user && user.user && isSunrinEmail) ? (
         <GestureDetector gesture={gesture}>
           <Animated.View
             style={[
@@ -169,12 +173,11 @@ const SchoolCard = () => {
             onPress={() => {
               logout();
               login()
-                .then(_user => {
+                .then(async _user => {
                   const email = _user?.user?.email ?? '';
                   const isSunrin = email.endsWith('@sunrint.hs.kr');
-                  const isDemo = email === 'nyl.demo.64@gmail.com';
 
-                  if (!(isSunrin || isDemo)) {
+                  if (!isSunrin) {
                     showToast('선린인터넷고등학교 구글 계정으로 로그인해 주세요.');
                     logout().catch(error => showToast(`로그아웃에 실패했어요:\n${error.message}`));
                   } else {
