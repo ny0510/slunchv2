@@ -29,7 +29,7 @@ Build Date: ${buildDate.format('YYYY년 M월 D일')}
       body: body,
     };
 
-    const options = [
+    Alert.alert('버그 및 건의사항 제보', '아래 중 하나를 선택해주세요.', [
       {
         text: '이메일로 보내기',
         onPress: () => Linking.openURL(`mailto:${emailData.to}?subject=${encodeURIComponent(emailData.subject)}&body=${encodeURIComponent(emailData.body)}`),
@@ -38,8 +38,11 @@ Build Date: ${buildDate.format('YYYY년 M월 D일')}
         text: 'GitHub 이슈로 보내기',
         onPress: () => Linking.openURL(`https://github.com/NY0510/slunchv2/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(emailData.body)}&labels=bug`),
       },
-    ];
-    Alert.alert('버그 및 건의사항 제보', '아래 중 하나를 선택해주세요.', options, {cancelable: true});
+      {
+        text: '취소',
+        style: 'cancel',
+      },
+    ]);
   };
 
   return (
