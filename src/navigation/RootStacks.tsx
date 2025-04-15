@@ -5,6 +5,7 @@ import Loading from '@/components/Loading';
 import {useFirstOpen} from '@/hooks/useFirstOpen';
 import BottomTabs from '@/navigation/BottomTabs';
 import Meal from '@/screens/Meal';
+import Share from '@/screens/Meal/screens/Share';
 import {ClassSelectScreen, IntroScreen, SchoolSearchScreen} from '@/screens/Onboarding';
 import Schedules from '@/screens/Schedules';
 import DeveloperInfo from '@/screens/Tab/Settings/screens/DeveloperInfo';
@@ -24,6 +25,7 @@ export type RootStackParamList = {
   Meal: undefined;
   DeveloperInfo: undefined;
   Notification: undefined;
+  Share: {data: {meal: string; date: string; school: string}};
 };
 
 const RootStacks = () => {
@@ -91,6 +93,13 @@ const RootStacks = () => {
         options: {
           headerShown: true,
           title: '알림 설정',
+        },
+      },
+      Share: {
+        screen: Share,
+        options: {
+          headerShown: true,
+          title: '인스타그램 스토리 공유',
         },
       },
     },

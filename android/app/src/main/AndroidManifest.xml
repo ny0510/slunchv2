@@ -42,4 +42,8 @@
         </intent-filter>
       </activity>
     </application>
+
+    <queries>
+        <package android:name="com.instagram.android" />
+    </queries>
 </manifest>

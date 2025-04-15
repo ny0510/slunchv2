@@ -56,7 +56,7 @@ const Home = () => {
         setTimetable(transpose(timetableResponse));
       } catch (e) {
         console.error('Error fetching timetable:', e);
-        showToast('시간표를 불러오는 중 오류가 발생했습니다.');
+        showToast('시간표를 불러오는 중 오류가 발생했어요.');
       }
 
       let mealResponse = [];
@@ -78,7 +78,7 @@ const Home = () => {
         setMeal(mealResponse);
       } catch (e) {
         console.error('Error fetching meal:', e);
-        showToast('급식을 불러오는 중 오류가 발생했습니다.');
+        showToast('급식을 불러오는 중 오류가 발생했어요.');
       }
 
       let scheduleResponse = [];
@@ -88,11 +88,11 @@ const Home = () => {
         setSchedules(scheduleResponse);
       } catch (e) {
         console.error('Error fetching schedules:', e);
-        showToast('학사일정을 불러오는 중 오류가 발생했습니다.');
+        showToast('학사일정을 불러오는 중 오류가 발생했어요.');
       }
     } catch (e) {
       console.error('Unexpected error:', e);
-      showToast('데이터를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.');
+      showToast('데이터를 불러오는 중 오류가 발생했어요.');
     } finally {
       setLoading(false);
     }

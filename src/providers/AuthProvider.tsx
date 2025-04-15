@@ -52,7 +52,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
       await GoogleSignin.hasPlayServices({showPlayServicesUpdateDialog: true});
       const {data} = await GoogleSignin.signIn();
       if (!data) {
-        throw new Error('사용자 정보를 불러오는 데 실패했습니다.');
+        throw new Error('사용자 정보를 불러오는 데 실패했어요.');
       }
       await AsyncStorage.setItem('googleAuthInfo', JSON.stringify(data));
       setUser(data);

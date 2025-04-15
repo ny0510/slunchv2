@@ -15,9 +15,9 @@ interface Props {
   children?: React.ReactNode;
 }
 
-const Card = ({title, titleStyle, subtitle, subtitleStyle, arrow, titleIcon, children, notificationDot}: Props) => {
+const Card = ({title, titleStyle, subtitle, subtitleStyle, arrow, titleIcon, children, notificationDot, ...rest}: Props & {[key: string]: any}) => {
   return (
-    <View style={s.container}>
+    <View style={s.container} {...rest}>
       {title && (
         <View style={s.titleRowContainer}>
           <View style={s.titleContentContainer}>

@@ -36,7 +36,7 @@ const Schedules = () => {
     } catch (e) {
       const err = e as Error;
 
-      showToast('학사일정을 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.');
+      showToast('학사일정을 불러오는 중 오류가 발생했어요.');
       console.error('Error fetching data:', err);
     } finally {
       setLoading(false);
@@ -57,7 +57,7 @@ const Schedules = () => {
       setCurrentDate(nextMonth);
     } catch (e) {
       const err = e as Error;
-      showToast('다음 달 학사일정을 불러오는 중 오류가 발생했습니다.');
+      showToast('다음 달 학사일정을 불러오는 중 오류가 발생했어요.');
       console.error('Error fetching next month data:', err);
     }
   }, [currentDate]);

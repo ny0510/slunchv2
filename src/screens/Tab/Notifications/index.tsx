@@ -39,7 +39,7 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
     } catch (e) {
       const err = e as Error;
 
-      showToast('알림을 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.');
+      showToast('알림을 불러오는 중 오류가 발생했어요.');
       console.error('Error fetching data:', err);
     }
   }, [onReadNotification]);
