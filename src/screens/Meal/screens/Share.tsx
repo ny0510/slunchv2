@@ -10,6 +10,7 @@ import TouchableScale from '@/components/TouchableScale';
 import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {theme} from '@/styles/theme';
+import analytics from '@react-native-firebase/analytics';
 import {StackScreenProps} from '@react-navigation/stack';
 
 const ShareScreen = ({route}: StackScreenProps<RootStackParamList, 'Share'>) => {
@@ -17,6 +18,7 @@ const ShareScreen = ({route}: StackScreenProps<RootStackParamList, 'Share'>) => 
   const viewShotRef = React.useRef<ViewShot>(null);
 
   const shareToInstagramStory = async () => {
+    analytics().logEvent('share_to_instagram_story');
     const capturedImage = await viewShotRef.current?.capture?.();
 
     if (!capturedImage) {
@@ -51,34 +53,36 @@ const ShareScreen = ({route}: StackScreenProps<RootStackParamList, 'Share'>) => 
   return (
     <Container style={{flex: 1, justifyContent: 'space-around', alignItems: 'center'}}>
       <View />
-      <ViewShot options={{format: 'png', result: 'base64'}} ref={viewShotRef}>
-        <View
-          style={{
-            width: '95%',
-            aspectRatio: 1 / 1,
-            justifyContent: 'space-between',
-            borderColor: theme.colors.highlightLight,
-            borderWidth: 6,
-            padding: 22,
-            backgroundColor: theme.colors.background,
-          }}>
-          <View>
-            <Text style={[theme.typography.body]}>{data.date}</Text>
-            <Text style={[theme.typography.body]}>{data.school} 급식</Text>
+      <TouchableScale scaleTo={0.98}>
+        <ViewShot options={{format: 'png', result: 'base64'}} ref={viewShotRef}>
+          <View
+            style={{
+              width: '95%',
+              aspectRatio: 1 / 1,
+              justifyContent: 'space-between',
+              borderColor: theme.colors.highlightLight,
+              borderWidth: 6,
+              padding: 22,
+              backgroundColor: theme.colors.background,
+            }}>
+            <View>
+              <Text style={[theme.typography.body]}>{data.date}</Text>
+              <Text style={[theme.typography.body]}>{data.school} 급식</Text>
+            </View>
+            <View>
+              {data.meal.split('\n').map((meal, index) => (
+                <Text key={index} style={[theme.typography.body, {fontFamily: theme.fontWeights.bold, color: theme.colors.primaryText, fontSize: 22}]} numberOfLines={1} adjustsFontSizeToFit>
+                  {meal}
+                </Text>
+              ))}
+            </View>
+            <View style={{position: 'absolute', top: 22, right: 22, flexDirection: 'row', alignItems: 'center', gap: 4, opacity: 0.8}}>
+              <Logo width={14} height={14} />
+              <Text style={[theme.typography.caption, {fontFamily: theme.fontWeights.regular}]}>NYL</Text>
+            </View>
           </View>
-          <View>
-            {data.meal.split('\n').map((meal, index) => (
-              <Text key={index} style={[theme.typography.body, {fontFamily: theme.fontWeights.bold, color: theme.colors.primaryText, fontSize: 22}]} numberOfLines={1} adjustsFontSizeToFit>
-                {meal}
-              </Text>
-            ))}
-          </View>
-          <View style={{position: 'absolute', top: 22, right: 22, flexDirection: 'row', alignItems: 'center', gap: 4, opacity: 0.8}}>
-            <Logo width={14} height={14} />
-            <Text style={[theme.typography.caption, {fontFamily: theme.fontWeights.regular}]}>NYL</Text>
-          </View>
-        </View>
-      </ViewShot>
+        </ViewShot>
+      </TouchableScale>
 
       <TouchableScale pressInEasing={Easing.elastic(1.5)} pressOutEasing={Easing.elastic(1.5)} pressInDuration={150} pressOutDuration={150} scaleTo={0.97} style={{width: '95%'}} onPress={shareToInstagramStory}>
         <View style={{paddingVertical: 16, paddingHorizontal: 20, alignItems: 'center', gap: 5, backgroundColor: theme.colors.card, borderRadius: 12}}>
