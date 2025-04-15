@@ -11,6 +11,7 @@ import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {theme} from '@/styles/theme';
 import analytics from '@react-native-firebase/analytics';
+import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {StackScreenProps} from '@react-navigation/stack';
 
 const ShareScreen = ({route}: StackScreenProps<RootStackParamList, 'Share'>) => {
@@ -54,7 +55,7 @@ const ShareScreen = ({route}: StackScreenProps<RootStackParamList, 'Share'>) => 
     <Container style={{flex: 1, justifyContent: 'space-around', alignItems: 'center'}}>
       <View />
       <TouchableScale scaleTo={0.98}>
-        <ViewShot options={{format: 'png', result: 'base64'}} ref={viewShotRef}>
+        <ViewShot options={{format: 'png', result: 'base64'}} ref={viewShotRef} style={{alignItems: 'center'}}>
           <View
             style={{
               width: '95%',
@@ -71,7 +72,7 @@ const ShareScreen = ({route}: StackScreenProps<RootStackParamList, 'Share'>) => 
             </View>
             <View>
               {data.meal.split('\n').map((meal, index) => (
-                <Text key={index} style={[theme.typography.body, {fontFamily: theme.fontWeights.bold, color: theme.colors.primaryText, fontSize: 22}]} numberOfLines={1} adjustsFontSizeToFit>
+                <Text key={index} style={[theme.typography.body, {fontFamily: theme.fontWeights.bold, color: theme.colors.primaryText, fontSize: 20}]} numberOfLines={1} adjustsFontSizeToFit>
                   {meal}
                 </Text>
               ))}
@@ -85,8 +86,9 @@ const ShareScreen = ({route}: StackScreenProps<RootStackParamList, 'Share'>) => 
       </TouchableScale>
 
       <TouchableScale pressInEasing={Easing.elastic(1.5)} pressOutEasing={Easing.elastic(1.5)} pressInDuration={150} pressOutDuration={150} scaleTo={0.97} style={{width: '95%'}} onPress={shareToInstagramStory}>
-        <View style={{paddingVertical: 16, paddingHorizontal: 20, alignItems: 'center', gap: 5, backgroundColor: theme.colors.card, borderRadius: 12}}>
-          <Text style={[theme.typography.subtitle, {fontSize: 20}]}>스토리로 공유하기</Text>
+        <View style={{paddingVertical: 16, paddingHorizontal: 20, alignItems: 'center', gap: 5, backgroundColor: theme.colors.card, borderRadius: 12, flexDirection: 'row', justifyContent: 'center', alignContent: 'center'}}>
+          <FontAwesome6 name="instagram" size={20} color={theme.colors.primaryText} iconStyle="brand" />
+          <Text style={[theme.typography.subtitle]}>공유하기</Text>
         </View>
       </TouchableScale>
     </Container>
