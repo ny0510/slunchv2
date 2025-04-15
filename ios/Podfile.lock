@@ -1924,15 +1924,6 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNImageCropPicker (0.42.0):
-    - React-Core
-    - React-RCTImage
-    - RNImageCropPicker/QBImagePickerController (= 0.42.0)
-    - TOCropViewController (~> 2.7.4)
-  - RNImageCropPicker/QBImagePickerController (0.42.0):
-    - React-Core
-    - React-RCTImage
-    - TOCropViewController (~> 2.7.4)
   - RNNotifee (9.1.8):
     - React-Core
     - RNNotifee/NotifeeCore (= 9.1.8)
@@ -2212,7 +2203,6 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - TOCropViewController (2.7.4)
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -2303,7 +2293,6 @@ DEPENDENCIES:
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - "RNGoogleSignin (from `../node_modules/@react-native-google-signin/google-signin`)"
-  - RNImageCropPicker (from `../node_modules/react-native-image-crop-picker`)
   - "RNNotifee (from `../node_modules/@notifee/react-native`)"
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -2334,7 +2323,6 @@ SPEC REPOS:
     - React-Codegen
     - Sentry
     - SocketRocket
-    - TOCropViewController
 
 EXTERNAL SOURCES:
   boost:
@@ -2504,8 +2492,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-gesture-handler"
   RNGoogleSignin:
     :path: "../node_modules/@react-native-google-signin/google-signin"
-  RNImageCropPicker:
-    :path: "../node_modules/react-native-image-crop-picker"
   RNNotifee:
     :path: "../node_modules/@notifee/react-native"
   RNReanimated:
@@ -2624,7 +2610,6 @@ SPEC CHECKSUMS:
   RNFBMessaging: c1dc973d87a82fd9e58bd8c3a8c269dcca337669
   RNGestureHandler: dcb1b1db024f3744b03af56d132f4f72c4c27195
   RNGoogleSignin: 5e115ab981ba1a9f5fae37000f49cd996c394df0
-  RNImageCropPicker: b0afedeefd8655254a15c34103718455fde6ce59
   RNNotifee: 5e3b271e8ea7456a36eec994085543c9adca9168
   RNReanimated: 04813c30d3c04044c32c60379945b71e0c6c950f
   RNScreens: 790123c4a28783d80a342ce42e8c7381bed62db1
@@ -2634,7 +2619,6 @@ SPEC CHECKSUMS:
   Sentry: 1ca8405451040482877dcd344dfa3ef80b646631
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SplashView: b7735add925f196c8b0549ec843081340ce88b6d
-  TOCropViewController: 80b8985ad794298fb69d3341de183f33d1853654
   Yoga: e14bad835e12b6c7e2260fc320bd00e0f4b45add
 
 PODFILE CHECKSUM: 187e8adb1c1a01fd5d0e33a0bf690cace59d9b4a
