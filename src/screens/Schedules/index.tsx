@@ -26,7 +26,7 @@ const Schedules = () => {
   const fetchData = useCallback(async () => {
     try {
       const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
-      const today = dayjs('2025-10-01');
+      const today = dayjs();
 
       const scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'));
       // if (scheduleResponse.length === 0) {
