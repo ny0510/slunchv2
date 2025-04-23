@@ -1,10 +1,13 @@
+import {ANDROID_MEAL_NATIVE_AD_UNIT_ID, IOS_NOTI_NATIVE_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
 import React, {useCallback, useEffect, useState} from 'react';
-import {Alert, Easing, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
+import {Easing, Platform, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
 
+import Ad from './components/Ad';
 import {getNotifications} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
+import Loading from '@/components/Loading';
 import TouchableScale from '@/components/TouchableScale';
 import {showToast} from '@/lib/toast';
 import {theme} from '@/styles/theme';
@@ -18,6 +21,7 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
   const [noti, setNoti] = useState<Notification[]>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [readNotifications, setReadNotifications] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const fetchReadNotifications = async () => {
     try {
@@ -31,6 +35,7 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
   };
 
   const fetchData = useCallback(async () => {
+    setLoading(true);
     try {
       const notifications = await getNotifications();
       setNoti(notifications);
@@ -41,6 +46,8 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
 
       showToast('알림을 불러오는 중 오류가 발생했어요.');
       console.error('Error fetching data:', err);
+    } finally {
+      setLoading(false);
     }
   }, [onReadNotification]);
 
@@ -62,10 +69,15 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
     }
   };
 
-  return (
+  return loading ? (
+    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+      <Loading fullScreen />
+    </View>
+  ) : (
     <Container
       scrollView
       bounce
+      style={{paddingHorizontal: 0}}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -76,7 +88,11 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
           tintColor={theme.colors.secondaryText}
         />
       }>
-      <View style={{gap: 16, width: '100%'}}>
+      <Ad adUnitId={Platform.OS === 'ios' ? IOS_NOTI_NATIVE_AD_UNIT_ID : ANDROID_MEAL_NATIVE_AD_UNIT_ID} />
+
+      <View style={{gap: 16, width: '100%', paddingHorizontal: 16}}>
+        {/* <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_NOTI_BANNER_AD_UNIT_ID : ANDROID_NOTI_BANNER_AD_UNIT_ID} /> */}
+
         {noti?.length > 0 ? (
           noti.map((item, index) => {
             const date = dayjs(item.date).format('MM월 DD일');
@@ -85,7 +101,7 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
 
             return (
               <TouchableScale key={index} pressInEasing={Easing.elastic(0.5)} pressOutEasing={Easing.elastic(0.5)} pressInDuration={200} pressOutDuration={200} scaleTo={0.98} onPress={() => handlePress(index, item.id)}>
-                <TouchableOpacity>
+                <TouchableOpacity activeOpacity={0.7}>
                   <Card title={item.title} titleIcon={icon} subtitle={date} arrow notificationDot={isNew}>
                     {expandedIndices.includes(index) && (
                       <Text

@@ -2,7 +2,9 @@ import dayjs from 'dayjs';
 import React, {useEffect} from 'react';
 import {AppRegistry, Text, TextInput} from 'react-native';
 import {setCustomImage, setCustomText, setCustomTouchableOpacity} from 'react-native-global-props';
+import mobileAds from 'react-native-google-mobile-ads';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
+import {PERMISSIONS, RESULTS, check, request} from 'react-native-permissions';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {enableScreens} from 'react-native-screens';
 import {showSplash} from 'react-native-splash-view';
@@ -40,6 +42,20 @@ const Root = ({isHeadless}) => {
     activeOpacity: 0.85,
     hitSlop: {top: 10, bottom: 10, left: 10, right: 10},
   });
+
+  useEffect(() => {
+    async () => {
+      const result = await check(PERMISSIONS.IOS.APP_TRACKING_TRANSPARENCY);
+      if (result === RESULTS.DENIED) {
+        // The permission has not been requested, so request it.
+        await request(PERMISSIONS.IOS.APP_TRACKING_TRANSPARENCY);
+      }
+
+      await mobileAds().setRequestConfiguration({testDeviceIdentifiers: ['EMULATOR']});
+      const adapterStatuses = await mobileAds().initialize();
+      console.log(`[AdMob] Adapter Statuses: ${JSON.stringify(adapterStatuses)}`);
+    };
+  }, []);
 
   useEffect(() => {
     notifee.getInitialNotification().then(remoteMessage => {

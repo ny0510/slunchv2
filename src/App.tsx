@@ -33,6 +33,7 @@ const App = () => {
 
   useEffect(() => {
     setTimeout(hideSplash, 250);
+    checkForUpdate();
   }, []);
 
   const checkForUpdate = async () => {

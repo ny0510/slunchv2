@@ -1,3 +1,5 @@
 - [ ] ThemeProvider 추가
 - [ ] 라이트모드 지원
 - [ ] 알레르기 표시 여부 설정 추가
+- [ ] 안드로이드 폰트 widght
+- [ ] defaltprops 설정 제거 (작동안함

@@ -19,7 +19,10 @@ target 'slunchv2' do
 
   pod 'FirebaseCore', :modular_headers => true
   pod 'GoogleUtilities', :modular_headers => true
-
+  
+  use_frameworks! :linkage => :static
+  $RNGoogleMobileAdsAsStaticFramework = true
+  
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.

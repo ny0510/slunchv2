@@ -1,6 +1,7 @@
 /* eslint-disable react/no-unstable-nested-components */
 import React, {useEffect, useState} from 'react';
-import {Easing, GestureResponderEvent, TouchableOpacity} from 'react-native';
+import {Easing, GestureResponderEvent, TouchableOpacity, View} from 'react-native';
+import {BannerAd, BannerAdSize, TestIds} from 'react-native-google-mobile-ads';
 
 import {getNotifications} from '@/api';
 import TouchableScale from '@/components/TouchableScale';
@@ -12,7 +13,7 @@ import {theme} from '@/styles/theme';
 import {Notification} from '@/types/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {BottomTabBar, BottomTabBarProps, createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 
 const BottomTab = createBottomTabNavigator();
 
@@ -49,6 +50,24 @@ const BottomTabs = () => {
     <BottomTab.Navigator
       initialRouteName="Home"
       backBehavior="firstRoute"
+      tabBar={(props: BottomTabBarProps) => {
+        return (
+          <>
+            {/* <View style={{justifyContent: 'center'}}>
+              <BannerAd
+                unitId={TestIds.BANNER}
+                size={BannerAdSize.FULL_BANNER}
+                requestOptions={{
+                  requestNonPersonalizedAdsOnly: true,
+                }}
+                onAdFailedToLoad={error => console.error('Ad failed to load:', error)}
+              />
+            </View> */}
+
+            <BottomTabBar {...props} />
+          </>
+        );
+      }}
       screenOptions={({route}) => ({
         headerShown: false,
         animation: 'shift',

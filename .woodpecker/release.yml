@@ -17,9 +17,15 @@ steps:
       - echo $KEYSTORE_BASE64 | base64 -di > keystore
       - echo $GOOGLE_SERVICES_JSON | base64 -di > android/app/google-services.json
       - echo $SENTRY_PROPERTIES | base64 -di > android/sentry.properties
-      - echo $SENTRY_PROPERTIES | base64 -di > ios/sentry.properties
-      - echo "API_BASE_URL='$API_BASE_URL'" > .env
+      # - echo $SENTRY_PROPERTIES | base64 -di > ios/sentry.properties
       - export RN_UPLOAD_STORE_FILE=$(pwd)/keystore
+
+      - echo "API_BASE_URL='$API_BASE_URL'" > .env
+      - echo "ANDROID_HOME_BANNER_AD_UNIT_ID='$ANDROID_HOME_BANNER_AD_UNIT_ID'" >> .env
+      - echo "ANDROID_NOTI_BANNER_AD_UNIT_ID='$ANDROID_NOTI_BANNER_AD_UNIT_ID'" >> .env
+      - echo "ANDROID_SCHEDULE_NATIVE_AD_UNIT_ID='$ANDROID_SCHEDULE_NATIVE_AD_UNIT_ID'" >> .env
+      - echo "ANDROID_MEAL_NATIVE_AD_UNIT_ID='$ANDROID_MEAL_NATIVE_AD_UNIT_ID'" >> .env
+      - echo "ANDROID_NOTI_NATIVE_AD_UNIT_ID='$ANDROID_NOTI_NATIVE_AD_UNIT_ID'" >> .env
 
       - cd android
       - ./gradlew app:assembleRelease -Dorg.gradle.parallel.threads=48
@@ -41,6 +47,16 @@ steps:
         from_secret: api_base_url
       SENTRY_PROPERTIES:
         from_secret: sentry_properties
+      ANDROID_HOME_BANNER_AD_UNIT_ID:
+        from_secret: android_home_banner_ad_unit_id
+      ANDROID_NOTI_BANNER_AD_UNIT_ID:
+        from_secret: android_noti_banner_ad_unit_id
+      ANDROID_SCHEDULE_NATIVE_AD_UNIT_ID:
+        from_secret: android_schedule_native_ad_unit_id
+      ANDROID_MEAL_NATIVE_AD_UNIT_ID:
+        from_secret: android_meal_native_ad_unit_id
+      ANDROID_NOTI_NATIVE_AD_UNIT_ID:
+        from_secret: android_noti_native_ad_unit_id
   - name: publish
     image: woodpeckerci/plugin-release
     settings:

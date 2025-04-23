@@ -1,11 +1,13 @@
+import {ANDROID_HOME_BANNER_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
 import React, {ReactNode, useCallback, useEffect, useState} from 'react';
-import {AppState, Easing, FlatList, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
+import {AppState, Easing, FlatList, Platform, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
 import Midnight from 'react-native-midnight';
 
 import {styles as s} from './styles';
 import {getMeal, getSchedules, getTimetable} from '@/api';
 import Logo from '@/assets/images/logo.svg';
+import BannerAdCard from '@/components/BannerAdCard';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
@@ -174,6 +176,9 @@ const Home = () => {
           <Logo width={24} height={24} />
           <Text style={[theme.typography.subtitle]}>{user ? user.schoolInfo.schoolName : '학교 정보 없음'}</Text>
         </View>
+
+        <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
+
         <HomeCard title="학사일정" titleIcon={<FontAwesome6 name="calendar" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Schedules')}>
           {loading ? <LoadingView height={100} /> : schedules.length === 0 ? <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}]}>학사일정이 없어요.</Text> : <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />}
         </HomeCard>
@@ -209,8 +214,8 @@ const Home = () => {
   );
 };
 
-const HomeCard = ({title, titleIcon, arrow, onPress, notificationDot, children}: {title?: string; titleIcon: ReactNode; arrow?: boolean; onPress?: () => void; notificationDot?: boolean; children?: ReactNode}) => (
-  <TouchableScale pressInEasing={Easing.elastic(0.5)} pressOutEasing={Easing.elastic(0.5)} pressInDuration={100} pressOutDuration={100} scaleTo={0.98} onPress={onPress}>
+const HomeCard = ({title, titleIcon, arrow, onPress, notificationDot, children, ...rest}: {title?: string; titleIcon?: ReactNode; arrow?: boolean; onPress?: () => void; notificationDot?: boolean; children?: ReactNode} & {[key: string]: any}) => (
+  <TouchableScale pressInEasing={Easing.elastic(0.5)} pressOutEasing={Easing.elastic(0.5)} pressInDuration={100} pressOutDuration={100} scaleTo={0.98} onPress={onPress} {...rest}>
     <TouchableOpacity>
       <Card title={title} titleIcon={titleIcon} arrow={arrow} notificationDot={notificationDot}>
         {children}

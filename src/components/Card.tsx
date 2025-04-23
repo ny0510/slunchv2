@@ -11,13 +11,14 @@ interface Props {
   subtitleStyle?: object;
   arrow?: boolean;
   notificationDot?: boolean;
+  style?: object;
   titleIcon?: React.ReactNode;
   children?: React.ReactNode;
 }
 
-const Card = ({title, titleStyle, subtitle, subtitleStyle, arrow, titleIcon, children, notificationDot, ...rest}: Props & {[key: string]: any}) => {
+const Card = ({title, titleStyle, subtitle, subtitleStyle, style, arrow, titleIcon, children, notificationDot, ...rest}: Props & {[key: string]: any}) => {
   return (
-    <View style={s.container} {...rest}>
+    <View style={[s.container, {...style}]} {...rest}>
       {title && (
         <View style={s.titleRowContainer}>
           <View style={s.titleContentContainer}>
@@ -36,7 +37,7 @@ const Card = ({title, titleStyle, subtitle, subtitleStyle, arrow, titleIcon, chi
   );
 };
 
-const s = StyleSheet.create({
+export const s = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.card,
     borderRadius: 12,

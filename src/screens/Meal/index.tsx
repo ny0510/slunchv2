@@ -1,6 +1,7 @@
+import {ANDROID_MEAL_NATIVE_AD_UNIT_ID, IOS_MEAL_NATIVE_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {RefreshControl, ScrollView, Text, View} from 'react-native';
+import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
+import {Platform, RefreshControl, ScrollView, Text, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 import {Easing} from 'react-native-reanimated';
 import Share from 'react-native-share';
@@ -10,6 +11,7 @@ import {getMeal} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
+import NativeAdCard from '@/components/NaviveAdCard';
 import TouchableScale from '@/components/TouchableScale';
 import {clearCache} from '@/lib/cache';
 import {showToast} from '@/lib/toast';
@@ -152,22 +154,43 @@ const Meal = () => {
         }}>
         <View style={{gap: 12, width: '100%'}}>
           {meal?.length > 0 ? (
-            meal.map((m, i) => {
-              const date = dayjs(m.date).format('M월 D일 ddd요일');
-              const mealData = m.meal.filter(mealItem => typeof mealItem === 'string' || (mealItem as MealItem).food !== '');
-              const mealText = mealData.map(mealItem => (typeof mealItem === 'string' ? mealItem : (mealItem as MealItem).food)).join('\n');
+            (() => {
+              // mealCount에 비례하여 광고 개수 동적 계산 (5개마다 1개, 최소 1개, 최대 10개)
+              const mealCount = meal.length;
+              const MAX_ADS = 10;
+              const MIN_ADS = 1;
+              const adsToShow = Math.max(MIN_ADS, Math.min(MAX_ADS, Math.floor(mealCount / 5)));
+              const adIndexes = mealCount <= 1 ? [] : Array.from({length: adsToShow}, (_, idx) => Math.round(((idx + 1) * mealCount) / (adsToShow + 1)));
 
-              return (
-                <TouchableScale key={i} pressInEasing={Easing.elastic(0.5)} pressOutEasing={Easing.elastic(0.5)} pressInDuration={100} pressOutDuration={100} scaleTo={0.98} onPress={() => openBottomSheet(mealText, date)}>
-                  <Card title={date}>
-                    <FlatList data={m.meal} renderItem={({item, index}) => renderMealItem(item, index)} scrollEnabled={false} />
-                  </Card>
-                </TouchableScale>
-              );
-            })
+              return meal.map((m, i) => {
+                const date = dayjs(m.date).format('M월 D일 ddd요일');
+                const mealData = m.meal.filter(mealItem => typeof mealItem === 'string' || (mealItem as MealItem).food !== '');
+                const mealText = mealData.map(mealItem => (typeof mealItem === 'string' ? mealItem : (mealItem as MealItem).food)).join('\n');
+
+                const shouldShowAd = adIndexes.includes(i);
+
+                return (
+                  <Fragment key={i}>
+                    {shouldShowAd && <NativeAdCard adUnitId={Platform.OS === 'ios' ? IOS_MEAL_NATIVE_AD_UNIT_ID : ANDROID_MEAL_NATIVE_AD_UNIT_ID} />}
+                    <TouchableScale pressInEasing={Easing.elastic(0.5)} pressOutEasing={Easing.elastic(0.5)} pressInDuration={100} pressOutDuration={100} scaleTo={0.98} onPress={() => openBottomSheet(mealText, date)}>
+                      <Card title={date}>
+                        <FlatList data={m.meal} renderItem={({item, index}) => renderMealItem(item, index)} scrollEnabled={false} />
+                      </Card>
+                    </TouchableScale>
+                  </Fragment>
+                );
+              });
+            })()
           ) : (
             <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
-              <Text style={{color: theme.colors.primaryText, fontFamily: theme.fontWeights.light, fontSize: 16}}>급식 데이터가 없어요.</Text>
+              <Text
+                style={{
+                  color: theme.colors.primaryText,
+                  fontFamily: theme.fontWeights.light,
+                  fontSize: 16,
+                }}>
+                급식 데이터가 없어요.
+              </Text>
             </View>
           )}
         </View>

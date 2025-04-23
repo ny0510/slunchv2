@@ -1,12 +1,14 @@
+import {ANDROID_SCHEDULE_NATIVE_AD_UNIT_ID, IOS_SCHEDULE_NATIVE_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {RefreshControl, ScrollView, Text, View} from 'react-native';
+import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
+import {Platform, RefreshControl, ScrollView, Text, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import {getSchedules} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
+import NativeAdCard from '@/components/NaviveAdCard';
 import {clearCache} from '@/lib/cache';
 import {showToast} from '@/lib/toast';
 import {theme} from '@/styles/theme';
@@ -24,7 +26,7 @@ const Schedules = () => {
   const fetchData = useCallback(async () => {
     try {
       const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
-      const today = dayjs();
+      const today = dayjs('2025-10-01');
 
       const scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'));
       // if (scheduleResponse.length === 0) {
@@ -95,9 +97,24 @@ const Schedules = () => {
       }}>
       <View style={{gap: 12, width: '100%'}}>
         {schedules?.length > 0 ? (
-          schedules.map((m, i) => {
-            return <ScheduleItem key={i} item={m} />;
-          })
+          (() => {
+            // 5개마다 1개 광고, 최소 1개, 최대10개
+            const scheduleCount = schedules.length;
+            const MAX_ADS = 10;
+            const MIN_ADS = 1;
+            const adsToShow = Math.max(MIN_ADS, Math.min(MAX_ADS, Math.floor(scheduleCount / 5)));
+            const adIndexes = scheduleCount <= 1 ? [] : Array.from({length: adsToShow}, (_, idx) => Math.round(((idx + 1) * scheduleCount) / (adsToShow + 1)));
+
+            return schedules.map((m, i) => {
+              const shouldShowAd = adIndexes.includes(i);
+              return (
+                <Fragment key={i}>
+                  {shouldShowAd && <NativeAdCard adUnitId={Platform.OS === 'ios' ? IOS_SCHEDULE_NATIVE_AD_UNIT_ID : ANDROID_SCHEDULE_NATIVE_AD_UNIT_ID} />}
+                  <ScheduleItem item={m} />
+                </Fragment>
+              );
+            });
+          })()
         ) : (
           <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
             <Text style={{color: theme.colors.primaryText, fontFamily: theme.fontWeights.light, fontSize: 16}}>학사일정 데이터가 없어요.</Text>
