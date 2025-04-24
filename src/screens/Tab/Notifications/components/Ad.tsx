@@ -37,7 +37,7 @@ const Ad = ({adUnitId}: {adUnitId: string}) => {
     <View style={{borderBottomLeftRadius: 8, borderBottomRightRadius: 8, marginBottom: 16, backgroundColor: theme.colors.card, overflow: 'hidden'}}>
       <LinearGradient colors={[theme.colors.background, 'transparent']} style={{position: 'absolute', top: 0, left: 0, right: 0, height: 15, zIndex: 10}} />
       <NativeAdView nativeAd={nativeAd}>
-        <NativeMediaView resizeMode="stretch" style={{width: '100%', aspectRatio: 16 / 9}} />
+        <NativeMediaView resizeMode="cover" style={{width: '100%', aspectRatio: 16 / 9}} />
         <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'space-between', alignItems: 'flex-end', flexDirection: 'row', paddingHorizontal: 16, marginBottom: 16}}>
           <View style={{backgroundColor: `${theme.colors.card}90`, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 8}}>
             <NativeAsset assetType={NativeAssetType.HEADLINE}>
