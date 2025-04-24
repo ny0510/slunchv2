@@ -1,7 +1,7 @@
 when:
   - branch: main
     event: tag
-  - event: manual
+  - event: [manual, deployment]
 
 steps:
   - name: install depends
@@ -81,7 +81,7 @@ steps:
       files:
         - 'app.apk'
         - 'app.aab'
-        - 'sha256sum.txt'
+        - '*sum.txt'
       api_key:
         from_secret: GITHUB_API_KEY
         checksum: 'sha256'
