@@ -12,11 +12,11 @@ import Card from '@/components/Card';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
 import TouchableScale from '@/components/TouchableScale';
+import {useTheme} from '@/contexts/ThemeContext';
 import {useUser} from '@/hooks/useUser';
 import {clearCache} from '@/lib/cache';
 import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
-import {theme} from '@/styles/theme';
 import {Meal, Schedule, Timetable} from '@/types/api';
 import {MealItem} from '@/types/meal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -35,6 +35,7 @@ const Home = () => {
   const [mealDayOffset, setMealDayOffset] = useState<number>(0);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
+  const {theme, typography} = useTheme();
   const user = useUser();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
@@ -136,7 +137,7 @@ const Home = () => {
   const renderMealItem = (mealItem: string | MealItem, index: number) => {
     if (typeof mealItem === 'string') {
       return (
-        <Text key={index} style={[theme.typography.body, {fontFamily: theme.fontWeights.light}]}>
+        <Text key={index} style={[typography.body, {color: theme.primaryText, fontWeight: 300}]}>
           - {mealItem}
         </Text>
       );
@@ -145,9 +146,9 @@ const Home = () => {
     const allergyInfo = showAllergy && mealItem.allergy && mealItem.allergy.length > 0 ? ` (${mealItem.allergy.map(allergy => allergy.code).join(', ')})` : '';
 
     return (
-      <Text key={index} style={[theme.typography.body, {fontFamily: theme.fontWeights.light}]}>
+      <Text key={index} style={[typography.body, {color: theme.primaryText, fontWeight: 300}]}>
         - {mealItem.food}
-        <Text style={theme.typography.small}>{allergyInfo}</Text>
+        <Text style={typography.small}>{allergyInfo}</Text>
       </Text>
     );
   };
@@ -170,41 +171,39 @@ const Home = () => {
   };
 
   return (
-    <Container bounce scrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.secondaryText} />}>
+    <Container bounce scrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}>
       <View style={s.container}>
         <View style={s.header}>
           <Logo width={24} height={24} />
-          <Text style={[theme.typography.subtitle]}>{user ? user.schoolInfo.schoolName : '학교 정보 없음'}</Text>
+          <Text style={[typography.subtitle, {color: theme.primaryText}]}>{user ? user.schoolInfo.schoolName : '학교 정보 없음'}</Text>
         </View>
 
         <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
 
-        <HomeCard title="학사일정" titleIcon={<FontAwesome6 name="calendar" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Schedules')}>
-          {loading ? <LoadingView height={100} /> : schedules.length === 0 ? <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}]}>학사일정이 없어요.</Text> : <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />}
+        <HomeCard title="학사일정" titleIcon={<FontAwesome6 name="calendar" size={16} color={theme.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Schedules')}>
+          {loading ? <LoadingView height={100} /> : schedules.length === 0 ? <Text style={[typography.caption, {color: theme.secondaryText}]}>학사일정이 없어요.</Text> : <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />}
         </HomeCard>
-
-        <HomeCard title="급식" titleIcon={<FontAwesome6 name="utensils" size={16} color={theme.colors.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Meal')}>
+        <HomeCard title="급식" titleIcon={<FontAwesome6 name="utensils" size={16} color={theme.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Meal')}>
           {loading ? (
             <LoadingView height={100} />
           ) : meal.length === 0 ? (
-            <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}]}>급식 정보가 없어요.</Text>
+            <Text style={[typography.caption, {color: theme.secondaryText}]}>급식 정보가 없어요.</Text>
           ) : (
             <View style={{gap: 4}}>
               <FlatList data={meal} renderItem={({item}) => <View>{item.meal.map(renderMealItem)}</View>} scrollEnabled={false} />
               {mealDayOffset > 0 && (
-                <Text style={[theme.typography.caption, {color: theme.colors.secondaryText, marginTop: 4}]}>
+                <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 4}]}>
                   {mealDayOffset}일 뒤, {dayjs().add(mealDayOffset, 'day').format('dddd')} 급식이에요.
                 </Text>
               )}
             </View>
           )}
         </HomeCard>
-
-        <Card title="시간표" titleIcon={<FontAwesome6 name="table" size={16} color={theme.colors.primaryText} iconStyle="solid" />}>
+        <Card title="시간표" titleIcon={<FontAwesome6 name="table" size={16} color={theme.primaryText} iconStyle="solid" />}>
           {loading ? (
             <LoadingView height={250} />
           ) : timetable.length === 0 ? (
-            <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}]}>이번주 시간표가 없어요.</Text>
+            <Text style={[typography.caption, {color: theme.secondaryText}]}>이번주 시간표가 없어요.</Text>
           ) : (
             <FlatList data={timetable} contentContainerStyle={{gap: 3}} renderItem={({item, index}) => <TimetableRow item={item} index={index} todayIndex={todayIndex} />} scrollEnabled={false} />
           )}
@@ -235,42 +234,40 @@ const ScheduleItem = ({item}: {item: Schedule}) => {
   const endDate = dayjs(item.date.end || item.date.start);
   const isSameDay = startDate.isSame(endDate, 'day');
 
+  const {theme, typography} = useTheme();
+
   return (
     <View style={s.scheduleItemContainer}>
-      <Text style={{color: theme.colors.primaryText, fontFamily: theme.fontWeights.medium, fontSize: 16}}>
+      <Text style={{color: theme.primaryText, fontWeight: 500, fontSize: 16}}>
         {startDate.format('M/D')}
         {!isSameDay && ` ~ ${endDate.format('M/D')}`}
       </Text>
-      <Text style={{color: theme.colors.primaryText, fontFamily: theme.fontWeights.light, fontSize: 16}}>{item.schedule}</Text>
-      <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}]}>{endDate.diff(startDate, 'day') > 0 && `(${endDate.diff(startDate, 'day') + 1}일)`}</Text>
+      <Text style={{color: theme.primaryText, fontWeight: 300, fontSize: 16}}>{item.schedule}</Text>
+      <Text style={[typography.caption, {color: theme.secondaryText}]}>{endDate.diff(startDate, 'day') > 0 && `(${endDate.diff(startDate, 'day') + 1}일)`}</Text>
     </View>
   );
 };
 
-const TimetableRow = ({item, index, todayIndex}: {item: Timetable[]; index: number; todayIndex: number}) => (
-  <View style={s.timetableRow}>
-    {item.map((subject, subIndex) => (
-      <View key={`${subject.subject}-${index}-${subIndex}`} style={[s.timetableCell, {backgroundColor: subIndex === todayIndex ? theme.colors.background : theme.colors.card}]}>
-        <Text
-          style={{
-            color: subject.changed ? theme.colors.highlightLight : theme.colors.primaryText,
-            fontFamily: theme.fontWeights.medium,
-            fontSize: 16,
-          }}>
-          {subject.subject}
-        </Text>
-        <Text
-          style={[
-            theme.typography.caption,
-            {
-              color: subject.changed ? theme.colors.highlightLight : theme.colors.secondaryText,
-            },
-          ]}>
-          {subject.teacher}
-        </Text>
-      </View>
-    ))}
-  </View>
-);
+const TimetableRow = ({item, index, todayIndex}: {item: Timetable[]; index: number; todayIndex: number}) => {
+  const {theme, typography} = useTheme();
+
+  return (
+    <View style={s.timetableRow}>
+      {item.map((subject, subIndex) => (
+        <View key={`${subject.subject}-${index}-${subIndex}`} style={[s.timetableCell, {backgroundColor: subIndex === todayIndex ? theme.background : theme.card}]}>
+          <Text
+            style={{
+              color: subject.changed ? theme.highlightLight : theme.primaryText,
+              fontWeight: '500',
+              fontSize: 16,
+            }}>
+            {subject.subject}
+          </Text>
+          <Text style={[typography.caption, {color: subject.changed ? theme.highlightLight : theme.secondaryText}]}>{subject.teacher}</Text>
+        </View>
+      ))}
+    </View>
+  );
+};
 
 export default Home;

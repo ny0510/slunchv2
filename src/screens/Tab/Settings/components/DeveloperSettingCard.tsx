@@ -3,8 +3,9 @@ import {Alert, View} from 'react-native';
 
 import Content from './Content';
 import Card from '@/components/Card';
+import {useTheme} from '@/contexts/ThemeContext';
+import {useFirstOpen} from '@/hooks/useFirstOpen';
 import {RootStackParamList} from '@/navigation/RootStacks';
-import {theme} from '@/styles/theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 
@@ -26,8 +27,11 @@ const clearCache = async (prefix: string) => {
 const DeveloperSettingCard = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
+  const {typography} = useTheme();
+  const {setFirstOpen} = useFirstOpen();
+
   return (
-    <Card title="개발자 설정" titleStyle={{fontSize: theme.typography.body.fontSize}}>
+    <Card title="개발자 설정" titleStyle={{fontSize: typography.body.fontSize}}>
       <View style={{gap: 8, marginTop: 8}}>
         <Content
           title="캐시 삭제"
@@ -58,6 +62,7 @@ const DeveloperSettingCard = () => {
                 text: '네',
                 onPress: async () => {
                   await AsyncStorage.clear();
+                  await setFirstOpen(true);
                   navigation.reset({routes: [{name: 'Intro'}]});
                 },
               },

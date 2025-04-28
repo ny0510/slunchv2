@@ -4,13 +4,15 @@ import DeviceInfo from 'react-native-device-info';
 
 import Content from './Content';
 import Card from '@/components/Card';
+import {useTheme} from '@/contexts/ThemeContext';
 import {appBuildNumber, appVersion, buildDate} from '@/lib/buildInfo';
 import {RootStackParamList} from '@/navigation/RootStacks';
-import {theme} from '@/styles/theme';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 
 const AppInfoCard = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  const {typography} = useTheme();
 
   const reportBug = async () => {
     const title = '[NYL 버그 및 건의사항] ';
@@ -46,7 +48,7 @@ Build Date: ${buildDate.format('YYYY년 M월 D일')}
   };
 
   return (
-    <Card title="앱 정보" titleStyle={{fontSize: theme.typography.body.fontSize}}>
+    <Card title="앱 정보" titleStyle={{fontSize: typography.body.fontSize}}>
       <View style={{gap: 8, marginTop: 8}}>
         <Content title="버전" content={appVersion} />
         <Content title="빌드 번호" content={appBuildNumber} />

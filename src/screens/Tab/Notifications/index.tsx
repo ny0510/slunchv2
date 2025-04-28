@@ -9,8 +9,8 @@ import Card from '@/components/Card';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
 import TouchableScale from '@/components/TouchableScale';
+import {useTheme} from '@/contexts/ThemeContext';
 import {showToast} from '@/lib/toast';
-import {theme} from '@/styles/theme';
 import {Notification} from '@/types/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
@@ -22,6 +22,8 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [readNotifications, setReadNotifications] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+
+  const {theme} = useTheme();
 
   const fetchReadNotifications = async () => {
     try {
@@ -85,7 +87,7 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
             setRefreshing(true);
             fetchData().then(() => setRefreshing(false));
           }}
-          tintColor={theme.colors.secondaryText}
+          tintColor={theme.secondaryText}
         />
       }>
       <Ad adUnitId={Platform.OS === 'ios' ? IOS_NOTI_NATIVE_AD_UNIT_ID : ANDROID_MEAL_NATIVE_AD_UNIT_ID} />
@@ -97,7 +99,7 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
           noti.map((item, index) => {
             const date = dayjs(item.date).format('MM월 DD일');
             const isNew = !readNotifications.includes(item.id);
-            const icon = <FontAwesome6 name="bullhorn" size={16} color={theme.colors.primaryText} iconStyle="solid" />;
+            const icon = <FontAwesome6 name="bullhorn" size={16} color={theme.primaryText} iconStyle="solid" />;
 
             return (
               <TouchableScale key={index} pressInEasing={Easing.elastic(0.5)} pressOutEasing={Easing.elastic(0.5)} pressInDuration={200} pressOutDuration={200} scaleTo={0.98} onPress={() => handlePress(index, item.id)}>
@@ -106,8 +108,8 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
                     {expandedIndices.includes(index) && (
                       <Text
                         style={{
-                          color: theme.colors.primaryText,
-                          fontFamily: theme.fontWeights.regular,
+                          color: theme.primaryText,
+                          fontWeight: '400',
                           fontSize: 16,
                           lineHeight: 24,
                         }}>
@@ -121,7 +123,7 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
           })
         ) : (
           <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
-            <Text style={{color: theme.colors.primaryText, fontFamily: theme.fontWeights.light, fontSize: 16}}>알림이 없습니다.</Text>
+            <Text style={{color: theme.primaryText, fontWeight: '300', fontSize: 16}}>알림이 없습니다.</Text>
           </View>
         )}
       </View>

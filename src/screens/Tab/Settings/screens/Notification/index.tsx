@@ -8,9 +8,9 @@ import Content from '../../components/Content';
 import {addFcmToken, checkFcmToken, editFcmTime, removeFcmToken} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
+import {useTheme} from '@/contexts/ThemeContext';
 import {useUser} from '@/hooks/useUser';
 import {showToast} from '@/lib/toast';
-import {theme} from '@/styles/theme';
 import BottomSheet, {BottomSheetBackdrop, BottomSheetView} from '@gorhom/bottom-sheet';
 import notifee, {AuthorizationStatus} from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -22,6 +22,7 @@ const Notification = () => {
   const [time, setTime] = useState<Date>(dayjs().set('hour', 7).set('minute', 30).toDate());
   const bottomSheetRef = useRef<BottomSheet>(null);
 
+  const {theme, typography} = useTheme();
   const user = useUser();
 
   const initializeNotificationSettings = useCallback(async () => {
@@ -171,10 +172,10 @@ const Notification = () => {
   return (
     <>
       <Container scrollView bounce style={{gap: 8}}>
-        <Card title="급식 알림" titleStyle={{fontSize: theme.typography.body.fontSize}}>
+        <Card title="급식 알림" titleStyle={{fontSize: typography.body.fontSize}}>
           <View style={{gap: 8, marginTop: 8}}>
             <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-              <Text style={theme.typography.body}>알림 받기</Text>
+              <Text style={[typography.body, {color: theme.primaryText}]}>알림 받기</Text>
               <Switch
                 value={isEnabled}
                 onValueChange={toggleSwitch}
@@ -182,10 +183,10 @@ const Notification = () => {
                 circleSize={22}
                 barHeight={22}
                 circleBorderWidth={2}
-                circleBorderActiveColor={theme.colors.highlight}
-                circleBorderInactiveColor={theme.colors.border}
-                backgroundActive={theme.colors.highlight}
-                backgroundInactive={theme.colors.border}
+                circleBorderActiveColor={theme.highlight}
+                circleBorderInactiveColor={theme.border}
+                backgroundActive={theme.highlight}
+                backgroundInactive={theme.border}
                 changeValueImmediately={true}
                 renderActiveText={false}
                 renderInActiveText={false}
@@ -197,17 +198,10 @@ const Notification = () => {
         </Card>
       </Container>
 
-      <BottomSheet
-        backdropComponent={renderBackdrop}
-        ref={bottomSheetRef}
-        index={-1}
-        enablePanDownToClose
-        onChange={handleSheetChanges}
-        backgroundStyle={{backgroundColor: theme.colors.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}}
-        handleIndicatorStyle={{backgroundColor: theme.colors.secondaryText}}>
-        <BottomSheetView style={{padding: 18, backgroundColor: theme.colors.card, justifyContent: 'center', alignItems: 'center'}}>
-          <Text style={[theme.typography.subtitle, {fontFamily: theme.fontWeights.semiBold, alignSelf: 'flex-start'}]}>알림 시간 변경</Text>
-          <DatePicker mode="time" date={time} theme="dark" dividerColor={theme.colors.secondaryText} onDateChange={setTime} />
+      <BottomSheet backdropComponent={renderBackdrop} ref={bottomSheetRef} index={-1} enablePanDownToClose onChange={handleSheetChanges} backgroundStyle={{backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}} handleIndicatorStyle={{backgroundColor: theme.secondaryText}}>
+        <BottomSheetView style={{padding: 18, backgroundColor: theme.card, justifyContent: 'center', alignItems: 'center'}}>
+          <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600', alignSelf: 'flex-start'}]}>알림 시간 변경</Text>
+          <DatePicker mode="time" date={time} theme="dark" dividerColor={theme.secondaryText} onDateChange={setTime} />
         </BottomSheetView>
       </BottomSheet>
     </>

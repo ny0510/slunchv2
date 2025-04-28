@@ -5,9 +5,9 @@ import Animated, {interpolate, useAnimatedStyle, useSharedValue, withSpring} fro
 
 import Barcode from './components/Barcode';
 import Container from '@/components/Container';
+import {useAuth} from '@/contexts/AuthContext';
+import {useTheme} from '@/contexts/ThemeContext';
 import {showToast} from '@/lib/toast';
-import {useAuth} from '@/providers/AuthProvider';
-import {theme} from '@/styles/theme';
 import DeviceBrightness from '@adrianso/react-native-device-brightness';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
@@ -17,6 +17,7 @@ import {useKeepAwake} from '@sayem314/react-native-keep-awake';
 
 const SchoolCard = () => {
   const {user, login, logout, loading} = useAuth();
+  const {theme, typography} = useTheme();
   const isFocused = useIsFocused();
 
   const [name, setName] = useState<string>('');
@@ -43,8 +44,8 @@ const SchoolCard = () => {
       const demoMode = JSON.parse((await AsyncStorage.getItem('demoMode')) || 'false');
       setIsDemoUser(demoMode);
 
-      if (user && user.user) {
-        setIsSunrinEmail(user.user.email.endsWith('@sunrint.hs.kr'));
+      if (user && user.email) {
+        setIsSunrinEmail(user.email.endsWith('@sunrint.hs.kr'));
       } else {
         setIsSunrinEmail(false);
       }
@@ -62,9 +63,9 @@ const SchoolCard = () => {
       return;
     }
 
-    if (user && user.user) {
-      const userEmail = user.user.email || '';
-      const userName = user.user.name || '';
+    if (user) {
+      const userEmail = user.email || '';
+      const userName = user.displayName || '';
 
       const _name = userName.slice(5);
       const _grade = userName.slice(0, 1);
@@ -76,7 +77,7 @@ const SchoolCard = () => {
       const year = parseInt(userEmail.slice(0, 2), 10);
 
       if (year <= 24) {
-        _barcodeValue = `S2${user.user.email.slice(0, 2)}0${user.user.email.slice(8, 11)}`;
+        _barcodeValue = `S2${userEmail.slice(0, 2)}0${userEmail.slice(8, 11)}`;
       } else {
         _barcodeValue = `S2${userEmail.slice(0, 2)}0${userEmail.slice(3, 6)}`;
       }
@@ -117,7 +118,7 @@ const SchoolCard = () => {
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{perspective: 1000}, {rotateX: `${rotateX.value}deg`}, {rotateY: `${rotateY.value}deg`}],
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.border,
   }));
 
   if (loading || !isFocused) {
@@ -126,7 +127,7 @@ const SchoolCard = () => {
 
   return (
     <Container style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
-      {isDemoUser || (user && user.user && isSunrinEmail) ? (
+      {isDemoUser || (user && isSunrinEmail) ? (
         <GestureDetector gesture={gesture}>
           <Animated.View
             style={[
@@ -134,7 +135,7 @@ const SchoolCard = () => {
               {
                 justifyContent: 'space-between',
                 aspectRatio: 3 / 3.7,
-                backgroundColor: theme.colors.card,
+                backgroundColor: theme.card,
                 width: '85%',
                 borderRadius: 12,
                 padding: 16,
@@ -147,21 +148,21 @@ const SchoolCard = () => {
               },
             ]}>
             <View>
-              <Text style={[theme.typography.caption]}>선린인터넷고등학교 모바일 학생증</Text>
+              <Text style={[typography.caption, {color: theme.primaryText}]}>선린인터넷고등학교 모바일 학생증</Text>
             </View>
             <View style={{gap: 8}}>
               <View style={{flexDirection: 'row', gap: 4, alignItems: 'flex-end'}}>
-                <Text style={[theme.typography.title, {fontSize: 32, fontFamily: theme.fontWeights.bold}]}>{name}</Text>
-                <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}]}>{`${generation}기`}</Text>
+                <Text style={[typography.title, {color: theme.primaryText, fontSize: 32, fontWeight: '700'}]}>{name}</Text>
+                <Text style={[typography.caption, {color: theme.secondaryText}]}>{`${generation}기`}</Text>
               </View>
               <View>
-                <Text style={[theme.typography.subtitle, {color: theme.colors.secondaryText}]}>{`${grade}학년 ${classNum}반 ${number}번`}</Text>
+                <Text style={[typography.subtitle, {color: theme.secondaryText}]}>{`${grade}학년 ${classNum}반 ${number}번`}</Text>
               </View>
             </View>
             <TouchableOpacity onPress={handleBarcodePress}>
-              <View style={{justifyContent: 'center', alignContent: 'center', backgroundColor: theme.colors.border, height: 100, marginHorizontal: -16, borderBottomRightRadius: 12, borderBottomLeftRadius: 12, marginTop: 16, gap: 4}}>
-                <Barcode value={barcodeValue} format={'CODE128'} />
-                <Text style={[theme.typography.caption, {textAlign: 'center', color: theme.colors.secondaryText}]}>{barcodeValue}</Text>
+              <View style={{justifyContent: 'center', alignItems: 'center', backgroundColor: theme.border, height: 100, marginHorizontal: -16, borderBottomRightRadius: 12, borderBottomLeftRadius: 12, marginTop: 16, gap: 4}}>
+                <Barcode value={barcodeValue} format={'CODE128'} fill={theme.primaryText} />
+                <Text style={[typography.caption, {color: theme.secondaryText}]}>{barcodeValue}</Text>
               </View>
             </TouchableOpacity>
           </Animated.View>
@@ -169,12 +170,16 @@ const SchoolCard = () => {
       ) : (
         <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
           <TouchableOpacity
-            style={{backgroundColor: theme.colors.border, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12}}
+            style={{backgroundColor: theme.border, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12}}
             onPress={() => {
               logout();
               login()
                 .then(async _user => {
-                  const email = _user?.user?.email ?? '';
+                  if (!_user) {
+                    return showToast('로그인에 실패했어요.');
+                  }
+
+                  const email = _user.email ?? '';
                   const isSunrin = email.endsWith('@sunrint.hs.kr');
 
                   if (!isSunrin) {
@@ -187,8 +192,8 @@ const SchoolCard = () => {
                 .catch(error => showToast(`로그인에 실패했어요:\n${error.message}`));
             }}>
             <View style={{flexDirection: 'row', gap: 8, alignItems: 'center'}}>
-              <FontAwesome6 name="google" iconStyle="brand" size={22} color={theme.colors.primaryText} />
-              <Text style={[theme.typography.subtitle, {color: theme.colors.primaryText}]}>로그인</Text>
+              <FontAwesome6 name="google" iconStyle="brand" size={22} color={theme.primaryText} />
+              <Text style={[typography.subtitle, {color: theme.primaryText}]}>로그인</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -205,7 +210,7 @@ const SchoolCard = () => {
             }}
             onPress={handleCloseModal}
             activeOpacity={1}>
-            <Barcode value={barcodeValue} format={'CODE128'} fill={theme.colors.white} />
+            <Barcode value={barcodeValue} format={'CODE128'} fill={theme.white} />
           </TouchableOpacity>
         </Modal>
       </View>

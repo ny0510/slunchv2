@@ -1,15 +1,14 @@
 /* eslint-disable react/no-unstable-nested-components */
 import React, {useEffect, useState} from 'react';
-import {Easing, GestureResponderEvent, TouchableOpacity, View} from 'react-native';
-import {BannerAd, BannerAdSize, TestIds} from 'react-native-google-mobile-ads';
+import {Easing, GestureResponderEvent, TouchableOpacity} from 'react-native';
 
 import {getNotifications} from '@/api';
 import TouchableScale from '@/components/TouchableScale';
+import {useTheme} from '@/contexts/ThemeContext';
 import Home from '@/screens/Tab/Home';
 import Notifications from '@/screens/Tab/Notifications';
 import SchoolCard from '@/screens/Tab/SchoolCard';
 import Settings from '@/screens/Tab/Settings';
-import {theme} from '@/styles/theme';
 import {Notification} from '@/types/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
@@ -18,6 +17,7 @@ import {BottomTabBar, BottomTabBarProps, createBottomTabNavigator} from '@react-
 const BottomTab = createBottomTabNavigator();
 
 const BottomTabs = () => {
+  const {theme, typography} = useTheme();
   const [isSunrin, setIsSunrin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -72,26 +72,22 @@ const BottomTabs = () => {
         headerShown: false,
         animation: 'shift',
         freezeOnBlur: true,
-        sceneStyle: {backgroundColor: theme.colors.background},
+        sceneStyle: {backgroundColor: theme.background},
         tabBarStyle: {
-          backgroundColor: theme.colors.background,
-          borderTopColor: theme.colors.border,
+          backgroundColor: theme.background,
+          borderTopColor: theme.border,
           paddingBottom: 0,
           height: 60,
           // borderTopLeftRadius: 24,
           // borderTopRightRadius: 24,
-          borderColor: theme.colors.border,
+          borderColor: theme.border,
           borderTopWidth: 1,
           // borderLeftWidth: 1,
           // borderRightWidth: 1,
         },
-        tabBarActiveTintColor: theme.colors.primaryText,
+        tabBarActiveTintColor: theme.primaryText,
         tabBarInactiveTintColor: '#8E8E93',
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontFamily: theme.fontWeights.medium,
-          lineHeight: 15,
-        },
+        tabBarLabelStyle: [typography.baseTextStyle, {fontSize: 12, fontWeight: 500, lineHeight: 15}],
         tabBarButton: props => (props.onPress ? <TabBarButton children={props.children} onPress={event => props.onPress && props.onPress(event!)} /> : null),
         tabBarIcon: props => <TabBarIcon route={route} size={20} color={props.color} />,
       })}>
@@ -104,7 +100,7 @@ const BottomTabs = () => {
           tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
           tabBarBadgeStyle: {
             fontSize: 12,
-            fontFamily: theme.fontWeights.medium,
+            fontWeight: '500',
           },
         }}>
         {() => <Notifications onReadNotification={fetchUnreadCount} />}

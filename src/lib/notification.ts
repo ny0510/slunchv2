@@ -1,4 +1,3 @@
-import {theme} from '@/styles/theme';
 import notifee, {AndroidImportance} from '@notifee/react-native';
 
 export const sendNotification = async (title: string | undefined, body: string | undefined) => {
@@ -21,7 +20,7 @@ export const sendNotification = async (title: string | undefined, body: string |
       pressAction: {
         id: 'default',
       },
-      color: theme.colors.highlight,
+      color: '#7956FC',
       timestamp: new Date().getTime(),
       showTimestamp: true,
     },

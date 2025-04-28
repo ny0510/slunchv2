@@ -1,7 +1,7 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 
-import {theme} from '@/styles/theme';
+import {useTheme} from '@/contexts/ThemeContext';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 
 interface Props {
@@ -17,18 +17,20 @@ interface Props {
 }
 
 const Card = ({title, titleStyle, subtitle, subtitleStyle, style, arrow, titleIcon, children, notificationDot, ...rest}: Props & {[key: string]: any}) => {
+  const {theme, typography} = useTheme();
+
   return (
-    <View style={[s.container, {...style}]} {...rest}>
+    <View style={{backgroundColor: theme.card, borderRadius: 12, paddingHorizontal: 22, paddingVertical: 18, width: '100%', borderColor: theme.border, borderWidth: 1, gap: 8, ...style}} {...rest}>
       {title && (
-        <View style={s.titleRowContainer}>
-          <View style={s.titleContentContainer}>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+          <View style={{gap: 8, flexDirection: 'row', alignItems: 'center'}}>
             {titleIcon}
-            <Text style={[s.title, titleStyle]}>{title}</Text>
-            {subtitle && <Text style={[theme.typography.caption, {color: theme.colors.secondaryText}, subtitleStyle]}>{subtitle}</Text>}
+            <Text style={[typography.baseTextStyle, {color: theme.primaryText, fontWeight: '700', fontSize: 20}, titleStyle]}>{title}</Text>
+            {subtitle && <Text style={[typography.caption, {color: theme.secondaryText}, subtitleStyle]}>{subtitle}</Text>}
           </View>
-          <View style={s.titleContentContainer}>
-            {notificationDot && <View style={s.notificationDot} />}
-            {arrow && <FontAwesome6 name="angle-right" iconStyle="solid" size={16} color={theme.colors.secondaryText} />}
+          <View style={{gap: 8, flexDirection: 'row', alignItems: 'center'}}>
+            {notificationDot && <View style={{width: 12, height: 12, borderRadius: 12 / 2, backgroundColor: theme.highlight}} />}
+            {arrow && <FontAwesome6 name="angle-right" iconStyle="solid" size={16} color={theme.secondaryText} />}
           </View>
         </View>
       )}
@@ -36,39 +38,5 @@ const Card = ({title, titleStyle, subtitle, subtitleStyle, style, arrow, titleIc
     </View>
   );
 };
-
-export const s = StyleSheet.create({
-  container: {
-    backgroundColor: theme.colors.card,
-    borderRadius: 12,
-    paddingHorizontal: 22,
-    paddingVertical: 18,
-    width: '100%',
-    borderColor: theme.colors.border,
-    borderWidth: 1,
-    gap: 8,
-  },
-  title: {
-    color: theme.colors.primaryText,
-    fontFamily: theme.fontWeights.bold,
-    fontSize: 20,
-  },
-  titleContentContainer: {
-    gap: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  titleRowContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  notificationDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 12 / 2,
-    backgroundColor: theme.colors.highlight,
-  },
-});
 
 export default Card;

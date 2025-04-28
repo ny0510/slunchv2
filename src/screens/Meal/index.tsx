@@ -13,10 +13,10 @@ import Container from '@/components/Container';
 import Loading from '@/components/Loading';
 import NativeAdCard from '@/components/NaviveAdCard';
 import TouchableScale from '@/components/TouchableScale';
+import {useTheme} from '@/contexts/ThemeContext';
 import {clearCache} from '@/lib/cache';
 import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
-import {theme} from '@/styles/theme';
 import {Meal as MealType} from '@/types/api';
 import {MealItem} from '@/types/meal';
 import BottomSheet, {BottomSheetBackdrop, BottomSheetView} from '@gorhom/bottom-sheet';
@@ -27,7 +27,6 @@ import {NavigationProp, useNavigation} from '@react-navigation/native';
 
 const Meal = () => {
   const [meal, setMeal] = useState<MealType[]>([]);
-  const [currentDate, setCurrentDate] = useState(dayjs());
   const [showAllergy, setShowAllergy] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -35,6 +34,7 @@ const Meal = () => {
   const [selectedMeal, setSelectedMeal] = useState<string>('');
   const [selectedMealDate, setSelectedMealDate] = useState<string>('');
 
+  const {theme, typography} = useTheme();
   const scrollViewRef = useRef<ScrollView | null>(null);
   const bottomSheetRef = useRef<BottomSheet>(null);
 
@@ -72,25 +72,6 @@ const Meal = () => {
     }
   }, [showAllergy]);
 
-  const fetchNextMonthData = useCallback(async () => {
-    try {
-      const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
-      const nextMonth = currentDate.add(1, 'month');
-
-      const mealResponse = await getMeal(school.neisCode, school.neisRegionCode, nextMonth.format('YYYY'), nextMonth.format('MM'), undefined, showAllergy, true, true);
-
-      setMeal(prevMeal => [...prevMeal, ...mealResponse]);
-      if (!mealResponse.length) {
-        showToast('더 이상 급식이 없습니다.');
-      }
-      setCurrentDate(nextMonth);
-    } catch (e) {
-      const err = e as Error;
-      showToast('다음 달 급식을 불러오는 중 오류가 발생했어요.');
-      console.error('Error fetching next month data:', err);
-    }
-  }, [currentDate, showAllergy]);
-
   useEffect(() => {
     analytics().logScreenView({screen_name: '급식 상세 페이지', screen_class: 'Meal'});
   }, []);
@@ -109,7 +90,7 @@ const Meal = () => {
   const renderMealItem = (mealItem: string | MealItem, index: number) => {
     if (typeof mealItem === 'string') {
       return (
-        <Text key={index} style={[theme.typography.body, {fontFamily: theme.fontWeights.light}]}>
+        <Text key={index} style={[typography.body, {color: theme.primaryText, fontWeight: '300'}]}>
           - {mealItem}
         </Text>
       );
@@ -118,9 +99,9 @@ const Meal = () => {
     const allergyInfo = showAllergy && mealItem.allergy && mealItem.allergy.length > 0 ? ` ${mealItem.allergy.map(allergy => allergy.code).join(', ')}` : '';
 
     return (
-      <Text key={index} style={[theme.typography.body, {fontFamily: theme.fontWeights.light}]}>
+      <Text key={index} style={[typography.body, {color: theme.primaryText, fontWeight: '300'}]}>
         - {mealItem.food}
-        <Text style={[theme.typography.small, {color: theme.colors.secondaryText}]}>{allergyInfo}</Text>
+        <Text style={[typography.small, {color: theme.secondaryText}]}>{allergyInfo}</Text>
       </Text>
     );
   };
@@ -139,19 +120,7 @@ const Meal = () => {
     <Loading fullScreen />
   ) : (
     <>
-      <Container
-        scrollView
-        bounce={!loading}
-        scrollViewRef={scrollViewRef}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.secondaryText} />}
-        onScroll={async (event: any) => {
-          const y = event.nativeEvent.contentOffset.y;
-          const height = event.nativeEvent.layoutMeasurement.height;
-          const contentHeight = event.nativeEvent.contentSize.height;
-          if (y + height >= contentHeight - 20) {
-            await fetchNextMonthData();
-          }
-        }}>
+      <Container scrollView bounce={!loading} scrollViewRef={scrollViewRef} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}>
         <View style={{gap: 12, width: '100%'}}>
           {meal?.length > 0 ? (
             (() => {
@@ -183,21 +152,14 @@ const Meal = () => {
             })()
           ) : (
             <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
-              <Text
-                style={{
-                  color: theme.colors.primaryText,
-                  fontFamily: theme.fontWeights.light,
-                  fontSize: 16,
-                }}>
-                급식 데이터가 없어요.
-              </Text>
+              <Text style={[typography.baseTextStyle, {color: theme.primaryText, fontWeight: '300', fontSize: 16}]}>급식 데이터가 없어요.</Text>
             </View>
           )}
         </View>
       </Container>
 
-      <BottomSheet backdropComponent={renderBackdrop} ref={bottomSheetRef} index={-1} enablePanDownToClose backgroundStyle={{backgroundColor: theme.colors.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}} handleIndicatorStyle={{backgroundColor: theme.colors.secondaryText}}>
-        <BottomSheetView style={{paddingHorizontal: 18, paddingVertical: 20, gap: 16, backgroundColor: theme.colors.card, justifyContent: 'center'}}>
+      <BottomSheet backdropComponent={renderBackdrop} ref={bottomSheetRef} index={-1} enablePanDownToClose backgroundStyle={{backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}} handleIndicatorStyle={{backgroundColor: theme.secondaryText}}>
+        <BottomSheetView style={{paddingHorizontal: 18, paddingVertical: 20, gap: 16, backgroundColor: theme.card, justifyContent: 'center'}}>
           <Content
             title="복사하기"
             arrow

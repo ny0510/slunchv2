@@ -1,16 +1,17 @@
 import dayjs from 'dayjs';
 import React, {useEffect, useRef, useState} from 'react';
-import {Alert, FlatList, ImageBackground, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {Alert, FlatList, ImageBackground, Platform, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import ScrollPicker from 'react-native-wheel-scrollview-picker';
 
-import {style as s} from './styles';
+import {createStyles} from './styles';
 import {comciganSchoolSearch, getClassList, neisSchoolSearch, removeFcmToken} from '@/api';
 import Loading from '@/components/Loading';
 import SlotMachine from '@/components/SlotMachine';
+import {useTheme} from '@/contexts/ThemeContext';
+import {useFirstOpen} from '@/hooks/useFirstOpen';
 import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
-import {theme} from '@/styles/theme';
 import {School} from '@/types/api';
 import notifee, {AuthorizationStatus} from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -21,19 +22,17 @@ import {StackScreenProps} from '@react-navigation/stack';
 
 export const IntroScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+
+  const {theme, typography, isDark} = useTheme();
+  const s = createStyles(theme, typography);
 
   const handlePress = () => {
-    // setIsButtonDisabled(true);
     navigation.navigate('SchoolSearch', {isFirstOpen: true});
   };
 
   const handleLongPress = () => {
     Alert.alert('데모 모드', '데모 모드에서는 학교를 선택할 수 없어요.\n계속하시겠습니까?', [
-      {
-        text: '아니요',
-        style: 'cancel',
-      },
+      {text: '아니요', style: 'cancel'},
       {
         text: '네',
         onPress: () => {
@@ -62,22 +61,22 @@ export const IntroScreen = () => {
 
   return (
     <View style={s.introContainer}>
-      <LinearGradient colors={[theme.colors.background, 'transparent']} style={{position: 'absolute', top: 0, left: 0, right: 0, height: 150, zIndex: 10}} />
+      {isDark && <LinearGradient colors={[theme.background, 'transparent']} style={{position: 'absolute', top: 0, left: 0, right: 0, height: 150, zIndex: 10}} />}
       <View style={s.onboardingImageContainer}>
-        <ImageBackground blurRadius={5} source={require('@/assets/images/onboarding.png')} style={s.onboardingImage} />
+        <ImageBackground blurRadius={Platform.OS === 'ios' ? 8 : 5} source={isDark ? require('@/assets/images/onboarding_dark.png') : require('@/assets/images/onboarding_white.png')} style={s.onboardingImage} />
       </View>
-      <LinearGradient colors={['transparent', theme.colors.background]} style={{position: 'absolute', bottom: 0, left: 0, right: 0, height: 250}} />
+      <LinearGradient colors={['transparent', theme.background]} style={{position: 'absolute', bottom: 0, left: 0, right: 0, height: 250}} />
       <View style={s.introContent}>
         <View style={{gap: 8}}>
           <SlotMachine list={['🍽️ 급식 뭐 나오지?', '📚 오늘 1교시가,,', '📅 중요한 학사일정은?', '🎈 곧 있을 학교 행사는?']} style={s.introTitle} delay={1500} duration={300} />
           <View>
-            <Text style={[theme.typography.body, {fontFamily: theme.fontWeights.semiBold}]}>챙기기 번거로운 학사일정, 시간표 및 급식을 간편하게</Text>
-            <Text style={[theme.typography.body, {fontFamily: theme.fontWeights.semiBold}]}>확인하세요!</Text>
+            <Text style={[typography.body, {color: theme.primaryText, fontWeight: '600'}]}>챙기기 번거로운 학사일정, 시간표 및 급식을 간편하게</Text>
+            <Text style={[typography.body, {color: theme.primaryText, fontWeight: '600'}]}>확인하세요!</Text>
           </View>
         </View>
         <TouchableOpacity style={s.nextButton} onPress={handlePress} onLongPress={handleLongPress} delayLongPress={2000}>
           <Text style={s.nextButtonText}>시작하기</Text>
-          <FontAwesome6 name="angle-right" iconStyle="solid" size={18} color={theme.colors.primaryText} />
+          <FontAwesome6 name="angle-right" iconStyle="solid" size={18} color={theme.primaryText} />
         </TouchableOpacity>
       </View>
     </View>
@@ -87,6 +86,9 @@ export const IntroScreen = () => {
 export const SchoolSearchScreen = ({route}: StackScreenProps<RootStackParamList, 'SchoolSearch'>) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const {isFirstOpen = true} = route.params;
+
+  const {theme, typography} = useTheme();
+  const s = createStyles(theme, typography);
 
   const [inputText, setInputText] = useState('');
   const [schoolList, setSchoolList] = useState<School[]>([]);
@@ -149,13 +151,13 @@ export const SchoolSearchScreen = ({route}: StackScreenProps<RootStackParamList,
         </View>
         <View style={s.inputContent}>
           <View style={s.textInputContainer}>
-            <TextInput placeholder="학교명" value={inputText} onKeyPress={() => setIsLoading(true)} onChangeText={setInputText} maxLength={25} autoCorrect={false} autoCapitalize="none" placeholderTextColor={theme.colors.secondaryText} style={s.textInput} />
+            <TextInput placeholder="학교명" value={inputText} onKeyPress={() => setIsLoading(true)} onChangeText={setInputText} maxLength={25} autoCorrect={false} autoCapitalize="none" placeholderTextColor={theme.secondaryText} style={s.textInput} />
             <TouchableOpacity
               onPress={() => {
                 setInputText('');
                 setSchoolList([]);
               }}>
-              <FontAwesome6 name="delete-left" iconStyle="solid" size={18} color={theme.colors.primaryText} />
+              <FontAwesome6 name="delete-left" iconStyle="solid" size={18} color={theme.primaryText} />
             </TouchableOpacity>
           </View>
           {isLoading ? (
@@ -199,6 +201,10 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
   const [selectedClass, setSelectedClass] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+
+  const {completeOnboarding} = useFirstOpen();
+  const {theme, typography} = useTheme();
+  const s = createStyles(theme, typography);
 
   const classScrollPickerRef = useRef<any>(null);
 
@@ -301,6 +307,10 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
         console.error('Error removing FCM token:', e);
       }
 
+      if (isFirstOpen) {
+        await completeOnboarding();
+      }
+
       navigation.reset({
         index: 0,
         routes: [{name: 'Tab'}],
@@ -326,20 +336,20 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
                 dataSource={gradeList}
                 wrapperBackground={'transparent'}
                 itemHeight={50}
-                highlightColor={theme.colors.secondaryText}
+                highlightColor={theme.secondaryText}
                 highlightBorderWidth={1}
                 onValueChange={handleGradeChange}
-                renderItem={(data, index, isSelected) => <Text style={{fontSize: 20, color: isSelected ? theme.colors.primaryText : theme.colors.secondaryText, fontFamily: theme.typography.subtitle.fontFamily}}>{data}학년</Text>}
+                renderItem={(data, index, isSelected) => <Text style={{fontSize: 20, color: isSelected ? theme.primaryText : theme.secondaryText, fontWeight: '500'}}>{data}학년</Text>}
               />
               <ScrollPicker
                 dataSource={classList[gradeList.indexOf(selectedGrade)]}
                 wrapperBackground={'transparent'}
                 itemHeight={50}
-                highlightColor={theme.colors.secondaryText}
+                highlightColor={theme.secondaryText}
                 highlightBorderWidth={1}
                 onValueChange={handleClassChange}
                 ref={classScrollPickerRef}
-                renderItem={(data, index, isSelected) => <Text style={{fontSize: 20, color: isSelected ? theme.colors.primaryText : theme.colors.secondaryText, fontFamily: theme.typography.subtitle.fontFamily}}>{data}반</Text>}
+                renderItem={(data, index, isSelected) => <Text style={{fontSize: 20, color: isSelected ? theme.primaryText : theme.secondaryText, fontWeight: '500'}}>{data}반</Text>}
               />
             </View>
           )}
@@ -347,7 +357,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
       </View>
       <TouchableOpacity style={s.nextButton} onPress={handlePress} disabled={isButtonDisabled}>
         <Text style={s.nextButtonText}>계속하기</Text>
-        <FontAwesome6 name="angle-right" iconStyle="solid" size={18} color={theme.colors.primaryText} />
+        <FontAwesome6 name="angle-right" iconStyle="solid" size={18} color={theme.primaryText} />
       </TouchableOpacity>
     </View>
   );

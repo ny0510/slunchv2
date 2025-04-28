@@ -3,7 +3,6 @@ import {View} from 'react-native';
 import {Path, Svg} from 'react-native-svg';
 
 import {binaryToSvg} from '@/lib/binaryToSvg';
-import {theme} from '@/styles/theme';
 import barcodes from 'jsbarcode/src/barcodes';
 
 interface BarcodeProps {
@@ -12,7 +11,7 @@ interface BarcodeProps {
   fill?: string;
 }
 
-const Barcode = ({value, format = 'CODE128', fill = theme.colors.primaryText}: BarcodeProps) => {
+const Barcode = ({value, format = 'CODE128', fill}: BarcodeProps) => {
   const [bars, setBars] = useState<any>();
   const [width, setWidth] = useState<number>();
   useEffect(() => {

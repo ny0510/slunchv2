@@ -3,10 +3,11 @@ import {Image, Text, View} from 'react-native';
 import {NativeAd, NativeAdChoicesPlacement, NativeAdView, NativeAsset, NativeAssetType, NativeMediaAspectRatio, TestIds} from 'react-native-google-mobile-ads';
 
 import Loading from './Loading';
-import Card, {s} from '@/components/Card';
-import {theme} from '@/styles/theme';
+import Card from '@/components/Card';
+import {useTheme} from '@/contexts/ThemeContext';
 
 const NativeAdCard = ({adUnitId}: {adUnitId: string}) => {
+  const {theme, typography} = useTheme();
   const [nativeAd, setNativeAd] = useState<NativeAd>();
 
   if (__DEV__) {
@@ -27,7 +28,7 @@ const NativeAdCard = ({adUnitId}: {adUnitId: string}) => {
   if (!nativeAd) {
     return (
       <Card style={{height: 100}}>
-        <Loading color={theme.colors.secondaryText} />
+        <Loading color={theme.secondaryText} />
       </Card>
     );
   }
@@ -44,10 +45,10 @@ const NativeAdCard = ({adUnitId}: {adUnitId: string}) => {
         )}
         <View style={{flexShrink: 1}}>
           <NativeAsset assetType={NativeAssetType.HEADLINE}>
-            <Text style={s.title}>{nativeAd.headline}</Text>
+            <Text style={[typography.title, {color: theme.primaryText, fontWeight: '700', fontSize: 20}]}>{nativeAd.headline}</Text>
           </NativeAsset>
           <NativeAsset assetType={NativeAssetType.BODY}>
-            <Text style={[theme.typography.body, {fontFamily: theme.fontWeights.light}]}>{nativeAd.body}</Text>
+            <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300'}]}>{nativeAd.body}</Text>
           </NativeAsset>
         </View>
       </NativeAdView>

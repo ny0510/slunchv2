@@ -6,11 +6,12 @@ import {hideSplash} from 'react-native-splash-view';
 import Toast from 'react-native-toast-message';
 import VersionCheck from 'react-native-version-check';
 
+import {typography} from './theme';
+import {AuthProvider} from '@/contexts/AuthContext';
+import {useTheme} from '@/contexts/ThemeContext';
 import {sendNotification} from '@/lib/notification';
-import {toastConfig} from '@/lib/toast';
+import {getToastConfig} from '@/lib/toast';
 import Stack from '@/navigation/RootStacks';
-import {AuthProvider} from '@/providers/AuthProvider';
-import {theme} from '@/styles/theme';
 import messaging from '@react-native-firebase/messaging';
 import * as Sentry from '@sentry/react-native';
 
@@ -29,6 +30,7 @@ Sentry.init({
 });
 
 const App = () => {
+  const {theme, isDark} = useTheme();
   const backPressedOnceRef = useRef(false);
 
   useEffect(() => {
@@ -40,7 +42,7 @@ const App = () => {
     try {
       const res = await VersionCheck.needUpdate({depth: 2});
       if (res.isNeeded && res.storeUrl) {
-        Alert.alert('새로운 버전이 출시되었습니다', '앱을 업데이트 해주세요', [{text: '업데이트', onPress: () => Linking.openURL(res.storeUrl)}], {cancelable: false});
+        // Alert.alert('새로운 버전이 출시되었습니다', '앱을 업데이트 해주세요', [{text: '업데이트', onPress: () => Linking.openURL(res.storeUrl)}], {cancelable: false});
       }
     } catch (e) {
       console.error(`Update check failed: ${(e as Error).message}`);
@@ -85,13 +87,13 @@ const App = () => {
 
   return (
     <GestureHandlerRootView>
-      <SafeAreaView style={{flex: 1, backgroundColor: theme.colors.background}}>
+      <SafeAreaView style={{flex: 1, backgroundColor: theme.background}}>
         <AuthProvider>
-          <StatusBar animated barStyle="light-content" backgroundColor={theme.colors.background} />
+          <StatusBar animated barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.background} />
           <Stack />
         </AuthProvider>
       </SafeAreaView>
-      <Toast config={toastConfig} />
+      <Toast config={getToastConfig(theme, typography)} />
     </GestureHandlerRootView>
   );
 };

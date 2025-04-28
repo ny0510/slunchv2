@@ -9,9 +9,9 @@ import Card from '@/components/Card';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
 import NativeAdCard from '@/components/NaviveAdCard';
+import {useTheme} from '@/contexts/ThemeContext';
 import {clearCache} from '@/lib/cache';
 import {showToast} from '@/lib/toast';
-import {theme} from '@/styles/theme';
 import {Schedule as ScheduleType} from '@/types/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
@@ -21,7 +21,8 @@ const Schedules = () => {
   const [schedules, setSchedules] = useState<ScheduleType[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [currentDate, setCurrentDate] = useState(dayjs());
+
+  const {theme} = useTheme();
 
   const fetchData = useCallback(async () => {
     try {
@@ -29,11 +30,6 @@ const Schedules = () => {
       const today = dayjs();
 
       const scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'));
-      // if (scheduleResponse.length === 0) {
-      //   showToast(`${today.format('M')}월 학사일정이 없어, 다음 달 학사일정을 불러왔어요.`);
-      //   fetchNextMonthData();
-      //   return;
-      // }
       setSchedules(scheduleResponse);
     } catch (e) {
       const err = e as Error;
@@ -43,26 +39,7 @@ const Schedules = () => {
     } finally {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const fetchNextMonthData = useCallback(async () => {
-    try {
-      const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
-      const nextMonth = currentDate.add(1, 'month');
-
-      const scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, nextMonth.format('YYYY'), nextMonth.format('MM'));
-      setSchedules(prevSchedules => [...prevSchedules, ...scheduleResponse]);
-      if (!scheduleResponse.length) {
-        return showToast('더 이상 학사일정이 없습니다.');
-      }
-      setCurrentDate(nextMonth);
-    } catch (e) {
-      const err = e as Error;
-      showToast('다음 달 학사일정을 불러오는 중 오류가 발생했어요.');
-      console.error('Error fetching next month data:', err);
-    }
-  }, [currentDate]);
 
   useEffect(() => {
     analytics().logScreenView({screen_name: '학사일정 상세 페이지', screen_class: 'Schedules'});
@@ -82,19 +59,7 @@ const Schedules = () => {
   return loading ? (
     <Loading fullScreen />
   ) : (
-    <Container
-      scrollView
-      bounce={!loading}
-      scrollViewRef={scrollViewRef}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.secondaryText} />}
-      onScroll={async (event: any) => {
-        const y = event.nativeEvent.contentOffset.y;
-        const height = event.nativeEvent.layoutMeasurement.height;
-        const contentHeight = event.nativeEvent.contentSize.height;
-        // if (y + height >= contentHeight - 20) {
-        //   await fetchNextMonthData();
-        // }
-      }}>
+    <Container scrollView bounce={!loading} scrollViewRef={scrollViewRef} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}>
       <View style={{gap: 12, width: '100%'}}>
         {schedules?.length > 0 ? (
           (() => {
@@ -117,8 +82,8 @@ const Schedules = () => {
           })()
         ) : (
           <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
-            <Text style={{color: theme.colors.primaryText, fontFamily: theme.fontWeights.light, fontSize: 16}}>학사일정 데이터가 없어요.</Text>
-            <Text style={{color: theme.colors.primaryText, fontFamily: theme.fontWeights.light, fontSize: 16}}>학교에서 제공하지 않는 경우도 있어요.</Text>
+            <Text style={{color: theme.primaryText, fontWeight: '300', fontSize: 16}}>학사일정 데이터가 없어요.</Text>
+            <Text style={{color: theme.primaryText, fontWeight: '300', fontSize: 16}}>학교에서 제공하지 않는 경우도 있어요.</Text>
           </View>
         )}
       </View>
@@ -133,9 +98,11 @@ const ScheduleItem = ({item}: {item: ScheduleType}) => {
 
   const schedules = item.schedule.split(', ');
 
+  const {theme} = useTheme();
+
   return (
     <Card title={startDate.format('M/D') + (isSameDay ? '' : ` ~ ${endDate.format('M/D')}`)}>
-      <FlatList data={schedules} scrollEnabled={false} renderItem={({item: scheduleItem}) => <Text style={{color: theme.colors.primaryText, fontFamily: theme.fontWeights.light, fontSize: 16}}>{schedules.length > 1 ? `- ${scheduleItem}` : scheduleItem}</Text>} />
+      <FlatList data={schedules} scrollEnabled={false} renderItem={({item: scheduleItem}) => <Text style={{color: theme.primaryText, fontWeight: '300', fontSize: 16}}>{schedules.length > 1 ? `- ${scheduleItem}` : scheduleItem}</Text>} />
     </Card>
   );
 };

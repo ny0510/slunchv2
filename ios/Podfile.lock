@@ -11,49 +11,63 @@ PODS:
   - DoubleConversion (1.1.6)
   - fast_float (6.1.4)
   - FBLazyVector (0.78.2)
-  - Firebase/Analytics (11.10.0):
+  - Firebase/Analytics (11.12.0):
     - Firebase/Core
-  - Firebase/Core (11.10.0):
+  - Firebase/Auth (11.12.0):
     - Firebase/CoreOnly
-    - FirebaseAnalytics (~> 11.10.0)
-  - Firebase/CoreOnly (11.10.0):
-    - FirebaseCore (~> 11.10.0)
-  - Firebase/Messaging (11.10.0):
+    - FirebaseAuth (~> 11.12.0)
+  - Firebase/Core (11.12.0):
     - Firebase/CoreOnly
-    - FirebaseMessaging (~> 11.10.0)
-  - FirebaseAnalytics (11.10.0):
-    - FirebaseAnalytics/AdIdSupport (= 11.10.0)
-    - FirebaseCore (~> 11.10.0)
+    - FirebaseAnalytics (~> 11.12.0)
+  - Firebase/CoreOnly (11.12.0):
+    - FirebaseCore (~> 11.12.0)
+  - Firebase/Messaging (11.12.0):
+    - Firebase/CoreOnly
+    - FirebaseMessaging (~> 11.12.0)
+  - FirebaseAnalytics (11.12.0):
+    - FirebaseAnalytics/AdIdSupport (= 11.12.0)
+    - FirebaseCore (~> 11.12.0)
     - FirebaseInstallations (~> 11.0)
     - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
     - GoogleUtilities/MethodSwizzler (~> 8.0)
     - GoogleUtilities/Network (~> 8.0)
     - "GoogleUtilities/NSData+zlib (~> 8.0)"
     - nanopb (~> 3.30910.0)
-  - FirebaseAnalytics/AdIdSupport (11.10.0):
-    - FirebaseCore (~> 11.10.0)
+  - FirebaseAnalytics/AdIdSupport (11.12.0):
+    - FirebaseCore (~> 11.12.0)
     - FirebaseInstallations (~> 11.0)
-    - GoogleAppMeasurement (= 11.10.0)
+    - GoogleAppMeasurement (= 11.12.0)
     - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
     - GoogleUtilities/MethodSwizzler (~> 8.0)
     - GoogleUtilities/Network (~> 8.0)
     - "GoogleUtilities/NSData+zlib (~> 8.0)"
     - nanopb (~> 3.30910.0)
-  - FirebaseCore (11.10.0):
-    - FirebaseCoreInternal (~> 11.10.0)
+  - FirebaseAppCheckInterop (11.12.0)
+  - FirebaseAuth (11.12.0):
+    - FirebaseAppCheckInterop (~> 11.0)
+    - FirebaseAuthInterop (~> 11.0)
+    - FirebaseCore (~> 11.12.0)
+    - FirebaseCoreExtension (~> 11.12.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
+    - GoogleUtilities/Environment (~> 8.0)
+    - GTMSessionFetcher/Core (< 5.0, >= 3.4)
+    - RecaptchaInterop (~> 101.0)
+  - FirebaseAuthInterop (11.12.0)
+  - FirebaseCore (11.12.0):
+    - FirebaseCoreInternal (~> 11.12.0)
     - GoogleUtilities/Environment (~> 8.0)
     - GoogleUtilities/Logger (~> 8.0)
-  - FirebaseCoreExtension (11.10.0):
-    - FirebaseCore (~> 11.10.0)
-  - FirebaseCoreInternal (11.10.0):
+  - FirebaseCoreExtension (11.12.0):
+    - FirebaseCore (~> 11.12.0)
+  - FirebaseCoreInternal (11.12.0):
     - "GoogleUtilities/NSData+zlib (~> 8.0)"
-  - FirebaseInstallations (11.10.0):
-    - FirebaseCore (~> 11.10.0)
+  - FirebaseInstallations (11.12.0):
+    - FirebaseCore (~> 11.12.0)
     - GoogleUtilities/Environment (~> 8.0)
     - GoogleUtilities/UserDefaults (~> 8.0)
     - PromisesObjC (~> 2.4)
-  - FirebaseMessaging (11.10.0):
-    - FirebaseCore (~> 11.10.0)
+  - FirebaseMessaging (11.12.0):
+    - FirebaseCore (~> 11.12.0)
     - FirebaseInstallations (~> 11.0)
     - GoogleDataTransport (~> 10.0)
     - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
@@ -65,21 +79,21 @@ PODS:
   - glog (0.3.5)
   - Google-Mobile-Ads-SDK (12.2.0):
     - GoogleUserMessagingPlatform (>= 1.1)
-  - GoogleAppMeasurement (11.10.0):
-    - GoogleAppMeasurement/AdIdSupport (= 11.10.0)
+  - GoogleAppMeasurement (11.12.0):
+    - GoogleAppMeasurement/AdIdSupport (= 11.12.0)
     - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
     - GoogleUtilities/MethodSwizzler (~> 8.0)
     - GoogleUtilities/Network (~> 8.0)
     - "GoogleUtilities/NSData+zlib (~> 8.0)"
     - nanopb (~> 3.30910.0)
-  - GoogleAppMeasurement/AdIdSupport (11.10.0):
-    - GoogleAppMeasurement/WithoutAdIdSupport (= 11.10.0)
+  - GoogleAppMeasurement/AdIdSupport (11.12.0):
+    - GoogleAppMeasurement/WithoutAdIdSupport (= 11.12.0)
     - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
     - GoogleUtilities/MethodSwizzler (~> 8.0)
     - GoogleUtilities/Network (~> 8.0)
     - "GoogleUtilities/NSData+zlib (~> 8.0)"
     - nanopb (~> 3.30910.0)
-  - GoogleAppMeasurement/WithoutAdIdSupport (11.10.0):
+  - GoogleAppMeasurement/WithoutAdIdSupport (11.12.0):
     - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
     - GoogleUtilities/MethodSwizzler (~> 8.0)
     - GoogleUtilities/Network (~> 8.0)
@@ -1807,6 +1821,7 @@ PODS:
     - React-logger (= 0.78.2)
     - React-perflogger (= 0.78.2)
     - React-utils (= 0.78.2)
+  - RecaptchaInterop (101.0.0)
   - RNCAsyncStorage (2.1.2):
     - DoubleConversion
     - glog
@@ -1872,15 +1887,19 @@ PODS:
     - Yoga
   - RNDeviceInfo (14.0.4):
     - React-Core
-  - RNFBAnalytics (21.13.0):
-    - Firebase/Analytics (= 11.10.0)
+  - RNFBAnalytics (22.0.0):
+    - Firebase/Analytics (= 11.12.0)
     - React-Core
     - RNFBApp
-  - RNFBApp (21.13.0):
-    - Firebase/CoreOnly (= 11.10.0)
+  - RNFBApp (22.0.0):
+    - Firebase/CoreOnly (= 11.12.0)
     - React-Core
-  - RNFBMessaging (21.13.0):
-    - Firebase/Messaging (= 11.10.0)
+  - RNFBAuth (22.0.0):
+    - Firebase/Auth (= 11.12.0)
+    - React-Core
+    - RNFBApp
+  - RNFBMessaging (22.0.0):
+    - Firebase/Messaging (= 11.12.0)
     - FirebaseCoreExtension
     - React-Core
     - RNFBApp
@@ -2338,6 +2357,7 @@ DEPENDENCIES:
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - "RNFBAnalytics (from `../node_modules/@react-native-firebase/analytics`)"
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
+  - "RNFBAuth (from `../node_modules/@react-native-firebase/auth`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNGoogleMobileAds (from `../node_modules/react-native-google-mobile-ads`)
@@ -2357,6 +2377,9 @@ SPEC REPOS:
     - AppAuth
     - Firebase
     - FirebaseAnalytics
+    - FirebaseAppCheckInterop
+    - FirebaseAuth
+    - FirebaseAuthInterop
     - FirebaseCore
     - FirebaseCoreExtension
     - FirebaseCoreInternal
@@ -2373,6 +2396,7 @@ SPEC REPOS:
     - nanopb
     - PromisesObjC
     - React-Codegen
+    - RecaptchaInterop
     - Sentry
     - SocketRocket
 
@@ -2538,6 +2562,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/analytics"
   RNFBApp:
     :path: "../node_modules/@react-native-firebase/app"
+  RNFBAuth:
+    :path: "../node_modules/@react-native-firebase/auth"
   RNFBMessaging:
     :path: "../node_modules/@react-native-firebase/messaging"
   RNGestureHandler:
@@ -2572,17 +2598,20 @@ SPEC CHECKSUMS:
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: e32d34492c519a2194ec9d7f5e7a79d11b73f91c
-  Firebase: 1fe1c0a7d9aaea32efe01fbea5f0ebd8d70e53a2
-  FirebaseAnalytics: 4e42333f02cf78ed93703a5c36f36dd518aebdef
-  FirebaseCore: 8344daef5e2661eb004b177488d6f9f0f24251b7
-  FirebaseCoreExtension: 6f357679327f3614e995dc7cf3f2d600bdc774ac
-  FirebaseCoreInternal: ef4505d2afb1d0ebbc33162cb3795382904b5679
-  FirebaseInstallations: 9980995bdd06ec8081dfb6ab364162bdd64245c3
-  FirebaseMessaging: 2b9f56aa4ed286e1f0ce2ee1d413aabb8f9f5cb9
+  Firebase: 735108d2d0b67827cd929bfe8254983907c4479f
+  FirebaseAnalytics: 2979c21ead00c520feff30db97ebadd669442f2a
+  FirebaseAppCheckInterop: 73b173e5ec45192e2d522ad43f526a82ad10b852
+  FirebaseAuth: 4ce97ceb271fce2b6cec6c53021930841442b15a
+  FirebaseAuthInterop: b583210c039a60ed3f1e48865e1f3da44a796595
+  FirebaseCore: 9d7a0caf39ec7317fbe13b3c7864c8c2acc60da8
+  FirebaseCoreExtension: 5e42645fd3f7c2c59ea5ed7641dd58f02bc565d1
+  FirebaseCoreInternal: 480d23e21f699cc7bcbc3d8eaa301f15d1e3ffaf
+  FirebaseInstallations: 41189d8b11007152d9e46ec844019f38a0a4282a
+  FirebaseMessaging: 3a5de79d8dce82b70815123c05dfb8825111f15d
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: eb93e2f488219332457c3c4eafd2738ddc7e80b8
   Google-Mobile-Ads-SDK: 1dfb0c3cb46c7e2b00b0f4de74a1e06d9ea25d67
-  GoogleAppMeasurement: 36684bfb3ee034e2b42b4321eb19da3a1b81e65d
+  GoogleAppMeasurement: 6ee0ee888bb1db802c49049001adb4013d7fe41b
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
   GoogleSignIn: d4281ab6cf21542b1cfaff85c191f230b399d2db
   GoogleUserMessagingPlatform: a8b56893477f67212fbc8411c139e61d463349f5
@@ -2659,13 +2688,15 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: 4893bde33952f997a323eb1a1ee87a72764018ff
   ReactCodegen: 31f8d982d351eb4dbf3af220f363c7398ae667c8
   ReactCommon: 0adf8f24a3415b6815613bad362d390726b33fc7
+  RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
   RNCAsyncStorage: 5321442ed26760d7581b26effab82399ea5ff18b
   RNCClipboard: 86342298a16010051a6f2fa92688fb83dfd3f4c4
   RNCMaskedView: f1d7a375655e54d0aca367a16692a04a8cb69a71
   RNDeviceInfo: d863506092aef7e7af3a1c350c913d867d795047
-  RNFBAnalytics: 9cbc50c04fb157ae30d703e774bb06c6d5452279
-  RNFBApp: a438a9444c965b4b1053330f8e54217de2075823
-  RNFBMessaging: c1dc973d87a82fd9e58bd8c3a8c269dcca337669
+  RNFBAnalytics: a06cec04f30d4b4d6e39d871fb9ff09ed1771adf
+  RNFBApp: 9185ad597a5433ff786659e4797f0153b3e13d88
+  RNFBAuth: 36007c6e745d996a2f2b7214c0e7b283f253091e
+  RNFBMessaging: 94d71d7c91a7bb6cd29f155690a35b99106504c9
   RNGestureHandler: 96fc2de36a25cf6bece93e030c2ed9a5e95d33dd
   RNGoogleMobileAds: 052ce09da3f03e5d9197ca2ce6ddc71a143ee848
   RNGoogleSignin: 1a215139c537bb0430abdb9ff9a8e437578e515d

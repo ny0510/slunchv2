@@ -45,30 +45,20 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
-	<!-- <key>NSPhotoLibraryUsageDescription</key>
-	<string>사진을 선택하기 위해 접근 권한이 필요해요.</string> -->
+	<string/>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Pretendard-Black.otf</string>
-		<string>Pretendard-Bold.otf</string>
-		<string>Pretendard-ExtraBold.otf</string>
-		<string>Pretendard-ExtraLight.otf</string>
-		<string>Pretendard-Light.otf</string>
-		<string>Pretendard-Medium.otf</string>
-		<string>Pretendard-Regular.otf</string>
-		<string>Pretendard-SemiBold.otf</string>
-		<string>Pretendard-Thin.otf</string>
 		<string>FontAwesome6_Brands.ttf</string>
 		<string>FontAwesome6_Regular.ttf</string>
 		<string>FontAwesome6_Solid.ttf</string>
+		<string>PretendardVariable.ttf</string>
 	</array>
 	<key>LSApplicationQueriesSchemes</key>
-  <array>
+	<array>
 		<string>instagram</string>
 		<string>instagramstories</string>
 		<string>instagram-stories</string>
-  </array>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
@@ -80,7 +70,7 @@
 		<string>arm64</string>
 	</array>
 	<key>UIStatusBarStyle</key>
-	<string></string>
+	<string/>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
