@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import React, {useEffect, useRef} from 'react';
 import {Alert, AppState, BackHandler, Linking, Platform, StatusBar, ToastAndroid} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
@@ -29,6 +30,13 @@ Sentry.init({
   ],
 });
 
+const showMaintenanceAlert = () => {
+  const now = dayjs();
+  if (now.hour() === 0 && now.minute() < 10) {
+    Alert.alert('서버 점검 중', '매일 00:00 ~ 00:10은 서버 점검 시간입니다. 일부 기능이 제한될 수 있어요.', [{text: '확인'}], {cancelable: true});
+  }
+};
+
 const App = () => {
   const {theme, isDark} = useTheme();
   const backPressedOnceRef = useRef(false);
@@ -36,6 +44,7 @@ const App = () => {
   useEffect(() => {
     setTimeout(hideSplash, 250);
     checkForUpdate();
+    showMaintenanceAlert();
   }, []);
 
   const checkForUpdate = async () => {
@@ -62,6 +71,7 @@ const App = () => {
     const listener = AppState.addEventListener('change', state => {
       if (state === 'active') {
         checkForUpdate();
+        showMaintenanceAlert();
       }
     });
     return () => listener.remove();
