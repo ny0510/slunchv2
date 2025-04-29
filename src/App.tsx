@@ -42,7 +42,16 @@ const App = () => {
     try {
       const res = await VersionCheck.needUpdate({depth: 2});
       if (res.isNeeded && res.storeUrl) {
-        // Alert.alert('새로운 버전이 출시되었습니다', '앱을 업데이트 해주세요', [{text: '업데이트', onPress: () => Linking.openURL(res.storeUrl)}], {cancelable: false});
+        Alert.alert(
+          '새로운 버전이 출시되었습니다',
+          '앱을 업데이트 해주세요',
+          [
+            {text: '업데이트', onPress: () => Linking.openURL(res.storeUrl)},
+            {text: '취소', style: 'cancel'},
+          ],
+          {cancelable: true},
+        );
+        backPressedOnceRef.current = false;
       }
     } catch (e) {
       console.error(`Update check failed: ${(e as Error).message}`);
