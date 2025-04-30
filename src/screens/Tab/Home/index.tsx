@@ -1,7 +1,7 @@
 import {ANDROID_HOME_BANNER_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
-import React, {ReactNode, useCallback, useEffect, useState} from 'react';
-import {AppState, Easing, FlatList, Platform, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
+import React, {Fragment, ReactNode, useCallback, useEffect, useRef, useState} from 'react';
+import {AppState, Easing, FlatList, Platform, RefreshControl, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import Midnight from 'react-native-midnight';
 
 import {styles as s} from './styles';
@@ -19,6 +19,7 @@ import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {Meal, Schedule, Timetable} from '@/types/api';
 import {MealItem} from '@/types/meal';
+import BottomSheet, {BottomSheetBackdrop, BottomSheetView} from '@gorhom/bottom-sheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
@@ -34,6 +35,9 @@ const Home = () => {
   const [midnightTrigger, setMidnightTrigger] = useState<boolean>(false);
   const [mealDayOffset, setMealDayOffset] = useState<number>(0);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [selectedSubject, setSelectedSubject] = useState<Timetable | null>(null);
+  const [selectedSubjectIndices, setSelectedSubjectIndices] = useState<{row: number; col: number} | null>(null);
+  const bottomSheetRef = useRef<BottomSheet>(null);
 
   const {theme, typography} = useTheme();
   const user = useUser();
@@ -53,13 +57,19 @@ const Home = () => {
       const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
       const classData: {grade: number; class: number} = JSON.parse((await AsyncStorage.getItem('class')) || '{}');
 
-      let timetableResponse = [];
-      try {
-        timetableResponse = await getTimetable(school.comciganCode, classData.grade, classData.class);
-        setTimetable(transpose(timetableResponse));
-      } catch (e) {
-        console.error('Error fetching timetable:', e);
-        showToast('시간표를 불러오는 중 오류가 발생했어요.');
+      // customTimetable 우선 적용
+      const customTimetableStr = await AsyncStorage.getItem('customTimetable');
+      if (customTimetableStr) {
+        setTimetable(JSON.parse(customTimetableStr));
+      } else {
+        let timetableResponse = [];
+        try {
+          timetableResponse = await getTimetable(school.comciganCode, classData.grade, classData.class);
+          setTimetable(transpose(timetableResponse));
+        } catch (e) {
+          console.error('Error fetching timetable:', e);
+          showToast('시간표를 불러오는 중 오류가 발생했어요.');
+        }
       }
 
       let mealResponse = [];
@@ -112,6 +122,16 @@ const Home = () => {
     analytics().logScreenView({screen_name: '홈', screen_class: 'Home'});
   }, []);
 
+  // 탭 이동 시 BottomSheet 자동 닫힘
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('blur', () => {
+      if (bottomSheetRef.current) {
+        bottomSheetRef.current.close();
+      }
+    });
+    return unsubscribe;
+  }, [navigation]);
+
   // 매일 자정마다 데이터를 갱신
   useEffect(() => {
     const listener = Midnight.addListener(() => setMidnightTrigger(prev => !prev));
@@ -133,6 +153,12 @@ const Home = () => {
     setTodayIndex(dayjs().day() - 1);
     fetchData();
   }, [fetchData, midnightTrigger]);
+
+  useEffect(() => {
+    if (timetable.length > 0) {
+      AsyncStorage.setItem('customTimetable', JSON.stringify(timetable));
+    }
+  }, [timetable]);
 
   const renderMealItem = (mealItem: string | MealItem, index: number) => {
     if (typeof mealItem === 'string') {
@@ -170,46 +196,155 @@ const Home = () => {
     );
   };
 
+  const handleSheetChanges = useCallback(
+    (index: number) => {
+      if (index === -1) {
+        setSelectedSubject(null);
+        setSelectedSubjectIndices(null);
+        showToast('시간표가 변경되었어요.');
+      }
+    },
+    [setSelectedSubject, setSelectedSubjectIndices],
+  );
+
+  const openBottomSheet = ({row, col}: {row: number; col: number}) => {
+    if (bottomSheetRef.current) {
+      setSelectedSubject(timetable[row]?.[col] || null);
+      setSelectedSubjectIndices({row, col});
+      bottomSheetRef.current.snapToIndex(0);
+    }
+  };
+
+  const renderBackdrop = useCallback((props: any) => <BottomSheetBackdrop {...props} pressBehavior="close" disappearsOnIndex={-1} />, []);
+
   return (
-    <Container bounce scrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}>
-      <View style={s.container}>
-        <View style={s.header}>
-          <Logo width={24} height={24} />
-          <Text style={[typography.subtitle, {color: theme.primaryText}]}>{user ? user.schoolInfo.schoolName : '학교 정보 없음'}</Text>
+    <Fragment>
+      <Container bounce scrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}>
+        <View style={s.container}>
+          <View style={s.header}>
+            <Logo width={24} height={24} />
+            <Text style={[typography.subtitle, {color: theme.primaryText}]}>{user ? user.schoolInfo.schoolName : '학교 정보 없음'}</Text>
+          </View>
+
+          <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
+
+          <HomeCard title="학사일정" titleIcon={<FontAwesome6 name="calendar" size={16} color={theme.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Schedules')}>
+            {loading ? <LoadingView height={100} /> : schedules.length === 0 ? <Text style={[typography.caption, {color: theme.secondaryText}]}>학사일정이 없어요.</Text> : <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />}
+          </HomeCard>
+          <HomeCard title="급식" titleIcon={<FontAwesome6 name="utensils" size={16} color={theme.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Meal')}>
+            {loading ? (
+              <LoadingView height={100} />
+            ) : meal.length === 0 ? (
+              <Text style={[typography.caption, {color: theme.secondaryText}]}>급식 정보가 없어요.</Text>
+            ) : (
+              <View style={{gap: 4}}>
+                <FlatList data={meal} renderItem={({item}) => <View>{item.meal.map(renderMealItem)}</View>} scrollEnabled={false} />
+                {mealDayOffset > 0 && (
+                  <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 4}]}>
+                    {mealDayOffset}일 뒤, {dayjs().add(mealDayOffset, 'day').format('dddd')} 급식이에요.
+                  </Text>
+                )}
+              </View>
+            )}
+          </HomeCard>
+          <Card title="시간표" titleIcon={<FontAwesome6 name="table" size={16} color={theme.primaryText} iconStyle="solid" />}>
+            {loading ? (
+              <LoadingView height={250} />
+            ) : timetable.length === 0 ? (
+              <Text style={[typography.caption, {color: theme.secondaryText}]}>이번주 시간표가 없어요.</Text>
+            ) : (
+              <FlatList data={timetable} contentContainerStyle={{gap: 3}} renderItem={({item, index}) => <TimetableRow item={item} index={index} todayIndex={todayIndex} openBottomSheet={openBottomSheet} />} scrollEnabled={false} />
+            )}
+          </Card>
         </View>
+      </Container>
 
-        <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
-
-        <HomeCard title="학사일정" titleIcon={<FontAwesome6 name="calendar" size={16} color={theme.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Schedules')}>
-          {loading ? <LoadingView height={100} /> : schedules.length === 0 ? <Text style={[typography.caption, {color: theme.secondaryText}]}>학사일정이 없어요.</Text> : <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />}
-        </HomeCard>
-        <HomeCard title="급식" titleIcon={<FontAwesome6 name="utensils" size={16} color={theme.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Meal')}>
-          {loading ? (
-            <LoadingView height={100} />
-          ) : meal.length === 0 ? (
-            <Text style={[typography.caption, {color: theme.secondaryText}]}>급식 정보가 없어요.</Text>
-          ) : (
-            <View style={{gap: 4}}>
-              <FlatList data={meal} renderItem={({item}) => <View>{item.meal.map(renderMealItem)}</View>} scrollEnabled={false} />
-              {mealDayOffset > 0 && (
-                <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 4}]}>
-                  {mealDayOffset}일 뒤, {dayjs().add(mealDayOffset, 'day').format('dddd')} 급식이에요.
-                </Text>
-              )}
-            </View>
-          )}
-        </HomeCard>
-        <Card title="시간표" titleIcon={<FontAwesome6 name="table" size={16} color={theme.primaryText} iconStyle="solid" />}>
-          {loading ? (
-            <LoadingView height={250} />
-          ) : timetable.length === 0 ? (
-            <Text style={[typography.caption, {color: theme.secondaryText}]}>이번주 시간표가 없어요.</Text>
-          ) : (
-            <FlatList data={timetable} contentContainerStyle={{gap: 3}} renderItem={({item, index}) => <TimetableRow item={item} index={index} todayIndex={todayIndex} />} scrollEnabled={false} />
-          )}
-        </Card>
-      </View>
-    </Container>
+      <BottomSheet backdropComponent={renderBackdrop} ref={bottomSheetRef} index={-1} enablePanDownToClose onChange={handleSheetChanges} backgroundStyle={{backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}} handleIndicatorStyle={{backgroundColor: theme.secondaryText}}>
+        <BottomSheetView style={{padding: 18, backgroundColor: theme.card, justifyContent: 'center', alignItems: 'center', gap: 8}}>
+          <View style={{gap: 4, width: '100%'}}>
+            <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600', alignSelf: 'flex-start'}]}>과목명 변경</Text>
+            <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', alignSelf: 'flex-start'}]}>시간표가 알맞지 않다면 직접 변경해주세요.</Text>
+          </View>
+          <View style={{flexDirection: 'row', gap: 8, width: '100%'}}>
+            <TextInput
+              style={{
+                flex: 1,
+                backgroundColor: theme.background,
+                color: theme.primaryText,
+                fontSize: 16,
+                fontWeight: '500',
+                padding: 12,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: theme.border,
+              }}
+              maxLength={5}
+              placeholder="과목명"
+              placeholderTextColor={theme.secondaryText}
+              onChangeText={text => {
+                if (selectedSubjectIndices) {
+                  setTimetable(prev => prev.map((row, rowIdx) => row.map((subject, colIdx) => (rowIdx === selectedSubjectIndices.row && colIdx === selectedSubjectIndices.col ? {...subject, subject: text, userChanged: true} : subject))));
+                  setSelectedSubject(prev => (prev ? {...prev, subject: text, userChanged: true} : prev));
+                }
+              }}
+              value={selectedSubject ? selectedSubject.subject : ''}
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="off"
+              autoFocus
+              returnKeyType="done"
+            />
+            <TextInput
+              style={{
+                flex: 1,
+                backgroundColor: theme.background,
+                color: theme.primaryText,
+                fontSize: 16,
+                fontWeight: '500',
+                padding: 12,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: theme.border,
+              }}
+              maxLength={5}
+              placeholder="선생님"
+              placeholderTextColor={theme.secondaryText}
+              onChangeText={text => {
+                if (selectedSubjectIndices) {
+                  setTimetable(prev => prev.map((row, rowIdx) => row.map((subject, colIdx) => (rowIdx === selectedSubjectIndices.row && colIdx === selectedSubjectIndices.col ? {...subject, teacher: text, userChanged: true} : subject))));
+                  setSelectedSubject(prev => (prev ? {...prev, teacher: text, userChanged: true} : prev));
+                }
+              }}
+              value={selectedSubject ? selectedSubject.teacher : ''}
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="off"
+              returnKeyType="done"
+            />
+          </View>
+          <TouchableOpacity
+            style={{backgroundColor: theme.background, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 16, borderWidth: 1, borderColor: theme.border, width: '100%'}}
+            onPress={async () => {
+              if (!selectedSubjectIndices) {
+                return;
+              }
+              const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
+              const classData = JSON.parse((await AsyncStorage.getItem('class')) || '{}');
+              try {
+                const apiTimetable = await getTimetable(school.comciganCode, classData.grade, classData.class);
+                const original = apiTimetable[selectedSubjectIndices.col]?.[selectedSubjectIndices.row] || {subject: '-', teacher: '-', changed: false};
+                setTimetable(prev => prev.map((row, rowIdx) => row.map((subject, colIdx) => (rowIdx === selectedSubjectIndices.row && colIdx === selectedSubjectIndices.col ? {...original, userChanged: false} : subject))));
+                setSelectedSubject({...original, userChanged: false});
+                showToast('원래 시간표로 되돌렸어요.');
+              } catch (e) {
+                showToast('원래 시간표를 불러오지 못했어요.');
+              }
+            }}>
+            <Text style={{color: theme.primaryText, textAlign: 'center', fontWeight: '600'}}>원래 시간표로 되돌리기</Text>
+          </TouchableOpacity>
+        </BottomSheetView>
+      </BottomSheet>
+    </Fragment>
   );
 };
 
@@ -248,22 +383,26 @@ const ScheduleItem = ({item}: {item: Schedule}) => {
   );
 };
 
-const TimetableRow = ({item, index, todayIndex}: {item: Timetable[]; index: number; todayIndex: number}) => {
+const TimetableRow = ({item, index, todayIndex, openBottomSheet}: {item: Timetable[]; index: number; todayIndex: number; openBottomSheet: (params: {row: number; col: number}) => void}) => {
   const {theme, typography} = useTheme();
 
   return (
     <View style={s.timetableRow}>
       {item.map((subject, subIndex) => (
         <View key={`${subject.subject}-${index}-${subIndex}`} style={[s.timetableCell, {backgroundColor: subIndex === todayIndex ? theme.background : theme.card}]}>
-          <Text
-            style={{
-              color: subject.changed ? theme.highlightLight : theme.primaryText,
-              fontWeight: '500',
-              fontSize: 16,
-            }}>
-            {subject.subject}
-          </Text>
-          <Text style={[typography.caption, {color: subject.changed ? theme.highlightLight : theme.secondaryText}]}>{subject.teacher}</Text>
+          <TouchableOpacity onLongPress={() => openBottomSheet({row: index, col: subIndex})}>
+            <Text
+              style={{
+                flexShrink: 1,
+                textAlign: 'center',
+                color: subject.userChanged ? '#FF3B30' : subject.changed ? theme.highlightLight : theme.primaryText,
+                fontWeight: '500',
+                fontSize: 16,
+              }}>
+              {subject.subject}
+            </Text>
+            <Text style={[typography.caption, {textAlign: 'center', color: subject.userChanged ? '#FF3B30' : subject.changed ? theme.highlightLight : theme.secondaryText}]}>{subject.teacher}</Text>
+          </TouchableOpacity>
         </View>
       ))}
     </View>

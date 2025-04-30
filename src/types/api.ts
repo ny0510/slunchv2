@@ -16,6 +16,7 @@ export interface Timetable {
   subject: string;
   teacher: string;
   changed: boolean;
+  userChanged?: boolean;
   originalSubject?: string;
   originalTeacher?: string;
 }
