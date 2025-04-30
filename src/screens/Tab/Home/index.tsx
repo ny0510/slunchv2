@@ -48,6 +48,23 @@ const Home = () => {
     setShowAllergy(settings.showAllergy);
   };
 
+  const transpose = (array: Timetable[][]) => {
+    const maxColLength = Math.max(...array.map(row => row.length));
+    return Array.from({length: maxColLength}, (_, colIndex) =>
+      array.map(row => {
+        const entry = row[colIndex];
+        if (!entry) {
+          return {subject: '-', teacher: '-', changed: false};
+        }
+        return {
+          ...entry,
+          subject: entry.subject === '없음' ? '-' : entry.subject,
+          teacher: entry.teacher === '없음' ? '-' : entry.teacher,
+        };
+      }),
+    );
+  };
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     getSettings();
@@ -176,23 +193,6 @@ const Home = () => {
         - {mealItem.food}
         <Text style={typography.small}>{allergyInfo}</Text>
       </Text>
-    );
-  };
-
-  const transpose = (array: Timetable[][]) => {
-    const maxColLength = Math.max(...array.map(row => row.length));
-    return Array.from({length: maxColLength}, (_, colIndex) =>
-      array.map(row => {
-        const entry = row[colIndex];
-        if (!entry) {
-          return {subject: '-', teacher: '-', changed: false};
-        }
-        return {
-          ...entry,
-          subject: entry.subject === '없음' ? '-' : entry.subject,
-          teacher: entry.teacher === '없음' ? '-' : entry.teacher,
-        };
-      }),
     );
   };
 
