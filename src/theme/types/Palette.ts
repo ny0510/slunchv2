@@ -3,6 +3,7 @@ interface Palette {
   background: string;
   highlight: string;
   highlightLight: string;
+  highlightSecondary: string;
   card: string;
   primaryText: string;
   secondaryText: string;

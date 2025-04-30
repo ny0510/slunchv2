@@ -5,6 +5,7 @@ const dark: Palette = {
   background: '#181818',
   highlight: '#7956FC',
   highlightLight: '#BAA6FF',
+  highlightSecondary: '#FF9F40',
   card: '#252525',
   primaryText: '#FEFCFF',
   secondaryText: '#B0B0B0',

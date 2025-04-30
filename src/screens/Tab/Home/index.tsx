@@ -395,13 +395,13 @@ const TimetableRow = ({item, index, todayIndex, openBottomSheet}: {item: Timetab
               style={{
                 flexShrink: 1,
                 textAlign: 'center',
-                color: subject.userChanged ? '#FF3B30' : subject.changed ? theme.highlightLight : theme.primaryText,
+                color: subject.userChanged ? theme.highlightSecondary : subject.changed ? theme.highlightLight : theme.primaryText,
                 fontWeight: '500',
                 fontSize: 16,
               }}>
               {subject.subject}
             </Text>
-            <Text style={[typography.caption, {textAlign: 'center', color: subject.userChanged ? '#FF3B30' : subject.changed ? theme.highlightLight : theme.secondaryText}]}>{subject.teacher}</Text>
+            <Text style={[typography.caption, {textAlign: 'center', color: subject.userChanged ? theme.highlightSecondary : subject.changed ? theme.highlightLight : theme.secondaryText}]}>{subject.teacher}</Text>
           </TouchableOpacity>
         </View>
       ))}
