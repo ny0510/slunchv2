@@ -323,6 +323,7 @@ const Home = () => {
             />
           </View>
           <TouchableOpacity
+            activeOpacity={0.7}
             style={{backgroundColor: theme.background, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 16, borderWidth: 1, borderColor: theme.border, width: '100%'}}
             onPress={async () => {
               if (!selectedSubjectIndices) {
