@@ -119,7 +119,7 @@ const Meal = () => {
   return loading ? (
     <Loading fullScreen />
   ) : (
-    <Fragment>
+    <>
       <Container scrollView bounce={!loading} scrollViewRef={scrollViewRef} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}>
         <View style={{gap: 12, width: '100%'}}>
           {meal?.length > 0 ? (
@@ -196,7 +196,7 @@ const Meal = () => {
           />
         </BottomSheetView>
       </BottomSheet>
-    </Fragment>
+    </>
   );
 };
 
