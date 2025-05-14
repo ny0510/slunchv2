@@ -53,14 +53,37 @@ const ShareScreen = ({route}: StackScreenProps<RootStackParamList, 'Share'>) => 
     }
   };
 
+  const shareToImage = async () => {
+    analytics().logEvent('share_to_image');
+    const capturedImage = await viewShotRef.current?.capture?.();
+
+    if (!capturedImage) {
+      console.log('Failed to capture image');
+      return showToast('이미지 캡처에 실패했어요.');
+    }
+
+    try {
+      await Share.open({
+        title: `${data.school} ${data.date} 급식`,
+        url: `data:image/png;base64,${capturedImage}`,
+        type: 'image/png',
+        failOnCancel: false,
+      });
+    } catch (e) {
+      const err = e as Error;
+      showToast('공유에 실패했어요.');
+      console.error('Error sharing', err);
+    }
+  };
+
   return (
-    <Container style={{flex: 1, justifyContent: 'space-around', alignItems: 'center'}}>
+    <Container style={{flex: 1, justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 28}}>
       <View />
       <TouchableScale scaleTo={0.98}>
-        <ViewShot options={{format: 'png', result: 'base64'}} ref={viewShotRef} style={{alignItems: 'center'}}>
+        <ViewShot options={{format: 'png', result: 'base64'}} ref={viewShotRef} style={{alignItems: 'center', margin: 2}}>
           <View
             style={{
-              width: '95%',
+              width: '100%',
               aspectRatio: 1 / 1,
               justifyContent: 'space-between',
               borderColor: theme.highlightLight,
@@ -74,7 +97,7 @@ const ShareScreen = ({route}: StackScreenProps<RootStackParamList, 'Share'>) => 
             </View>
             <View>
               {data.meal.split('\n').map((meal, index) => (
-                <Text key={index} style={[typography.body, {fontWeight: '700', color: theme.primaryText, fontSize: 20}]} numberOfLines={1} adjustsFontSizeToFit>
+                <Text key={index} style={[typography.body, {fontWeight: '700', color: theme.primaryText, fontSize: 18}]} numberOfLines={1} adjustsFontSizeToFit>
                   {meal}
                 </Text>
               ))}
@@ -87,12 +110,21 @@ const ShareScreen = ({route}: StackScreenProps<RootStackParamList, 'Share'>) => 
         </ViewShot>
       </TouchableScale>
 
-      <TouchableScale pressInEasing={Easing.elastic(1.5)} pressOutEasing={Easing.elastic(1.5)} pressInDuration={150} pressOutDuration={150} scaleTo={0.97} style={{width: '95%'}} onPress={shareToInstagramStory}>
-        <View style={{paddingVertical: 16, paddingHorizontal: 20, alignItems: 'center', gap: 5, backgroundColor: theme.card, borderRadius: 12, flexDirection: 'row', justifyContent: 'center', alignContent: 'center'}}>
-          <FontAwesome6 name="instagram" size={20} color={theme.primaryText} iconStyle="brand" />
-          <Text style={[typography.subtitle, {color: theme.primaryText}]}>공유하기</Text>
-        </View>
-      </TouchableScale>
+      <View style={{width: '100%', gap: 16}}>
+        <TouchableScale pressInEasing={Easing.elastic(1.5)} pressOutEasing={Easing.elastic(1.5)} pressInDuration={150} pressOutDuration={150} scaleTo={0.97} style={{width: '100%'}} onPress={shareToImage}>
+          <View style={{paddingVertical: 14, alignItems: 'center', gap: 6, backgroundColor: theme.card, borderRadius: 12, flexDirection: 'row', justifyContent: 'center', alignContent: 'center'}}>
+            <FontAwesome6 name="image" size={20} color={theme.primaryText} />
+            <Text style={[typography.subtitle, {color: theme.primaryText}]}>공유하기</Text>
+          </View>
+        </TouchableScale>
+
+        <TouchableScale pressInEasing={Easing.elastic(1.5)} pressOutEasing={Easing.elastic(1.5)} pressInDuration={150} pressOutDuration={150} scaleTo={0.97} style={{width: '100%'}} onPress={shareToInstagramStory}>
+          <View style={{paddingVertical: 14, alignItems: 'center', gap: 6, backgroundColor: theme.card, borderRadius: 12, flexDirection: 'row', justifyContent: 'center', alignContent: 'center'}}>
+            <FontAwesome6 name="instagram" size={20} color={theme.primaryText} iconStyle="brand" />
+            <Text style={[typography.subtitle, {color: theme.primaryText}]}>인스타그램 스토리에 업로드</Text>
+          </View>
+        </TouchableScale>
+      </View>
     </Container>
   );
 };

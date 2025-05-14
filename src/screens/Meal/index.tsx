@@ -171,7 +171,7 @@ const Meal = () => {
             }}
           />
           <Content
-            title="공유하기"
+            title="텍스트로 공유하기"
             arrow
             onPress={() => {
               analytics().logEvent('meal_share');
@@ -186,7 +186,7 @@ const Meal = () => {
             }}
           />
           <Content
-            title="인스타그램 스토리로 공유하기"
+            title="이미지로 공유하기"
             arrow
             onPress={() => {
               analytics().logEvent('meal_instagram_share');
