@@ -1,7 +1,7 @@
 import {ANDROID_HOME_BANNER_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
 import React, {Fragment, ReactNode, useCallback, useEffect, useRef, useState} from 'react';
-import {AppState, Easing, FlatList, Platform, RefreshControl, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {AppState, Easing, FlatList, Keyboard, Platform, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
 import Midnight from 'react-native-midnight';
 
 import {styles as s} from './styles';
@@ -19,7 +19,7 @@ import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {Meal, Schedule, Timetable} from '@/types/api';
 import {MealItem} from '@/types/meal';
-import BottomSheet, {BottomSheetBackdrop, BottomSheetView} from '@gorhom/bottom-sheet';
+import BottomSheet, {BottomSheetBackdrop, BottomSheetTextInput, BottomSheetView} from '@gorhom/bottom-sheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
@@ -215,7 +215,22 @@ const Home = () => {
     }
   };
 
-  const renderBackdrop = useCallback((props: any) => <BottomSheetBackdrop {...props} pressBehavior="close" disappearsOnIndex={-1} />, []);
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        pressBehavior="close"
+        disappearsOnIndex={-1}
+        onPress={() => {
+          Keyboard.dismiss();
+          if (props.onPress) {
+            props.onPress();
+          }
+        }}
+      />
+    ),
+    [],
+  );
 
   return (
     <Fragment>
@@ -259,14 +274,23 @@ const Home = () => {
         </View>
       </Container>
 
-      <BottomSheet backdropComponent={renderBackdrop} ref={bottomSheetRef} index={-1} enablePanDownToClose onChange={handleSheetChanges} backgroundStyle={{backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}} handleIndicatorStyle={{backgroundColor: theme.secondaryText}}>
+      <BottomSheet
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+        backdropComponent={renderBackdrop}
+        ref={bottomSheetRef}
+        index={-1}
+        enablePanDownToClose
+        onChange={handleSheetChanges}
+        backgroundStyle={{backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}}
+        handleIndicatorStyle={{backgroundColor: theme.secondaryText}}>
         <BottomSheetView style={{padding: 18, backgroundColor: theme.card, justifyContent: 'center', alignItems: 'center', gap: 8}}>
           <View style={{gap: 4, width: '100%'}}>
             <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600', alignSelf: 'flex-start'}]}>과목명 변경</Text>
             <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', alignSelf: 'flex-start'}]}>시간표가 알맞지 않다면 직접 변경해주세요.</Text>
           </View>
           <View style={{flexDirection: 'row', gap: 8, width: '100%'}}>
-            <TextInput
+            <BottomSheetTextInput
               style={{
                 flex: 1,
                 backgroundColor: theme.background,
@@ -291,10 +315,9 @@ const Home = () => {
               autoCapitalize="none"
               autoCorrect={false}
               autoComplete="off"
-              autoFocus
               returnKeyType="done"
             />
-            <TextInput
+            <BottomSheetTextInput
               style={{
                 flex: 1,
                 backgroundColor: theme.background,
