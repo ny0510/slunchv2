@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import React, {useEffect} from 'react';
-import {AppRegistry, AppState, Platform} from 'react-native';
+import {AppRegistry, Platform} from 'react-native';
 import mobileAds from 'react-native-google-mobile-ads';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
 import {SafeAreaProvider} from 'react-native-safe-area-context';

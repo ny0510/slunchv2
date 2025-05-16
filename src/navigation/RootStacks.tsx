@@ -94,7 +94,7 @@ const RootStacks = () => {
         screen: Share,
         options: {
           headerShown: true,
-          title: '인스타그램 스토리 공유',
+          title: '공유',
         },
       },
     },
