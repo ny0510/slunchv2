@@ -7,7 +7,7 @@ import {useAuth} from '@/contexts/AuthContext';
 import {useTheme} from '@/contexts/ThemeContext';
 import {useUser} from '@/hooks/useUser';
 
-const AppInfoCard = () => {
+const MyInfoCard = () => {
   const user = useUser();
   const {user: authUser} = useAuth();
 
@@ -24,4 +24,4 @@ const AppInfoCard = () => {
   );
 };
 
-export default AppInfoCard;
+export default MyInfoCard;
