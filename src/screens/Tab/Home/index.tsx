@@ -307,8 +307,9 @@ const Home = () => {
               placeholderTextColor={theme.secondaryText}
               onChangeText={text => {
                 if (selectedSubjectIndices) {
-                  setTimetable(prev => prev.map((row, rowIdx) => row.map((subject, colIdx) => (rowIdx === selectedSubjectIndices.row && colIdx === selectedSubjectIndices.col ? {...subject, subject: text, userChanged: true} : subject))));
-                  setSelectedSubject(prev => (prev ? {...prev, subject: text, userChanged: true} : prev));
+                  const formattedText = text === '없음' ? '-' : text;
+                  setTimetable(prev => prev.map((row, rowIdx) => row.map((subject, colIdx) => (rowIdx === selectedSubjectIndices.row && colIdx === selectedSubjectIndices.col ? {...subject, subject: formattedText, userChanged: true} : subject))));
+                  setSelectedSubject(prev => (prev ? {...prev, subject: formattedText, userChanged: true} : prev));
                 }
               }}
               value={selectedSubject ? selectedSubject.subject : ''}
@@ -356,7 +357,12 @@ const Home = () => {
               const classData = JSON.parse((await AsyncStorage.getItem('class')) || '{}');
               try {
                 const apiTimetable = await getTimetable(school.comciganCode, classData.grade, classData.class);
-                const original = apiTimetable[selectedSubjectIndices.col]?.[selectedSubjectIndices.row] || {subject: '-', teacher: '-', changed: false};
+                const raw = apiTimetable[selectedSubjectIndices.col]?.[selectedSubjectIndices.row] || {subject: '-', teacher: '-', changed: false};
+                const original = {
+                  ...raw,
+                  subject: raw.subject === '없음' ? '-' : raw.subject,
+                  teacher: raw.teacher === '없음' ? '-' : raw.teacher,
+                };
                 setTimetable(prev => prev.map((row, rowIdx) => row.map((subject, colIdx) => (rowIdx === selectedSubjectIndices.row && colIdx === selectedSubjectIndices.col ? {...original, userChanged: false} : subject))));
                 setSelectedSubject({...original, userChanged: false});
                 showToast('원래 시간표로 되돌렸어요.');
