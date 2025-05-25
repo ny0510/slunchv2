@@ -7,12 +7,11 @@ interface Props {
   scaleTo?: number;
   pressInEasing?: (t: number) => number;
   pressOutEasing?: (t: number) => number;
-  onPress?: (...args: any[]) => void;
   style?: object;
   children: React.ReactNode;
 }
 
-const TouchableScale = ({onPress, pressInDuration = 100, pressOutDuration = 100, scaleTo = 0.95, pressInEasing, pressOutEasing, style, children, ...rest}: Props & {[key: string]: any}) => {
+const TouchableScale = ({pressInDuration = 100, pressOutDuration = 100, scaleTo = 0.95, pressInEasing, pressOutEasing, style, children, ...rest}: Props & {[key: string]: any}) => {
   const scale = new Animated.Value(1);
 
   const onPressIn = () => {
@@ -34,10 +33,8 @@ const TouchableScale = ({onPress, pressInDuration = 100, pressOutDuration = 100,
   };
 
   return (
-    <Animated.View style={{transform: [{scale}], ...style}} onTouchEnd={onPress} onTouchCancel={onPressOut} {...rest}>
-      <View onTouchStart={onPressIn} onTouchEnd={onPressOut} onTouchCancel={onPressOut}>
-        {children}
-      </View>
+    <Animated.View style={{transform: [{scale}], ...style}} onTouchStart={onPressIn} onTouchEnd={onPressOut} onTouchCancel={onPressOut} {...rest}>
+      <View>{children}</View>
     </Animated.View>
   );
 };

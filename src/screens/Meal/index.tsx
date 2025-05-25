@@ -1,7 +1,7 @@
 import {ANDROID_MEAL_NATIVE_AD_UNIT_ID, IOS_MEAL_NATIVE_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
 import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
-import {Platform, RefreshControl, ScrollView, Text, View} from 'react-native';
+import {Platform, RefreshControl, ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 import {Easing} from 'react-native-reanimated';
 import Share from 'react-native-share';
@@ -19,7 +19,7 @@ import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {Meal as MealType} from '@/types/api';
 import {MealItem} from '@/types/meal';
-import BottomSheet, {BottomSheetBackdrop, BottomSheetView} from '@gorhom/bottom-sheet';
+import BottomSheet, {BottomSheetBackdrop, BottomSheetView, TouchableWithoutFeedback} from '@gorhom/bottom-sheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Clipboard from '@react-native-clipboard/clipboard';
 import analytics from '@react-native-firebase/analytics';
@@ -141,11 +141,13 @@ const Meal = () => {
                 return (
                   <Fragment key={i}>
                     {shouldShowAd && <NativeAdCard adUnitId={Platform.OS === 'ios' ? IOS_MEAL_NATIVE_AD_UNIT_ID : ANDROID_MEAL_NATIVE_AD_UNIT_ID} />}
-                    <TouchableScale pressInEasing={Easing.elastic(0.5)} pressOutEasing={Easing.elastic(0.5)} pressInDuration={100} pressOutDuration={100} scaleTo={0.98} onPress={() => openBottomSheet(mealText, date)}>
+                    {/* <TouchableScale pressInEasing={Easing.elastic(0.5)} pressOutEasing={Easing.elastic(0.5)} pressInDuration={100} pressOutDuration={100} scaleTo={0.98}> */}
+                    <TouchableOpacity activeOpacity={0.7} onPress={() => openBottomSheet(mealText, date)}>
                       <Card title={date}>
                         <FlatList data={m.meal} renderItem={({item, index}) => renderMealItem(item, index)} scrollEnabled={false} />
                       </Card>
-                    </TouchableScale>
+                    </TouchableOpacity>
+                    {/* </TouchableScale> */}
                   </Fragment>
                 );
               });
