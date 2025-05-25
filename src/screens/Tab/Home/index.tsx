@@ -75,19 +75,19 @@ const Home = () => {
       const classData: {grade: number; class: number} = JSON.parse((await AsyncStorage.getItem('class')) || '{}');
 
       // customTimetable 우선 적용
-      const customTimetableStr = await AsyncStorage.getItem('customTimetable');
-      if (customTimetableStr) {
-        setTimetable(JSON.parse(customTimetableStr));
-      } else {
-        let timetableResponse = [];
-        try {
-          timetableResponse = await getTimetable(school.comciganCode, classData.grade, classData.class);
-          setTimetable(transpose(timetableResponse));
-        } catch (e) {
-          console.error('Error fetching timetable:', e);
-          showToast('시간표를 불러오는 중 오류가 발생했어요.');
-        }
+      // const customTimetableStr = await AsyncStorage.getItem('customTimetable');
+      // if (customTimetableStr) {
+      //   setTimetable(JSON.parse(customTimetableStr));
+      // } else {
+      let timetableResponse = [];
+      try {
+        timetableResponse = await getTimetable(school.comciganCode, classData.grade, classData.class);
+        setTimetable(transpose(timetableResponse));
+      } catch (e) {
+        console.error('Error fetching timetable:', e);
+        showToast('시간표를 불러오는 중 오류가 발생했어요.');
       }
+      // }
 
       let mealResponse = [];
       try {
@@ -379,8 +379,8 @@ const Home = () => {
 };
 
 const HomeCard = ({title, titleIcon, arrow, onPress, notificationDot, children, ...rest}: {title?: string; titleIcon?: ReactNode; arrow?: boolean; onPress?: () => void; notificationDot?: boolean; children?: ReactNode} & {[key: string]: any}) => (
-  <TouchableScale pressInEasing={Easing.elastic(0.5)} pressOutEasing={Easing.elastic(0.5)} pressInDuration={100} pressOutDuration={100} scaleTo={0.98} onPress={onPress} {...rest}>
-    <TouchableOpacity>
+  <TouchableScale pressInEasing={Easing.elastic(0.5)} pressOutEasing={Easing.elastic(0.5)} pressInDuration={100} pressOutDuration={100} scaleTo={0.98} {...rest}>
+    <TouchableOpacity activeOpacity={0.7} onPress={onPress}>
       <Card title={title} titleIcon={titleIcon} arrow={arrow} notificationDot={notificationDot}>
         {children}
       </Card>
@@ -420,19 +420,19 @@ const TimetableRow = ({item, index, todayIndex, openBottomSheet}: {item: Timetab
     <View style={s.timetableRow}>
       {item.map((subject, subIndex) => (
         <View key={`${subject.subject}-${index}-${subIndex}`} style={[s.timetableCell, {backgroundColor: subIndex === todayIndex ? theme.background : theme.card}]}>
-          <TouchableOpacity onLongPress={() => openBottomSheet({row: index, col: subIndex})}>
-            <Text
-              style={{
-                flexShrink: 1,
-                textAlign: 'center',
-                color: subject.userChanged ? theme.highlightSecondary : subject.changed ? theme.highlightLight : theme.primaryText,
-                fontWeight: '500',
-                fontSize: 16,
-              }}>
-              {subject.subject}
-            </Text>
-            <Text style={[typography.caption, {textAlign: 'center', color: subject.userChanged ? theme.highlightSecondary : subject.changed ? theme.highlightLight : theme.secondaryText}]}>{subject.teacher}</Text>
-          </TouchableOpacity>
+          {/* <TouchableOpacity onLongPress={() => openBottomSheet({row: index, col: subIndex})}> */}
+          <Text
+            style={{
+              flexShrink: 1,
+              textAlign: 'center',
+              color: subject.userChanged ? theme.highlightSecondary : subject.changed ? theme.highlightLight : theme.primaryText,
+              fontWeight: '500',
+              fontSize: 16,
+            }}>
+            {subject.subject}
+          </Text>
+          <Text style={[typography.caption, {textAlign: 'center', color: subject.userChanged ? theme.highlightSecondary : subject.changed ? theme.highlightLight : theme.secondaryText}]}>{subject.teacher}</Text>
+          {/* </TouchableOpacity> */}
         </View>
       ))}
     </View>
