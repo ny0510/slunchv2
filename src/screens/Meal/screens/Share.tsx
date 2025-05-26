@@ -1,12 +1,11 @@
 import React from 'react';
 import {Text, View} from 'react-native';
-import {Easing} from 'react-native-reanimated';
 import Share, {ShareSingleOptions, Social} from 'react-native-share';
+import TouchableScale from 'react-native-touchable-scale';
 import ViewShot from 'react-native-view-shot';
 
 import Logo from '@/assets/images/logo.svg';
 import Container from '@/components/Container';
-import TouchableScale from '@/components/TouchableScale';
 import {useTheme} from '@/contexts/ThemeContext';
 import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
@@ -79,7 +78,8 @@ const ShareScreen = ({route}: StackScreenProps<RootStackParamList, 'Share'>) => 
   return (
     <Container style={{flex: 1, justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 28}}>
       <View />
-      <TouchableScale scaleTo={0.98}>
+
+      <TouchableScale activeScale={0.98} tension={40} friction={3}>
         <ViewShot options={{format: 'png', result: 'base64'}} ref={viewShotRef} style={{alignItems: 'center', margin: 2}}>
           <View
             style={{
@@ -111,14 +111,14 @@ const ShareScreen = ({route}: StackScreenProps<RootStackParamList, 'Share'>) => 
       </TouchableScale>
 
       <View style={{width: '100%', gap: 16}}>
-        <TouchableScale pressInEasing={Easing.elastic(1.5)} pressOutEasing={Easing.elastic(1.5)} pressInDuration={150} pressOutDuration={150} scaleTo={0.97} style={{width: '100%'}} onPress={shareToImage}>
+        <TouchableScale activeScale={0.98} tension={40} friction={3} onPress={shareToImage}>
           <View style={{paddingVertical: 14, alignItems: 'center', gap: 6, backgroundColor: theme.card, borderRadius: 12, flexDirection: 'row', justifyContent: 'center', alignContent: 'center'}}>
             <FontAwesome6 name="image" size={20} color={theme.primaryText} />
             <Text style={[typography.subtitle, {color: theme.primaryText}]}>공유하기</Text>
           </View>
         </TouchableScale>
 
-        <TouchableScale pressInEasing={Easing.elastic(1.5)} pressOutEasing={Easing.elastic(1.5)} pressInDuration={150} pressOutDuration={150} scaleTo={0.97} style={{width: '100%'}} onPress={shareToInstagramStory}>
+        <TouchableScale activeScale={0.98} tension={40} friction={3} onPress={shareToInstagramStory}>
           <View style={{paddingVertical: 14, alignItems: 'center', gap: 6, backgroundColor: theme.card, borderRadius: 12, flexDirection: 'row', justifyContent: 'center', alignContent: 'center'}}>
             <FontAwesome6 name="instagram" size={20} color={theme.primaryText} iconStyle="brand" />
             <Text style={[typography.subtitle, {color: theme.primaryText}]}>인스타그램 스토리에 업로드</Text>

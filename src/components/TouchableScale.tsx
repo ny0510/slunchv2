@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import {Animated, View} from 'react-native';
 
 interface Props {
@@ -9,10 +9,11 @@ interface Props {
   pressOutEasing?: (t: number) => number;
   style?: object;
   children: React.ReactNode;
+  onPress?: () => void;
 }
 
-const TouchableScale = ({pressInDuration = 100, pressOutDuration = 100, scaleTo = 0.95, pressInEasing, pressOutEasing, style, children, ...rest}: Props & {[key: string]: any}) => {
-  const scale = new Animated.Value(1);
+const TouchableScale = ({onPress, pressInDuration = 100, pressOutDuration = 100, scaleTo = 0.95, pressInEasing, pressOutEasing, style, children, ...rest}: Props & {[key: string]: any}) => {
+  const scale = useRef(new Animated.Value(1)).current;
 
   const onPressIn = () => {
     Animated.timing(scale, {
@@ -33,7 +34,15 @@ const TouchableScale = ({pressInDuration = 100, pressOutDuration = 100, scaleTo 
   };
 
   return (
-    <Animated.View style={{transform: [{scale}], ...style}} onTouchStart={onPressIn} onTouchEnd={onPressOut} onTouchCancel={onPressOut} {...rest}>
+    <Animated.View
+      style={[{transform: [{scale}]}, style]}
+      onTouchStart={onPressIn}
+      onTouchEnd={() => {
+        onPressOut();
+        if (onPress) onPress();
+      }}
+      onTouchCancel={onPressOut}
+      {...rest}>
       <View>{children}</View>
     </Animated.View>
   );

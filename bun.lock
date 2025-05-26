@@ -49,6 +49,7 @@
         "react-native-svg": "^15.12.0",
         "react-native-switch": "^1.5.1",
         "react-native-toast-message": "^2.3.0",
+        "react-native-touchable-scale": "^2.2.0",
         "react-native-tracking-transparency": "^0.1.2",
         "react-native-version-check": "^3.5.0",
         "react-native-view-shot": "^4.0.3",
@@ -597,6 +598,8 @@
 
     "@react-native/metro-config": ["@react-native/metro-config@0.78.2", "", { "dependencies": { "@react-native/js-polyfills": "0.78.2", "@react-native/metro-babel-transformer": "0.78.2", "metro-config": "^0.81.3", "metro-runtime": "^0.81.3" } }, "sha512-n4wL9p4vRDuvKiVChMifnpeWvAoWIniT2w9P4WuNflmU5+A7kS5QDviBYJqfCPh0OSzeaXMtlh8FEVUmtBCjiQ=="],
 
+    "@react-native/normalize-color": ["@react-native/normalize-color@2.1.0", "", {}, "sha512-Z1jQI2NpdFJCVgpY+8Dq/Bt3d+YUi1928Q+/CZm/oh66fzM0RUl54vvuXlPJKybH4pdCZey1eDTPaLHkMPNgWA=="],
+
     "@react-native/normalize-colors": ["@react-native/normalize-colors@0.78.2", "", {}, "sha512-CA/3ynRO6/g1LDbqU8ewrv0js/1lU4+j04L7qz6btXbLTDk1UkF+AfpGRJGbIVY9UmFBJ7l1AOmzwutrWb3Txw=="],
 
     "@react-native/typescript-config": ["@react-native/typescript-config@0.77.0", "", {}, "sha512-WunTrKSQtGKi7gVf24jinHkXXi3tSkChRfrUPFY1njNWwVNtJ/H0ElSlJKUIWaBcd6DKG4ZddKsftWBAWTV0Sg=="],
@@ -1000,6 +1003,8 @@
     "delayed-stream": ["delayed-stream@1.0.0", "", {}, "sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ=="],
 
     "depd": ["depd@2.0.0", "", {}, "sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw=="],
+
+    "deprecated-react-native-prop-types": ["deprecated-react-native-prop-types@2.3.0", "", { "dependencies": { "@react-native/normalize-color": "*", "invariant": "*", "prop-types": "*" } }, "sha512-pWD0voFtNYxrVqvBMYf5gq3NA2GCpfodS1yNynTPc93AYA/KEMGeWDqqeUB6R2Z9ZofVhks2aeJXiuQqKNpesA=="],
 
     "dequal": ["dequal@2.0.3", "", {}, "sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA=="],
 
@@ -1750,6 +1755,8 @@
     "react-native-switch": ["react-native-switch@1.5.1", "", { "dependencies": { "prop-types": "^15.6.0" }, "peerDependencies": { "react-native": ">=0.29" } }, "sha512-nfuPrrPKzeZL1mQH0u1rlEGv9W1+okU/xOcNNaDNz/LhSdzWOZ04ogJ4iEj7Sth3hkBxv4XwFQZTgCc07we+cg=="],
 
     "react-native-toast-message": ["react-native-toast-message@2.3.0", "", { "peerDependencies": { "react": "*", "react-native": "*" } }, "sha512-d7LldTK1ei1Bl7RFhoOYw8hVQ4oKPQHORYI//xR9Pyz3HxSlFlvQbueE5X3KLoemRRgBrOUg3zY6DxXnxrVLRg=="],
+
+    "react-native-touchable-scale": ["react-native-touchable-scale@2.2.0", "", { "dependencies": { "deprecated-react-native-prop-types": "^2.3.0", "prop-types": "^15.6.0" }, "peerDependencies": { "react": ">=0.13.2 || ^0.14 || ^15.0.0", "react-native": ">=0.19.0" } }, "sha512-EKWOpvqFKKvw4FsaMqoIqqALQbhEcEYeyd5iIctub4lA+6nUfQ472NeQzDLtXMJD65JUYxsC8XEKz/Ttj5+b/Q=="],
 
     "react-native-tracking-transparency": ["react-native-tracking-transparency@0.1.2", "", { "peerDependencies": { "react": "*", "react-native": "*" } }, "sha512-oe+BFutdq+fnTgyC9pAm/NEz6nuYkEHpFQUU8swj+E5oOOPqGmrNXmseNatKob521Zh7w0ovxXkoQNTV+PKTFA=="],
 

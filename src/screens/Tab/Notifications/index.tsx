@@ -1,14 +1,15 @@
 import {ANDROID_MEAL_NATIVE_AD_UNIT_ID, IOS_NOTI_NATIVE_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
 import React, {useCallback, useEffect, useState} from 'react';
-import {Easing, Platform, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
+import {Platform, RefreshControl, Text, View} from 'react-native';
+// import TouchableScale from '@/components/TouchableScale';
+import TouchableScale from 'react-native-touchable-scale';
 
 import Ad from './components/Ad';
 import {getNotifications} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
-import TouchableScale from '@/components/TouchableScale';
 import {useTheme} from '@/contexts/ThemeContext';
 import {showToast} from '@/lib/toast';
 import {Notification} from '@/types/api';
@@ -102,22 +103,20 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
             const icon = <FontAwesome6 name="bullhorn" size={16} color={theme.primaryText} iconStyle="solid" />;
 
             return (
-              <TouchableScale key={index} pressInEasing={Easing.elastic(0.5)} pressOutEasing={Easing.elastic(0.5)} pressInDuration={200} pressOutDuration={200} scaleTo={0.98} onPress={() => handlePress(index, item.id)}>
-                <TouchableOpacity activeOpacity={0.7}>
-                  <Card title={item.title} titleIcon={icon} subtitle={date} arrow notificationDot={isNew}>
-                    {expandedIndices.includes(index) && (
-                      <Text
-                        style={{
-                          color: theme.primaryText,
-                          fontWeight: '400',
-                          fontSize: 16,
-                          lineHeight: 24,
-                        }}>
-                        {item.content}
-                      </Text>
-                    )}
-                  </Card>
-                </TouchableOpacity>
+              <TouchableScale key={index} onPress={() => handlePress(index, item.id)} activeScale={0.98} tension={40} friction={3}>
+                <Card title={item.title} titleIcon={icon} subtitle={date} arrow notificationDot={isNew}>
+                  {expandedIndices.includes(index) && (
+                    <Text
+                      style={{
+                        color: theme.primaryText,
+                        fontWeight: '400',
+                        fontSize: 16,
+                        lineHeight: 24,
+                      }}>
+                      {item.content}
+                    </Text>
+                  )}
+                </Card>
               </TouchableScale>
             );
           })

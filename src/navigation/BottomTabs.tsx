@@ -1,9 +1,10 @@
 /* eslint-disable react/no-unstable-nested-components */
 import React, {useEffect, useState} from 'react';
-import {Easing, GestureResponderEvent, TouchableOpacity} from 'react-native';
+import {GestureResponderEvent} from 'react-native';
+// import TouchableScale from '@/components/TouchableScale';
+import TouchableScale from 'react-native-touchable-scale';
 
 import {getNotifications} from '@/api';
-import TouchableScale from '@/components/TouchableScale';
 import {useTheme} from '@/contexts/ThemeContext';
 import Home from '@/screens/Tab/Home';
 import Notifications from '@/screens/Tab/Notifications';
@@ -112,9 +113,13 @@ const BottomTabs = () => {
 
 const TabBarButton = ({children, onPress}: {children: React.ReactNode; onPress: (event?: GestureResponderEvent) => void}) => {
   return (
-    <TouchableScale pressInEasing={Easing.elastic(1.5)} pressOutEasing={Easing.elastic(1.5)} pressInDuration={150} pressOutDuration={150} scaleTo={0.9} onPress={onPress} style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <TouchableOpacity style={{justifyContent: 'center', alignItems: 'center'}}>{children}</TouchableOpacity>
+    // <TouchableOpacity style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+    // <TouchableScale onPress={onPress} pressInEasing={Easing.elastic(1.5)} pressOutEasing={Easing.elastic(1.5)} pressInDuration={150} pressOutDuration={150} scaleTo={0.9} style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+    <TouchableScale onPress={onPress} style={{flex: 1, justifyContent: 'center', alignItems: 'center'}} activeScale={0.95} tension={40} friction={3}>
+      {children}
     </TouchableScale>
+    // </TouchableScale>
+    // </TouchableOpacity>
   );
 };
 

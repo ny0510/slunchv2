@@ -1,8 +1,9 @@
 import {ANDROID_HOME_BANNER_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
 import React, {Fragment, ReactNode, useCallback, useEffect, useRef, useState} from 'react';
-import {AppState, Easing, FlatList, Keyboard, Platform, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
+import {AppState, FlatList, Keyboard, Platform, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
 import Midnight from 'react-native-midnight';
+import TouchableScale from 'react-native-touchable-scale';
 
 import {styles as s} from './styles';
 import {getMeal, getSchedules, getTimetable} from '@/api';
@@ -11,7 +12,7 @@ import BannerAdCard from '@/components/BannerAdCard';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
-import TouchableScale from '@/components/TouchableScale';
+// import TouchableScale from '@/components/TouchableScale';
 import {useTheme} from '@/contexts/ThemeContext';
 import {useUser} from '@/hooks/useUser';
 import {clearCache} from '@/lib/cache';
@@ -379,12 +380,12 @@ const Home = () => {
 };
 
 const HomeCard = ({title, titleIcon, arrow, onPress, notificationDot, children, ...rest}: {title?: string; titleIcon?: ReactNode; arrow?: boolean; onPress?: () => void; notificationDot?: boolean; children?: ReactNode} & {[key: string]: any}) => (
-  <TouchableScale pressInEasing={Easing.elastic(0.5)} pressOutEasing={Easing.elastic(0.5)} pressInDuration={100} pressOutDuration={100} scaleTo={0.98} {...rest}>
-    <TouchableOpacity activeOpacity={0.7} onPress={onPress}>
-      <Card title={title} titleIcon={titleIcon} arrow={arrow} notificationDot={notificationDot}>
-        {children}
-      </Card>
-    </TouchableOpacity>
+  <TouchableScale onPress={onPress} activeScale={0.98} tension={60} friction={3} {...rest}>
+    {/* <TouchableOpacity activeOpacity={0.7} onPress={onPress}> */}
+    <Card title={title} titleIcon={titleIcon} arrow={arrow} notificationDot={notificationDot}>
+      {children}
+    </Card>
+    {/* </TouchableOpacity> */}
   </TouchableScale>
 );
 
