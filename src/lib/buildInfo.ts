@@ -3,4 +3,4 @@ import DeviceInfo from 'react-native-device-info';
 
 export const appVersion = DeviceInfo.getVersion();
 export const appBuildNumber = DeviceInfo.getBuildNumber();
-export const buildDate = dayjs('2025-056-2');
+export const buildDate = dayjs('2025-05-26');
