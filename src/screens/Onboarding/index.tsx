@@ -263,59 +263,69 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
   const handlePress = async () => {
     if (!isButtonDisabled) {
       setIsButtonDisabled(true);
-      const response = await neisSchoolSearch(school.schoolName);
-      const neisSchool = response.find(item => item.region.includes(school.region)) || response[0];
+      setIsLoading(true);
 
-      if (!neisSchool) {
-        showToast('학교 정보를 불러오는 중 오류가 발생했어요.');
-        setIsButtonDisabled(false);
-        return;
-      }
-
-      if (isFirstOpen) {
-        AsyncStorage.setItem('isFirstOpen', 'false');
-        AsyncStorage.setItem('firstOpenDate', dayjs().format('YYYY-MM-DD'));
-      }
-
-      AsyncStorage.setItem(
-        'school',
-        JSON.stringify({
-          schoolName: school.schoolName,
-          comciganCode: school.schoolCode,
-          comciganRegion: school.region,
-          neisCode: neisSchool.schoolCode,
-          neisRegion: neisSchool.region,
-          neisRegionCode: neisSchool.regionCode,
-        }),
-      );
-      AsyncStorage.setItem('class', JSON.stringify({grade: selectedGrade, class: selectedClass}));
-      AsyncStorage.setItem('demoMode', JSON.stringify(false));
-      AsyncStorage.removeItem('customTimetable');
-
-      // 학급 정보 변경되면 알림 해제
       try {
-        const storedToken = await AsyncStorage.getItem('fcmToken');
-        const isNotiEnabled = await AsyncStorage.getItem('isNotiEnabled');
-        const isNotiEnabledParsed = isNotiEnabled ? JSON.parse(isNotiEnabled) : false;
+        const response = await neisSchoolSearch(school.schoolName);
+        const neisSchool = response.find(item => item.region.includes(school.region)) || response[0];
 
-        if (isNotiEnabledParsed && storedToken) {
-          await removeFcmToken(storedToken);
-          await AsyncStorage.setItem('isNotiEnabled', JSON.stringify(false));
-
-          showToast('학교 정보가 변경되어 알림이 해제되었어요.');
+        if (!neisSchool) {
+          showToast('학교 정보를 불러오는 중 오류가 발생했어요.');
+          setIsButtonDisabled(false);
+          setIsLoading(false);
+          return;
         }
-      } catch (e) {
-        console.error('Error removing FCM token:', e);
-      }
 
-      if (isFirstOpen) {
-        await completeOnboarding();
-      }
+        if (isFirstOpen) {
+          AsyncStorage.setItem('isFirstOpen', 'false');
+          AsyncStorage.setItem('firstOpenDate', dayjs().format('YYYY-MM-DD'));
+        }
 
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'Tab'}],
-      });
+        AsyncStorage.setItem(
+          'school',
+          JSON.stringify({
+            schoolName: school.schoolName,
+            comciganCode: school.schoolCode,
+            comciganRegion: school.region,
+            neisCode: neisSchool.schoolCode,
+            neisRegion: neisSchool.region,
+            neisRegionCode: neisSchool.regionCode,
+          }),
+        );
+        AsyncStorage.setItem('class', JSON.stringify({grade: selectedGrade, class: selectedClass}));
+        AsyncStorage.setItem('demoMode', JSON.stringify(false));
+        AsyncStorage.removeItem('customTimetable');
+
+        // 학급 정보 변경되면 알림 해제
+        try {
+          const storedToken = await AsyncStorage.getItem('fcmToken');
+          const isNotiEnabled = await AsyncStorage.getItem('isNotiEnabled');
+          const isNotiEnabledParsed = isNotiEnabled ? JSON.parse(isNotiEnabled) : false;
+
+          if (isNotiEnabledParsed && storedToken) {
+            await removeFcmToken(storedToken);
+            await AsyncStorage.setItem('isNotiEnabled', JSON.stringify(false));
+
+            showToast('학교 정보가 변경되어 알림이 해제되었어요.');
+          }
+        } catch (e) {
+          console.error('Error removing FCM token:', e);
+        }
+
+        if (isFirstOpen) {
+          await completeOnboarding();
+        }
+
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'Tab'}],
+        });
+      } catch (error) {
+        showToast('학교 정보를 불러오는 중 오류가 발생했어요.');
+        console.error('Error in handlePress:', error);
+        setIsButtonDisabled(false);
+        setIsLoading(false);
+      }
     }
   };
 
