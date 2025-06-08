@@ -44,12 +44,12 @@ const Home = () => {
   const user = useUser();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const getSettings = async () => {
+  const getSettings = useCallback(async () => {
     const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
     setShowAllergy(settings.showAllergy);
-  };
+  }, []);
 
-  const transpose = (array: Timetable[][]) => {
+  const transpose = useCallback((array: Timetable[][]) => {
     const maxColLength = Math.max(...array.map(row => row.length));
     return Array.from({length: maxColLength}, (_, colIndex) =>
       array.map(row => {
@@ -64,61 +64,65 @@ const Home = () => {
         };
       }),
     );
-  };
+  }, []);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    getSettings();
+    await getSettings();
 
     try {
       const today = dayjs();
       const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
       const classData: {grade: number; class: number} = JSON.parse((await AsyncStorage.getItem('class')) || '{}');
 
-      // customTimetable 우선 적용
-      // const customTimetableStr = await AsyncStorage.getItem('customTimetable');
-      // if (customTimetableStr) {
-      //   setTimetable(JSON.parse(customTimetableStr));
-      // } else {
-      let timetableResponse = [];
-      try {
-        timetableResponse = await getTimetable(school.comciganCode, classData.grade, classData.class);
-        setTimetable(transpose(timetableResponse));
-      } catch (e) {
-        console.error('Error fetching timetable:', e);
+      // Promise.allSettled를 사용하여 병렬 처리하고 실패한 API가 있어도 다른 API는 계속 실행
+      const [timetableResult, mealResult, scheduleResult] = await Promise.allSettled([
+        getTimetable(school.comciganCode, classData.grade, classData.class),
+        getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), today.format('DD'), showAllergy, true, true),
+        getSchedules(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM')),
+      ]);
+
+      // 시간표 처리
+      if (timetableResult.status === 'fulfilled') {
+        setTimetable(transpose(timetableResult.value));
+      } else {
+        console.error('Error fetching timetable:', timetableResult.reason);
         showToast('시간표를 불러오는 중 오류가 발생했어요.');
       }
-      // }
 
-      let mealResponse = [];
-      try {
+      // 급식 처리
+      if (mealResult.status === 'fulfilled') {
+        let mealResponse = mealResult.value;
         const isPastNoon = today.hour() > 14;
-        mealResponse = await getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), today.format('DD'), showAllergy, true, true);
         setMealDayOffset(0);
 
         if (mealResponse.length === 0 || isPastNoon) {
+          // 순차적으로 다음날들을 확인
           for (let i = 1; i <= 3; i++) {
-            const nextDay = today.add(i, 'day');
-            mealResponse = await getMeal(school.neisCode, school.neisRegionCode, nextDay.format('YYYY'), nextDay.format('MM'), nextDay.format('DD'), showAllergy, true, true);
-            if (mealResponse.length > 0) {
-              setMealDayOffset(i);
-              break;
+            try {
+              const nextDay = today.add(i, 'day');
+              mealResponse = await getMeal(school.neisCode, school.neisRegionCode, nextDay.format('YYYY'), nextDay.format('MM'), nextDay.format('DD'), showAllergy, true, true);
+              if (mealResponse.length > 0) {
+                setMealDayOffset(i);
+                break;
+              }
+            } catch (e) {
+              console.error(`Error fetching meal for day +${i}:`, e);
             }
           }
         }
         setMeal(mealResponse);
-      } catch (e) {
-        console.error('Error fetching meal:', e);
+      } else {
+        console.error('Error fetching meal:', mealResult.reason);
         showToast('급식을 불러오는 중 오류가 발생했어요.');
       }
 
-      let scheduleResponse = [];
-      try {
-        scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'));
-        scheduleResponse = scheduleResponse?.length > 0 ? scheduleResponse.filter(schedule => dayjs(schedule.date.start).isAfter(today)) : [];
+      // 학사일정 처리
+      if (scheduleResult.status === 'fulfilled') {
+        const scheduleResponse = scheduleResult.value?.length > 0 ? scheduleResult.value.filter(schedule => dayjs(schedule.date.start).isAfter(today)) : [];
         setSchedules(scheduleResponse);
-      } catch (e) {
-        console.error('Error fetching schedules:', e);
+      } else {
+        console.error('Error fetching schedules:', scheduleResult.reason);
         showToast('학사일정을 불러오는 중 오류가 발생했어요.');
       }
     } catch (e) {
@@ -127,7 +131,7 @@ const Home = () => {
     } finally {
       setLoading(false);
     }
-  }, [showAllergy]);
+  }, [showAllergy, getSettings, transpose]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

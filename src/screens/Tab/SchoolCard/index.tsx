@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {Modal, Text, TouchableOpacity, View} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {interpolate, useAnimatedStyle, useSharedValue, withSpring} from 'react-native-reanimated';
@@ -40,16 +40,24 @@ const SchoolCard = () => {
   }, []);
 
   useEffect(() => {
-    (async () => {
-      const demoMode = JSON.parse((await AsyncStorage.getItem('demoMode')) || 'false');
-      setIsDemoUser(demoMode);
+    const checkUserStatus = async () => {
+      try {
+        const demoMode = JSON.parse((await AsyncStorage.getItem('demoMode')) || 'false');
+        setIsDemoUser(demoMode);
 
-      if (user && user.email) {
-        setIsSunrinEmail(user.email.endsWith('@sunrint.hs.kr'));
-      } else {
+        if (user && user.email) {
+          setIsSunrinEmail(user.email.endsWith('@sunrint.hs.kr'));
+        } else {
+          setIsSunrinEmail(false);
+        }
+      } catch (error) {
+        console.error('Error checking user status:', error);
+        setIsDemoUser(false);
         setIsSunrinEmail(false);
       }
-    })();
+    };
+
+    checkUserStatus();
   }, [user]);
 
   useEffect(() => {
@@ -91,19 +99,27 @@ const SchoolCard = () => {
     }
   }, [user, isDemoUser]);
 
-  const handleBarcodePress = async () => {
-    const currentBrightness = await DeviceBrightness.getBrightnessLevel();
-    setOriginalBrightness(currentBrightness);
-    await DeviceBrightness.setBrightnessLevel(1);
-    setIsModalVisible(true);
-  };
-
-  const handleCloseModal = async () => {
-    if (originalBrightness !== null) {
-      await DeviceBrightness.setBrightnessLevel(originalBrightness);
+  const handleBarcodePress = useCallback(async () => {
+    try {
+      const currentBrightness = await DeviceBrightness.getBrightnessLevel();
+      setOriginalBrightness(currentBrightness);
+      await DeviceBrightness.setBrightnessLevel(1);
+      setIsModalVisible(true);
+    } catch (error) {
+      console.error('Error adjusting brightness:', error);
     }
-    setIsModalVisible(false);
-  };
+  }, []);
+
+  const handleCloseModal = useCallback(async () => {
+    try {
+      if (originalBrightness !== null) {
+        await DeviceBrightness.setBrightnessLevel(originalBrightness);
+      }
+      setIsModalVisible(false);
+    } catch (error) {
+      console.error('Error restoring brightness:', error);
+    }
+  }, [originalBrightness]);
 
   const gesture = Gesture.Pan()
     .onUpdate(event => {

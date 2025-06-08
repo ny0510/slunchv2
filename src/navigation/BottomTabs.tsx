@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {GestureResponderEvent} from 'react-native';
 // import TouchableScale from '@/components/TouchableScale';
 import TouchableScale from 'react-native-touchable-scale';
@@ -23,25 +23,39 @@ const BottomTabs = () => {
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const fetchUnreadCount = async () => {
-    const notifications = await getNotifications();
-    const storedReadNotifications = await AsyncStorage.getItem('readNotifications');
-    const readNotifications = storedReadNotifications ? JSON.parse(storedReadNotifications) : [];
-    const unreadNotifications = notifications.filter((notification: Notification) => !readNotifications.includes(notification.id));
-    setUnreadCount(unreadNotifications.length);
-    return unreadNotifications.length;
-  };
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const notifications = await getNotifications();
+      const storedReadNotifications = await AsyncStorage.getItem('readNotifications');
+      const readNotifications = storedReadNotifications ? JSON.parse(storedReadNotifications) : [];
+      const unreadNotifications = notifications.filter((notification: Notification) => !readNotifications.includes(notification.id));
+      setUnreadCount(unreadNotifications.length);
+      return unreadNotifications.length;
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
+      return 0;
+    }
+  }, []);
 
   useEffect(() => {
     const checkSunrin = async () => {
-      const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
-      setIsSunrin(school.schoolName === '선린인터넷고');
-      setLoading(false);
+      try {
+        const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
+        setIsSunrin(school.schoolName === '선린인터넷고');
+      } catch (error) {
+        console.error('Error checking school:', error);
+        setIsSunrin(false);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    checkSunrin();
-    fetchUnreadCount();
-  }, []);
+    const initializeData = async () => {
+      await Promise.all([checkSunrin(), fetchUnreadCount()]);
+    };
+
+    initializeData();
+  }, [fetchUnreadCount]);
 
   if (loading) {
     return null;
