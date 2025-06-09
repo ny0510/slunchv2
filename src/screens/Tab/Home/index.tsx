@@ -84,7 +84,26 @@ const Home = () => {
 
       // 시간표 처리
       if (timetableResult.status === 'fulfilled') {
-        setTimetable(transpose(timetableResult.value));
+        const newTimetable = transpose(timetableResult.value);
+
+        // 기존 커스텀 시간표가 있는 경우, 사용자가 변경한 항목만 보존
+        const existingCustomTimetable = JSON.parse((await AsyncStorage.getItem('customTimetable')) || 'null');
+
+        if (existingCustomTimetable) {
+          const mergedTimetable = newTimetable.map((row, rowIndex) =>
+            row.map((subject, colIndex) => {
+              const existingSubject = existingCustomTimetable[rowIndex]?.[colIndex];
+              // userChanged가 true인 항목만 보존
+              if (existingSubject?.userChanged) {
+                return existingSubject;
+              }
+              return subject;
+            }),
+          );
+          setTimetable(mergedTimetable);
+        } else {
+          setTimetable(newTimetable);
+        }
       } else {
         console.error('Error fetching timetable:', timetableResult.reason);
         showToast('시간표를 불러오는 중 오류가 발생했어요.');
@@ -425,19 +444,19 @@ const TimetableRow = ({item, index, todayIndex, openBottomSheet}: {item: Timetab
     <View style={s.timetableRow}>
       {item.map((subject, subIndex) => (
         <View key={`${subject.subject}-${index}-${subIndex}`} style={[s.timetableCell, {backgroundColor: subIndex === todayIndex ? theme.background : theme.card}]}>
-          {/* <TouchableOpacity onLongPress={() => openBottomSheet({row: index, col: subIndex})}> */}
-          <Text
-            style={{
-              flexShrink: 1,
-              textAlign: 'center',
-              color: subject.userChanged ? theme.highlightSecondary : subject.changed ? theme.highlightLight : theme.primaryText,
-              fontWeight: '500',
-              fontSize: 16,
-            }}>
-            {subject.subject}
-          </Text>
-          <Text style={[typography.caption, {textAlign: 'center', color: subject.userChanged ? theme.highlightSecondary : subject.changed ? theme.highlightLight : theme.secondaryText}]}>{subject.teacher}</Text>
-          {/* </TouchableOpacity> */}
+          <TouchableOpacity onLongPress={() => openBottomSheet({row: index, col: subIndex})}>
+            <Text
+              style={{
+                flexShrink: 1,
+                textAlign: 'center',
+                color: subject.userChanged ? theme.highlightSecondary : subject.changed ? theme.highlightLight : theme.primaryText,
+                fontWeight: '500',
+                fontSize: 16,
+              }}>
+              {subject.subject}
+            </Text>
+            <Text style={[typography.caption, {textAlign: 'center', color: subject.userChanged ? theme.highlightSecondary : subject.changed ? theme.highlightLight : theme.secondaryText}]}>{subject.teacher}</Text>
+          </TouchableOpacity>
         </View>
       ))}
     </View>
