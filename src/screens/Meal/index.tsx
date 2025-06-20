@@ -141,7 +141,7 @@ const Meal = () => {
 
                 return (
                   <Fragment key={i}>
-                    {shouldShowAd && <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />}
+                    {/* {shouldShowAd && <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />} */}
                     <TouchableScale onPress={() => openBottomSheet(mealText, date)} activeScale={0.98} tension={40} friction={3}>
                       <Card title={date}>
                         <FlatList data={m.meal} renderItem={({item, index}) => renderMealItem(item, index)} scrollEnabled={false} />
