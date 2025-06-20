@@ -1,10 +1,11 @@
-import {ANDROID_SCHEDULE_NATIVE_AD_UNIT_ID, IOS_SCHEDULE_NATIVE_AD_UNIT_ID} from '@env';
+import {ANDROID_HOME_BANNER_AD_UNIT_ID, ANDROID_SCHEDULE_NATIVE_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID, IOS_SCHEDULE_NATIVE_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
 import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
 import {Platform, RefreshControl, ScrollView, Text, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import {getSchedules} from '@/api';
+import BannerAdCard from '@/components/BannerAdCard';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
@@ -74,7 +75,7 @@ const Schedules = () => {
               const shouldShowAd = adIndexes.includes(i);
               return (
                 <Fragment key={i}>
-                  {shouldShowAd && <NativeAdCard adUnitId={Platform.OS === 'ios' ? IOS_SCHEDULE_NATIVE_AD_UNIT_ID : ANDROID_SCHEDULE_NATIVE_AD_UNIT_ID} />}
+                  {shouldShowAd && <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />}
                   <ScheduleItem item={m} />
                 </Fragment>
               );

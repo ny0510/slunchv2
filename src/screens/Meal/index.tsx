@@ -1,4 +1,4 @@
-import {ANDROID_MEAL_NATIVE_AD_UNIT_ID, IOS_MEAL_NATIVE_AD_UNIT_ID} from '@env';
+import {ANDROID_HOME_BANNER_AD_UNIT_ID, ANDROID_MEAL_NATIVE_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID, IOS_MEAL_NATIVE_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
 import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
 import {Platform, RefreshControl, ScrollView, Text, View} from 'react-native';
@@ -9,6 +9,7 @@ import TouchableScale from 'react-native-touchable-scale';
 
 import Content from '../Tab/Settings/components/Content';
 import {getMeal} from '@/api';
+import BannerAdCard from '@/components/BannerAdCard';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
@@ -140,7 +141,7 @@ const Meal = () => {
 
                 return (
                   <Fragment key={i}>
-                    {shouldShowAd && <NativeAdCard adUnitId={Platform.OS === 'ios' ? IOS_MEAL_NATIVE_AD_UNIT_ID : ANDROID_MEAL_NATIVE_AD_UNIT_ID} />}
+                    {shouldShowAd && <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />}
                     <TouchableScale onPress={() => openBottomSheet(mealText, date)} activeScale={0.98} tension={40} friction={3}>
                       <Card title={date}>
                         <FlatList data={m.meal} renderItem={({item, index}) => renderMealItem(item, index)} scrollEnabled={false} />
