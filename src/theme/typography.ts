@@ -5,7 +5,7 @@ import TextStyles from '@/theme/types/TextStyles';
 export const toDP = (px: number) => PixelRatio.roundToNearestPixel(px);
 
 const baseTextStyle = {
-  fontFamily: 'Pretendard Variable',
+  fontFamily: 'pretendard',
 };
 
 const Typography: TextStyles = {

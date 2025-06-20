@@ -14,7 +14,7 @@
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		9819667B5F9BA8BF384BB0BF /* Pods_slunchv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61EDCCFF4D3263D5B6F46C6A /* Pods_slunchv2.framework */; };
 		F3BC56C37D4F4F77B85C8729 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
-		F81EB6D304814E6182C13212 /* PretendardVariable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9C51CB14D45B48809AA48A18 /* PretendardVariable.ttf */; };
+		53ABA0496B814C219114073A /* pretendard.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 601457E03DC64EB1BD81AF02 /* pretendard.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,10 +31,10 @@
 		6DD43F972D9FE8940097DDFB /* ci_post_clone.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ci_post_clone.sh; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = slunchv2/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = slunchv2/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		9C51CB14D45B48809AA48A18 /* PretendardVariable.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = PretendardVariable.ttf; path = ../src/assets/fonts/PretendardVariable.ttf; sourceTree = "<group>"; };
 		D21D6BE46A9B550A50271703 /* Pods-slunchv2.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-slunchv2.debug.xcconfig"; path = "Target Support Files/Pods-slunchv2/Pods-slunchv2.debug.xcconfig"; sourceTree = "<group>"; };
 		E6F162AF93B061B746D5A400 /* Pods-slunchv2.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-slunchv2.release.xcconfig"; path = "Target Support Files/Pods-slunchv2/Pods-slunchv2.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		601457E03DC64EB1BD81AF02 /* pretendard.ttf */ = {isa = PBXFileReference; name = "pretendard.ttf"; path = "../src/assets/fonts/pretendard.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,7 +52,7 @@
 		04191A193BC5445CB5C9EC53 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				9C51CB14D45B48809AA48A18 /* PretendardVariable.ttf */,
+				601457E03DC64EB1BD81AF02 /* pretendard.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -207,7 +207,7 @@
 				6DD43F982D9FE8940097DDFB /* ci_post_clone.sh in Resources */,
 				6DB24E6B2D75EBEA00BC5B73 /* GoogleService-Info.plist in Resources */,
 				F3BC56C37D4F4F77B85C8729 /* PrivacyInfo.xcprivacy in Resources */,
-				F81EB6D304814E6182C13212 /* PretendardVariable.ttf in Resources */,
+				53ABA0496B814C219114073A /* pretendard.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
