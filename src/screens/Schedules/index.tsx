@@ -75,7 +75,7 @@ const Schedules = () => {
               const shouldShowAd = adIndexes.includes(i);
               return (
                 <Fragment key={i}>
-                  {/* {shouldShowAd && <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />} */}
+                  {shouldShowAd && <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />}
                   <ScheduleItem item={m} />
                 </Fragment>
               );

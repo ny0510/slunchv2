@@ -2,6 +2,7 @@ import {ANDROID_HOME_BANNER_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
 import React, {Fragment, ReactNode, useCallback, useEffect, useRef, useState} from 'react';
 import {AppState, FlatList, Keyboard, Platform, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
+import {trigger} from 'react-native-haptic-feedback';
 import Midnight from 'react-native-midnight';
 import TouchableScale from 'react-native-touchable-scale';
 
@@ -233,6 +234,7 @@ const Home = () => {
 
   const openBottomSheet = ({row, col}: {row: number; col: number}) => {
     if (bottomSheetRef.current) {
+      trigger('impactLight');
       setSelectedSubject(timetable[row]?.[col] || null);
       setSelectedSubjectIndices({row, col});
       bottomSheetRef.current.snapToIndex(0);

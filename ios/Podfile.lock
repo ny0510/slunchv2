@@ -1957,6 +1957,27 @@ PODS:
     - RNNotifee/NotifeeCore (= 9.1.8)
   - RNNotifee/NotifeeCore (9.1.8):
     - React-Core
+  - RNReactNativeHapticFeedback (2.3.3):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RNReanimated (3.18.0):
     - DoubleConversion
     - glog
@@ -2325,6 +2346,7 @@ DEPENDENCIES:
   - RNGoogleMobileAds (from `../node_modules/react-native-google-mobile-ads`)
   - "RNGoogleSignin (from `../node_modules/@react-native-google-signin/google-signin`)"
   - "RNNotifee (from `../node_modules/@notifee/react-native`)"
+  - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
@@ -2537,6 +2559,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-google-signin/google-signin"
   RNNotifee:
     :path: "../node_modules/@notifee/react-native"
+  RNReactNativeHapticFeedback:
+    :path: "../node_modules/react-native-haptic-feedback"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -2663,6 +2687,7 @@ SPEC CHECKSUMS:
   RNGoogleMobileAds: 9f19f7a15ae84c0ce009223487c774392a922e69
   RNGoogleSignin: efa6d8113b0d60703a3d01468399582ff91b7e3a
   RNNotifee: 4a6ee5c7deaf00e005050052d73ee6315dff7ec9
+  RNReactNativeHapticFeedback: a49e613d48d721c99cad9689a490554104c22154
   RNReanimated: 54fbd14d2d88e242e8f8ad46376db0c78ae88bd1
   RNScreens: 39b2b81ef7e0d93386810ac7c1860b6248bb1e15
   RNSentry: 5a32004807e39059b0b1efd3423c3776b1fafda1

@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Alert, FlatList, ImageBackground, Platform, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {trigger} from 'react-native-haptic-feedback';
 import LinearGradient from 'react-native-linear-gradient';
 import ScrollPicker from 'react-native-wheel-scrollview-picker';
 
@@ -110,6 +111,7 @@ export const IntroScreen = () => {
   }, [navigation]);
 
   const handleLongPress = useCallback(() => {
+    trigger('impactLight');
     Alert.alert('데모 모드', '데모 모드에서는 학교를 선택할 수 없어요.\n계속하시겠습니까?', [
       {text: '아니요', style: 'cancel'},
       {
