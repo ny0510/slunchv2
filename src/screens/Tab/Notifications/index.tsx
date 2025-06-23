@@ -91,7 +91,7 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
           tintColor={theme.secondaryText}
         />
       }>
-      <Ad adUnitId={Platform.OS === 'ios' ? IOS_NOTI_NATIVE_AD_UNIT_ID : ANDROID_MEAL_NATIVE_AD_UNIT_ID} />
+      {/* <Ad adUnitId={Platform.OS === 'ios' ? IOS_NOTI_NATIVE_AD_UNIT_ID : ANDROID_MEAL_NATIVE_AD_UNIT_ID} /> */}
 
       <View style={{gap: 16, width: '100%', paddingHorizontal: 16}}>
         {/* <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_NOTI_BANNER_AD_UNIT_ID : ANDROID_NOTI_BANNER_AD_UNIT_ID} /> */}
