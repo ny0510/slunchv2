@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
 import {Platform, RefreshControl, ScrollView, Text, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
+import {trigger} from 'react-native-haptic-feedback';
 import Share from 'react-native-share';
 // import TouchableScale from '@/components/TouchableScale';
 import TouchableScale from 'react-native-touchable-scale';
@@ -108,6 +109,7 @@ const Meal = () => {
   };
 
   const openBottomSheet = (_meal: string, date: string) => {
+    trigger('impactLight');
     setSelectedMeal(_meal);
     setSelectedMealDate(date);
     if (bottomSheetRef.current) {
