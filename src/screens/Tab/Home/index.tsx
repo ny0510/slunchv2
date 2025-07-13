@@ -396,7 +396,7 @@ const Home = () => {
                 showToast('원래 시간표를 불러오지 못했어요.');
               }
             }}>
-            <Text style={{color: theme.primaryText, textAlign: 'center', fontWeight: '600'}}>원래 시간표로 되돌리기</Text>
+            <Text style={[typography.baseTextStyle, {color: theme.primaryText, textAlign: 'center', fontWeight: '600'}]}>원래 시간표로 되돌리기</Text>
           </TouchableOpacity>
         </BottomSheetView>
       </BottomSheet>
@@ -429,11 +429,11 @@ const ScheduleItem = ({item}: {item: Schedule}) => {
 
   return (
     <View style={s.scheduleItemContainer}>
-      <Text style={{color: theme.primaryText, fontWeight: 500, fontSize: 16}}>
+      <Text style={[typography.baseTextStyle, {color: theme.primaryText, fontWeight: 500, fontSize: 16}]}>
         {startDate.format('M/D')}
         {!isSameDay && ` ~ ${endDate.format('M/D')}`}
       </Text>
-      <Text style={{color: theme.primaryText, fontWeight: 300, fontSize: 16}}>{item.schedule}</Text>
+      <Text style={[typography.baseTextStyle, {color: theme.primaryText, fontWeight: 300, fontSize: 16}]}>{item.schedule}</Text>
       <Text style={[typography.caption, {color: theme.secondaryText}]}>{endDate.diff(startDate, 'day') > 0 && `(${endDate.diff(startDate, 'day') + 1}일)`}</Text>
     </View>
   );
@@ -448,13 +448,16 @@ const TimetableRow = ({item, index, todayIndex, openBottomSheet}: {item: Timetab
         <View key={`${subject.subject}-${index}-${subIndex}`} style={[s.timetableCell, {backgroundColor: subIndex === todayIndex ? theme.background : theme.card}]}>
           <TouchableOpacity onLongPress={() => openBottomSheet({row: index, col: subIndex})}>
             <Text
-              style={{
-                flexShrink: 1,
-                textAlign: 'center',
-                color: subject.userChanged ? theme.highlightSecondary : subject.changed ? theme.highlightLight : theme.primaryText,
-                fontWeight: '500',
-                fontSize: 16,
-              }}>
+              style={[
+                typography.baseTextStyle,
+                {
+                  flexShrink: 1,
+                  textAlign: 'center',
+                  color: subject.userChanged ? theme.highlightSecondary : subject.changed ? theme.highlightLight : theme.primaryText,
+                  fontWeight: '500',
+                  fontSize: 16,
+                },
+              ]}>
               {subject.subject}
             </Text>
             <Text style={[typography.caption, {textAlign: 'center', color: subject.userChanged ? theme.highlightSecondary : subject.changed ? theme.highlightLight : theme.secondaryText}]}>{subject.teacher}</Text>

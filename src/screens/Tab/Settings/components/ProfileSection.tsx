@@ -21,8 +21,8 @@ const ProfileSection = () => {
     <View style={{alignItems: 'center', justifyContent: 'center', gap: 12}}>
       <Image src={user && user.photoURL ? user.photoURL : `${API_BASE_URL}/public/default_profile.png`} style={{width: 150, height: 150, backgroundColor: theme.border, borderRadius: 75}} borderRadius={75} />
       <View style={{alignItems: 'center', justifyContent: 'center'}}>
-        <Text style={{color: theme.primaryText, fontWeight: '700', fontSize: 24}}>{user ? user.displayName : '게스트'}</Text>
-        <Text style={{color: theme.secondaryText, fontWeight: '500', fontSize: 16}}>{user ? user.email : '로그인해 주세요'}</Text>
+        <Text style={[typography.baseTextStyle, {color: theme.primaryText, fontWeight: '700', fontSize: 24}]}>{user ? user.displayName : '게스트'}</Text>
+        <Text style={[typography.baseTextStyle, {color: theme.secondaryText, fontWeight: '500', fontSize: 16}]}>{user ? user.email : '로그인해 주세요'}</Text>
       </View>
 
       <View style={{width: '100%'}}>
@@ -55,7 +55,7 @@ const ProfileSection = () => {
               borderWidth: 1,
               gap: 8,
             }}>
-            <Text style={{color: theme.primaryText, fontWeight: '700', fontSize: typography.body.fontSize}}>{user ? '로그아웃' : '로그인'}</Text>
+            <Text style={[typography.baseTextStyle, {color: theme.primaryText, fontWeight: '700', fontSize: typography.body.fontSize}]}>{user ? '로그아웃' : '로그인'}</Text>
           </View>
           {/* </TouchableOpacity> */}
         </TouchableScale>

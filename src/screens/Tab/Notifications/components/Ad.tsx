@@ -6,6 +6,7 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import Loading from '@/components/Loading';
 import {useTheme} from '@/contexts/ThemeContext';
+import {typography} from '@/theme';
 
 const Ad = ({adUnitId}: {adUnitId: string}) => {
   const [nativeAd, setNativeAd] = useState<NativeAd>();
@@ -42,12 +43,12 @@ const Ad = ({adUnitId}: {adUnitId: string}) => {
         <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'space-between', alignItems: 'flex-end', flexDirection: 'row', paddingHorizontal: 16, marginBottom: 16}}>
           <View style={{backgroundColor: `${theme.card}90`, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 8}}>
             <NativeAsset assetType={NativeAssetType.HEADLINE}>
-              <Text style={{color: theme.primaryText, fontWeight: '500', fontSize: 12}}>{nativeAd.headline}</Text>
+              <Text style={[typography.baseTextStyle, {color: theme.primaryText, fontWeight: '500', fontSize: 12}]}>{nativeAd.headline}</Text>
             </NativeAsset>
           </View>
           <View style={{backgroundColor: `${theme.card}90`, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 8}}>
             <NativeAsset assetType={NativeAssetType.CALL_TO_ACTION}>
-              <Text style={{color: theme.primaryText, fontWeight: '500', fontSize: 12}}>{nativeAd.callToAction}</Text>
+              <Text style={[typography.baseTextStyle, {color: theme.primaryText, fontWeight: '500', fontSize: 12}]}>{nativeAd.callToAction}</Text>
             </NativeAsset>
           </View>
         </View>
