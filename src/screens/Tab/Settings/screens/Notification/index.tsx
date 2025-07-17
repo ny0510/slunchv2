@@ -23,7 +23,7 @@ const Notification = () => {
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   const {theme, typography} = useTheme();
-  const user = useUser();
+  const {schoolInfo} = useUser();
 
   const initializeNotificationSettings = useCallback(async () => {
     const storedState = await AsyncStorage.getItem('isNotiEnabled');
@@ -74,7 +74,7 @@ const Notification = () => {
     setIsProcessing(true);
     try {
       const fcmToken = await getFcmToken();
-      await editFcmTime(fcmToken, dayjs(time).format('HH:mm'), String(user.schoolInfo.neisCode), user.schoolInfo.neisRegionCode);
+      await editFcmTime(fcmToken, dayjs(time).format('HH:mm'), String(schoolInfo.neisCode), schoolInfo.neisRegionCode);
       await AsyncStorage.setItem('notiTime', JSON.stringify(time));
       showToast(`매일 ${dayjs(time).format('A hh:mm')}에 알림을 받아요.`);
     } catch (e) {
@@ -82,7 +82,7 @@ const Notification = () => {
       showToast(`알림 시간 변경에 실패했어요:\n${error.message}`);
     }
     setIsProcessing(false);
-  }, [time, user.schoolInfo.neisCode, user.schoolInfo.neisRegionCode]);
+  }, [time, schoolInfo.neisCode, schoolInfo.neisRegionCode]);
 
   const handleSubscription = async (subscribe: boolean) => {
     try {
@@ -124,7 +124,7 @@ const Notification = () => {
           showToast('이미 알림이 설정되어 있어요.');
           return false;
         }
-        await addFcmToken(fcmToken, dayjs(time).format('HH:mm'), String(user.schoolInfo.neisCode), user.schoolInfo.neisRegionCode);
+        await addFcmToken(fcmToken, dayjs(time).format('HH:mm'), String(schoolInfo.neisCode), schoolInfo.neisRegionCode);
         showToast(`매일 ${dayjs(time).format('A hh:mm')}에 급식 알림을 받아요.`);
       } else {
         await removeFcmToken(fcmToken);

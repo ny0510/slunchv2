@@ -1,9 +1,8 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {Modal, Text, TouchableOpacity, View} from 'react-native';
-import {Gesture, GestureDetector} from 'react-native-gesture-handler';
-import Animated, {interpolate, useAnimatedStyle, useSharedValue, withSpring} from 'react-native-reanimated';
 
 import Barcode from './components/Barcode';
+import IDCard from './components/IDCard';
 import Container from '@/components/Container';
 import {useAuth} from '@/contexts/AuthContext';
 import {useTheme} from '@/contexts/ThemeContext';
@@ -31,9 +30,6 @@ const SchoolCard = () => {
   const [isDemoUser, setIsDemoUser] = useState(false);
   const [isSunrinEmail, setIsSunrinEmail] = useState(false);
   useKeepAwake();
-
-  const rotateX = useSharedValue(0);
-  const rotateY = useSharedValue(0);
 
   useEffect(() => {
     analytics().logScreenView({screen_name: '학생증 페이지', screen_class: 'SchoolCard'});
@@ -121,22 +117,6 @@ const SchoolCard = () => {
     }
   }, [originalBrightness]);
 
-  const gesture = Gesture.Pan()
-    .onUpdate(event => {
-      rotateX.value = interpolate(event.translationY, [-80, 80], [-10, 10]);
-      rotateY.value = interpolate(event.translationX, [-80, 80], [10, -10]);
-    })
-    .onEnd(() => {
-      rotateX.value = withSpring(0);
-      rotateY.value = withSpring(0);
-    });
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{perspective: 1000}, {rotateX: `${rotateX.value}deg`}, {rotateY: `${rotateY.value}deg`}],
-    borderWidth: 1,
-    borderColor: theme.border,
-  }));
-
   if (loading || !isFocused) {
     return null;
   }
@@ -144,45 +124,7 @@ const SchoolCard = () => {
   return (
     <Container style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
       {isDemoUser || (user && isSunrinEmail) ? (
-        <GestureDetector gesture={gesture}>
-          <Animated.View
-            style={[
-              animatedStyle,
-              {
-                justifyContent: 'space-between',
-                aspectRatio: 3 / 3.7,
-                backgroundColor: theme.card,
-                width: '85%',
-                borderRadius: 12,
-                padding: 16,
-                paddingTop: 26,
-                paddingBottom: 0,
-                shadowColor: '#000',
-                shadowOffset: {width: 0, height: 4},
-                shadowOpacity: 0.3,
-                shadowRadius: 6,
-              },
-            ]}>
-            <View>
-              <Text style={[typography.caption, {color: theme.primaryText}]}>선린인터넷고등학교 모바일 학생증</Text>
-            </View>
-            <View style={{gap: 8}}>
-              <View style={{flexDirection: 'row', gap: 4, alignItems: 'flex-end'}}>
-                <Text style={[typography.title, {color: theme.primaryText, fontSize: 32, fontWeight: '700'}]}>{name}</Text>
-                <Text style={[typography.caption, {color: theme.secondaryText}]}>{`${generation}기`}</Text>
-              </View>
-              <View>
-                <Text style={[typography.subtitle, {color: theme.secondaryText}]}>{`${grade}학년 ${classNum}반 ${number}번`}</Text>
-              </View>
-            </View>
-            <TouchableOpacity onPress={handleBarcodePress}>
-              <View style={{justifyContent: 'center', alignItems: 'center', backgroundColor: theme.border, height: 100, marginHorizontal: -16, borderBottomRightRadius: 12, borderBottomLeftRadius: 12, marginTop: 16, gap: 4}}>
-                <Barcode value={barcodeValue} format={'CODE128'} fill={theme.primaryText} />
-                <Text style={[typography.caption, {color: theme.secondaryText}]}>{barcodeValue}</Text>
-              </View>
-            </TouchableOpacity>
-          </Animated.View>
-        </GestureDetector>
+        <IDCard name={name} schoolName="선린인터넷고등학교" generation={generation.toString()} grade={grade} classNum={classNum} number={number} barcodeValue={barcodeValue} handleBarcodePress={handleBarcodePress} />
       ) : (
         <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
           <TouchableOpacity

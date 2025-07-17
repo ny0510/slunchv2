@@ -10,6 +10,7 @@ import VersionCheck from 'react-native-version-check';
 import {typography} from './theme';
 import {AuthProvider} from '@/contexts/AuthContext';
 import {useTheme} from '@/contexts/ThemeContext';
+import {UserProvider} from '@/contexts/UserContext';
 import {sendNotification} from '@/lib/notification';
 import {getToastConfig} from '@/lib/toast';
 import Stack from '@/navigation/RootStacks';
@@ -107,10 +108,12 @@ const App = () => {
   return (
     <GestureHandlerRootView>
       <SafeAreaView style={{flex: 1, backgroundColor: theme.background}}>
-        <AuthProvider>
-          <StatusBar animated barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.background} />
-          <Stack />
-        </AuthProvider>
+        <UserProvider>
+          <AuthProvider>
+            <StatusBar animated barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.background} />
+            <Stack />
+          </AuthProvider>
+        </UserProvider>
       </SafeAreaView>
       <Toast config={getToastConfig(theme, typography)} />
     </GestureHandlerRootView>

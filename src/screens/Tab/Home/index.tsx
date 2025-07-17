@@ -15,7 +15,7 @@ import Container from '@/components/Container';
 import Loading from '@/components/Loading';
 // import TouchableScale from '@/components/TouchableScale';
 import {useTheme} from '@/contexts/ThemeContext';
-import {useUser} from '@/hooks/useUser';
+import {useUser} from '@/contexts/UserContext';
 import {clearCache} from '@/lib/cache';
 import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
@@ -42,7 +42,7 @@ const Home = () => {
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   const {theme, typography} = useTheme();
-  const user = useUser();
+  const {schoolInfo, classInfo, classChangedTrigger, setClassChangedTrigger} = useUser();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const getSettings = useCallback(async () => {
@@ -174,6 +174,23 @@ const Home = () => {
     return unsubscribe;
   }, [navigation]);
 
+  // 다른 탭에 있다 홈으로 이동시 classChangedTrigger가 true라면 데이터 갱신
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', async () => {
+      console.log('Home screen focused, checking for class changes...');
+      console.log(classChangedTrigger);
+      if (classChangedTrigger) {
+        console.log('Class changed trigger is true, refreshing data...');
+        setRefreshing(true);
+        await clearCache('@cache/');
+        await fetchData();
+        setRefreshing(false);
+        setClassChangedTrigger(false);
+      }
+    });
+    return unsubscribe;
+  }, [navigation, classChangedTrigger, setClassChangedTrigger, fetchData]);
+
   // 매일 자정마다 데이터를 갱신
   useEffect(() => {
     const listener = Midnight.addListener(() => setMidnightTrigger(prev => !prev));
@@ -264,7 +281,7 @@ const Home = () => {
         <View style={s.container}>
           <View style={s.header}>
             <Logo width={24} height={24} />
-            <Text style={[typography.subtitle, {color: theme.primaryText}]}>{user ? user.schoolInfo.schoolName : '학교 정보 없음'}</Text>
+            <Text style={[typography.subtitle, {color: theme.primaryText}]}>{schoolInfo.schoolName || '학교 정보 없음'}</Text>
           </View>
 
           <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
