@@ -193,7 +193,7 @@ const Settings = () => {
         </View>
       </Container>
 
-      <BottomSheet ref={bottomSheetRef} index={-1} backdropComponent={renderBackdrop} enablePanDownToClose={true} backgroundStyle={{backgroundColor: theme.card}} handleIndicatorStyle={{backgroundColor: theme.secondaryText}}>
+      <BottomSheet ref={bottomSheetRef} enableContentPanningGesture={false} index={-1} backdropComponent={renderBackdrop} enablePanDownToClose={true} backgroundStyle={{backgroundColor: theme.card}} handleIndicatorStyle={{backgroundColor: theme.secondaryText}}>
         <BottomSheetView style={{flex: 1, padding: 20}}>
           <View style={{gap: 20, flex: 1}}>
             <View>
