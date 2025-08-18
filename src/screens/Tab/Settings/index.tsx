@@ -41,6 +41,8 @@ const Settings = () => {
   }, []);
 
   const handleClassChangePress = useCallback(() => {
+    if (isLoading || isButtonDisabled) return;
+
     // Set current user's grade and class as selected values
     const currentGrade = parseInt(classInfo.grade);
     const currentClass = parseInt(classInfo.class);
@@ -69,7 +71,7 @@ const Settings = () => {
         }
       }
     }, 300); // Bottom sheet 애니메이션 완료 후 실행
-  }, [classInfo.grade, classInfo.class, gradeList, classList]);
+  }, [classInfo.grade, classInfo.class, gradeList, classList, isLoading, isButtonDisabled]);
 
   const loadClassData = useCallback(async () => {
     setIsLoading(true);

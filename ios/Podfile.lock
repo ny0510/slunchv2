@@ -1417,7 +1417,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - react-native-midnight (1.0.2):
     - React-Core
-  - react-native-safe-area-context (5.5.2):
+  - react-native-safe-area-context (5.6.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1430,8 +1430,8 @@ PODS:
     - React-featureflags
     - React-graphics
     - React-ImageManager
-    - react-native-safe-area-context/common (= 5.5.2)
-    - react-native-safe-area-context/fabric (= 5.5.2)
+    - react-native-safe-area-context/common (= 5.6.0)
+    - react-native-safe-area-context/fabric (= 5.6.0)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-rendererdebug
@@ -1440,7 +1440,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-safe-area-context/common (5.5.2):
+  - react-native-safe-area-context/common (5.6.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1461,7 +1461,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-safe-area-context/fabric (5.5.2):
+  - react-native-safe-area-context/fabric (5.6.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1862,19 +1862,19 @@ PODS:
     - Yoga
   - RNDeviceInfo (14.0.4):
     - React-Core
-  - RNFBAnalytics (23.0.0):
+  - RNFBAnalytics (23.0.1):
     - FirebaseAnalytics/Core (= 12.1.0)
     - FirebaseAnalytics/IdentitySupport (= 12.1.0)
     - React-Core
     - RNFBApp
-  - RNFBApp (23.0.0):
+  - RNFBApp (23.0.1):
     - Firebase/CoreOnly (= 12.1.0)
     - React-Core
-  - RNFBAuth (23.0.0):
+  - RNFBAuth (23.0.1):
     - Firebase/Auth (= 12.1.0)
     - React-Core
     - RNFBApp
-  - RNFBMessaging (23.0.0):
+  - RNFBMessaging (23.0.1):
     - Firebase/Messaging (= 12.1.0)
     - FirebaseCoreExtension
     - React-Core
@@ -1972,7 +1972,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNReanimated (4.0.1):
+  - RNReanimated (4.0.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1994,10 +1994,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNReanimated/reanimated (= 4.0.1)
+    - RNReanimated/reanimated (= 4.0.2)
     - RNWorklets
     - Yoga
-  - RNReanimated/reanimated (4.0.1):
+  - RNReanimated/reanimated (4.0.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2019,10 +2019,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNReanimated/reanimated/apple (= 4.0.1)
+    - RNReanimated/reanimated/apple (= 4.0.2)
     - RNWorklets
     - Yoga
-  - RNReanimated/reanimated/apple (4.0.1):
+  - RNReanimated/reanimated/apple (4.0.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2046,7 +2046,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - RNWorklets
     - Yoga
-  - RNScreens (4.13.1):
+  - RNScreens (4.14.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2067,9 +2067,9 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNScreens/common (= 4.13.1)
+    - RNScreens/common (= 4.14.1)
     - Yoga
-  - RNScreens/common (4.13.1):
+  - RNScreens/common (4.14.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2091,7 +2091,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSentry (6.19.0):
+  - RNSentry (6.20.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2660,7 +2660,7 @@ SPEC CHECKSUMS:
   react-native-device-brightness: 886cfbfb49a32b6de4ccfc1f720776dc5f381d24
   react-native-keep-awake: 5fb94de503761b67af1bec52f83e18d66e9abaf3
   react-native-midnight: a81cc0ad5e396306d7d55101af45ac9675c9311e
-  react-native-safe-area-context: 8cdab4bfef584e17a2f25e108d94df3e68ce8411
+  react-native-safe-area-context: 868702bb94df4fa6499b9e35eb93312f8fc939c8
   react-native-tracking-transparency: 25ff1ff866e338c137c818bdec20526bb05ffcc1
   react-native-vector-icons-fontawesome6: 1b667969bef2f430d1d7515163b980b856f58670
   react-native-version-check: 54a471d70dadf0f72fc142e70f16e4bf473a91a5
@@ -2698,18 +2698,18 @@ SPEC CHECKSUMS:
   RNCClipboard: 4d8c76e488f1491e5235901b7028ff53a678bd94
   RNCMaskedView: ca5c7d2db3015c15e6e06522bdd921cc50a7cf44
   RNDeviceInfo: feea80a690d2bde1fe51461cf548039258bd03f2
-  RNFBAnalytics: 982fe9217e8c79174819be03b8f2a6af365480c1
-  RNFBApp: b7b23d12712d8d624eb9c28141b54276f05a408b
-  RNFBAuth: bd3a3eafe04dacae5ff1d06680903caf3c180049
-  RNFBMessaging: 723d063ba0296d008c7293a947628f3c6982979b
+  RNFBAnalytics: d4a791a78f7cc07b484e2ff66ba6f740c007fe01
+  RNFBApp: fb8ecc637267c1655a4608061356246a410f423d
+  RNFBAuth: 11b1855318ab7dc26ad1325277718bfd5769b0e3
+  RNFBMessaging: bad512bf05be5c505428dfec207cbecbf14c66ff
   RNGestureHandler: 433f2680b512ab94fe82e014365ea8785de09c4d
   RNGoogleMobileAds: 9f19f7a15ae84c0ce009223487c774392a922e69
   RNGoogleSignin: 193de15bc878f545c3bc191eae91d0dcce6cf1f7
   RNNotifee: 4a6ee5c7deaf00e005050052d73ee6315dff7ec9
   RNReactNativeHapticFeedback: a49e613d48d721c99cad9689a490554104c22154
-  RNReanimated: 34d918102eb6dd405bdbe54ab10b595219c3d7db
-  RNScreens: d3e6af187f88d577c016653ab68d8df432e1bbe4
-  RNSentry: 0a4a66e582c69f10e5b3a1fe693565ca5e3740c7
+  RNReanimated: 8bda96e7a5845e907c6f72129e037da08b5f2e51
+  RNScreens: 2598aae5123846139d151bc88edd1ee073ac7fd3
+  RNSentry: 8d896cb5a5420ee86403742be0c4654b763542bc
   RNShare: a53d733847d76af8968a59aafc7167668f52b720
   RNSVG: 02ef1157622e9e59e31c257e48a0dc943411c7bf
   RNWorklets: 360e836600a293dd70f952d197187d9df232a4e6

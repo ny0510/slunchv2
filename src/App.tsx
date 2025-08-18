@@ -106,7 +106,7 @@ const App = () => {
   }, []);
 
   return (
-    <GestureHandlerRootView>
+    <GestureHandlerRootView style={{flex: 1}}>
       <SafeAreaView style={{flex: 1, backgroundColor: theme.background}}>
         <UserProvider>
           <AuthProvider>
