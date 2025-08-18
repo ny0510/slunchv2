@@ -134,7 +134,7 @@ const Settings = () => {
   };
 
   const handleSaveClassChange = async () => {
-    if (isButtonDisabled) {
+    if (isButtonDisabled || isLoading) {
       return;
     }
 
@@ -172,8 +172,11 @@ const Settings = () => {
       console.error('Error saving class change:', error);
       showToast('학급 정보 변경에 실패했어요.');
     } finally {
-      setIsButtonDisabled(false);
-      setIsLoading(false);
+      // 버튼 비활성화 해제를 약간 지연시켜 더블 클릭 방지
+      setTimeout(() => {
+        setIsButtonDisabled(false);
+        setIsLoading(false);
+      }, 500);
     }
   };
 
@@ -260,10 +263,11 @@ const Settings = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 8,
-                opacity: isButtonDisabled ? 0.5 : 1,
+                opacity: isButtonDisabled || isLoading ? 0.5 : 1,
               }}
               onPress={handleSaveClassChange}
-              disabled={isButtonDisabled}>
+              disabled={isButtonDisabled || isLoading}
+              activeOpacity={0.7}>
               <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '700'}]}>변경하기</Text>
               <FontAwesome6 name="check" iconStyle="solid" size={16} color={theme.primaryText} />
             </TouchableOpacity>

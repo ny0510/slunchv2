@@ -44,9 +44,15 @@ const DeveloperSettingCard = () => {
               },
               {
                 text: '네',
-                onPress: async () => {
-                  await clearCache('@cache/');
-                  Alert.alert('캐시 삭제', '캐시가 삭제되었어요.', [{text: '확인'}]);
+                onPress: () => {
+                  clearCache('@cache/')
+                    .then(() => {
+                      Alert.alert('캐시 삭제', '캐시가 삭제되었어요.', [{text: '확인'}]);
+                    })
+                    .catch(error => {
+                      console.error('Cache clear error:', error);
+                      Alert.alert('오류', '캐시 삭제 중 오류가 발생했어요.', [{text: '확인'}]);
+                    });
                 },
               },
             ]);
@@ -55,15 +61,20 @@ const DeveloperSettingCard = () => {
         <Content
           title="앱 데이터 삭제"
           arrow
-          onPress={async () => {
+          onPress={() => {
             Alert.alert('앱 데이터 삭제', '앱 데이터를 삭제하시겠습니까?', [
               {text: '아니요', style: 'cancel'},
               {
                 text: '네',
-                onPress: async () => {
-                  await AsyncStorage.clear();
-                  await setFirstOpen(true);
-                  navigation.reset({routes: [{name: 'Intro'}]});
+                onPress: () => {
+                  Promise.all([AsyncStorage.clear(), setFirstOpen(true)])
+                    .then(() => {
+                      navigation.reset({routes: [{name: 'Intro'}]});
+                    })
+                    .catch(error => {
+                      console.error('App data clear error:', error);
+                      Alert.alert('오류', '앱 데이터 삭제 중 오류가 발생했어요.', [{text: '확인'}]);
+                    });
                 },
               },
             ]);
