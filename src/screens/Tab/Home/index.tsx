@@ -391,7 +391,9 @@ const Home = () => {
           </View>
           <TouchableOpacity
             activeOpacity={0.7}
-            style={{backgroundColor: theme.background, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 16, borderWidth: 1, borderColor: theme.border, width: '100%'}}
+            delayPressIn={0}
+            hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
+            style={{backgroundColor: theme.background, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 16, borderWidth: 1, borderColor: theme.border, width: '100%', minHeight: 44}}
             onPress={async () => {
               if (!selectedSubjectIndices) {
                 return;
@@ -463,7 +465,7 @@ const TimetableRow = ({item, index, todayIndex, openBottomSheet}: {item: Timetab
     <View style={s.timetableRow}>
       {item.map((subject, subIndex) => (
         <View key={`${subject.subject}-${index}-${subIndex}`} style={[s.timetableCell, {backgroundColor: subIndex === todayIndex ? theme.background : theme.card}]}>
-          <TouchableOpacity onLongPress={() => openBottomSheet({row: index, col: subIndex})}>
+          <TouchableOpacity onLongPress={() => openBottomSheet({row: index, col: subIndex})} delayPressIn={0} hitSlop={{top: 4, bottom: 4, left: 4, right: 4}}>
             <Text
               style={[
                 typography.baseTextStyle,

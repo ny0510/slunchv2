@@ -13,11 +13,13 @@ import Loading from '@/components/Loading';
 import {useTheme} from '@/contexts/ThemeContext';
 import {useUser} from '@/contexts/UserContext';
 import {showToast} from '@/lib/toast';
+import {RootStackParamList} from '@/navigation/RootStacks';
 import {ClassData, SchoolData} from '@/types/onboarding';
 import BottomSheet, {BottomSheetBackdrop, BottomSheetView} from '@gorhom/bottom-sheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
+import {NavigationProp, useNavigation} from '@react-navigation/native';
 
 const Settings = () => {
   const [developerOptions, setDeveloperOptions] = useState(false);
@@ -34,11 +36,22 @@ const Settings = () => {
 
   const {theme, typography} = useTheme();
   const {schoolInfo, classInfo, refreshUserData, setClassChangedTrigger} = useUser();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   useEffect(() => {
     analytics().logScreenView({screen_name: '설정 페이지', screen_class: 'Settings'});
     AsyncStorage.getItem('developerOptions').then(val => setDeveloperOptions(!!JSON.parse(val ?? 'false')));
   }, []);
+
+  // 탭 이동 시 BottomSheet 자동 닫힘
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('blur', () => {
+      if (bottomSheetRef.current) {
+        bottomSheetRef.current.close();
+      }
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const handleClassChangePress = useCallback(() => {
     if (isLoading || isButtonDisabled) return;
@@ -198,7 +211,16 @@ const Settings = () => {
         </View>
       </Container>
 
-      <BottomSheet ref={bottomSheetRef} enableContentPanningGesture={false} index={-1} backdropComponent={renderBackdrop} enablePanDownToClose={true} backgroundStyle={{backgroundColor: theme.card}} handleIndicatorStyle={{backgroundColor: theme.secondaryText}}>
+      <BottomSheet
+        ref={bottomSheetRef}
+        enableContentPanningGesture={false}
+        index={-1}
+        backdropComponent={renderBackdrop}
+        enablePanDownToClose={true}
+        backgroundStyle={{backgroundColor: theme.card}}
+        handleIndicatorStyle={{backgroundColor: theme.secondaryText}}
+        keyboardBehavior="extend"
+        android_keyboardInputMode="adjustResize">
         <BottomSheetView style={{flex: 1, padding: 20}}>
           <View style={{gap: 20, flex: 1}}>
             <View>
@@ -266,10 +288,13 @@ const Settings = () => {
                 justifyContent: 'center',
                 gap: 8,
                 opacity: isButtonDisabled || isLoading ? 0.5 : 1,
+                minHeight: 44,
               }}
               onPress={handleSaveClassChange}
               disabled={isButtonDisabled || isLoading}
-              activeOpacity={0.7}>
+              activeOpacity={0.7}
+              delayPressIn={0}
+              hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
               <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '700'}]}>변경하기</Text>
               <FontAwesome6 name="check" iconStyle="solid" size={16} color={theme.primaryText} />
             </TouchableOpacity>

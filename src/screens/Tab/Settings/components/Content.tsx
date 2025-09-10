@@ -2,21 +2,14 @@ import React from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 
 import {useTheme} from '@/contexts/ThemeContext';
-import {useDebounce} from '@/hooks/useDebounce';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 
 const Content = ({title, content, arrow, arrowText, onPress, disabled}: {title: string; content?: string; arrow?: boolean; arrowText?: string; onPress?: () => void; disabled?: boolean}) => {
   const {theme, typography} = useTheme();
 
-  const debouncedOnPress = useDebounce(() => {
-    if (onPress && !disabled) {
-      onPress();
-    }
-  }, 300);
-
   return (
-    <TouchableOpacity onPress={debouncedOnPress} activeOpacity={0.7} disabled={disabled || !onPress} delayPressIn={50}>
-      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.7} disabled={disabled || !onPress} delayPressIn={0} hitSlop={{top: 12, bottom: 12, left: 12, right: 12}}>
+      <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
         <Text style={[typography.body, {color: disabled ? theme.secondaryText : theme.primaryText}]}>{title}</Text>
         <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8}}>
           <Text style={[typography.body, {color: theme.secondaryText}]}>{arrowText}</Text>
