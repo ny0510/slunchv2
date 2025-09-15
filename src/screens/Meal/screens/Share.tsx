@@ -77,11 +77,6 @@ const ShareScreen = ({route}: StackScreenProps<RootStackParamList, 'Share'>) => 
 
   return (
     <Container style={{flex: 1, justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20}}>
-      {/* Header with back button indication */}
-      <View style={{alignSelf: 'flex-start', paddingTop: 8}}>
-        <Text style={[typography.caption, {color: theme.secondaryText}]}>급식 이미지로 공유</Text>
-      </View>
-
       {/* Enhanced preview card */}
       <View style={{flex: 1, justifyContent: 'center', paddingVertical: 20}}>
         <TouchableScale activeScale={0.98} tension={40} friction={3}>
@@ -108,7 +103,7 @@ const ShareScreen = ({route}: StackScreenProps<RootStackParamList, 'Share'>) => 
                 </View>
                 <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600'}]}>{data.school} 급식</Text>
               </View>
-              
+
               {/* Meal items with improved layout */}
               <View style={{flex: 1, justifyContent: 'center', gap: 2}}>
                 {data.meal.split('\n').map((meal, index) => (
@@ -120,7 +115,7 @@ const ShareScreen = ({route}: StackScreenProps<RootStackParamList, 'Share'>) => 
                   </View>
                 ))}
               </View>
-              
+
               {/* Watermark with improved positioning */}
               <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
                 <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
@@ -132,7 +127,7 @@ const ShareScreen = ({route}: StackScreenProps<RootStackParamList, 'Share'>) => 
             </View>
           </ViewShot>
         </TouchableScale>
-        
+
         {/* Preview hint */}
         <Text style={[typography.caption, {color: theme.secondaryText, textAlign: 'center', marginTop: 12}]}>미리보기</Text>
       </View>
