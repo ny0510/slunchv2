@@ -10,23 +10,51 @@ cd ../../
 
 echo "Project root: $(pwd)"
 
-# Create required files from environment variables
+# Handle Sentry configuration
 if [ ! -z "$SENTRY_PROPERTIES" ]; then
     echo "Creating sentry.properties..."
-    echo "$SENTRY_PROPERTIES" | base64 -d > ios/sentry.properties
+    # Decode base64 and write to file
+    echo "$SENTRY_PROPERTIES" | base64 --decode > ios/sentry.properties 2>/dev/null || \
+    echo "$SENTRY_PROPERTIES" | base64 -D > ios/sentry.properties 2>/dev/null || \
+    echo "$SENTRY_PROPERTIES" > ios/sentry.properties
     
     # Verify sentry.properties file
-    if [ -f "ios/sentry.properties" ]; then
+    if [ -f "ios/sentry.properties" ] && [ -s "ios/sentry.properties" ]; then
         echo "✓ sentry.properties created successfully"
+        # Debug: Show first line of file (without sensitive data)
+        echo "File size: $(wc -c < ios/sentry.properties) bytes"
+        
+        # Check if file content looks like base64 (shouldn't be)
+        if head -n1 ios/sentry.properties | grep -q "^[A-Za-z0-9+/=]*$"; then
+            echo "⚠️ Warning: sentry.properties appears to still be base64 encoded"
+            # Try to decode again
+            mv ios/sentry.properties ios/sentry.properties.tmp
+            cat ios/sentry.properties.tmp | base64 --decode > ios/sentry.properties 2>/dev/null || \
+            cat ios/sentry.properties.tmp | base64 -D > ios/sentry.properties 2>/dev/null
+            rm ios/sentry.properties.tmp
+        fi
+        
         # Set environment variable to allow Sentry upload failures (for CI)
         export SENTRY_ALLOW_FAILURE=true
     else
-        echo "⚠️ sentry.properties creation failed"
+        echo "⚠️ sentry.properties creation failed or file is empty"
+        export SENTRY_DISABLE_AUTO_UPLOAD=true
     fi
 else
     echo "⚠️ SENTRY_PROPERTIES not set, disabling Sentry auto upload"
     # Disable Sentry auto upload if no properties provided
     export SENTRY_DISABLE_AUTO_UPLOAD=true
+fi
+
+# Export Sentry environment variables for the build process
+echo "Setting Sentry environment variables..."
+if [ ! -z "$SENTRY_DISABLE_AUTO_UPLOAD" ]; then
+    echo "export SENTRY_DISABLE_AUTO_UPLOAD=$SENTRY_DISABLE_AUTO_UPLOAD" >> ~/.bashrc
+    echo "export SENTRY_DISABLE_AUTO_UPLOAD=$SENTRY_DISABLE_AUTO_UPLOAD" >> ~/.zshrc
+fi
+if [ ! -z "$SENTRY_ALLOW_FAILURE" ]; then
+    echo "export SENTRY_ALLOW_FAILURE=$SENTRY_ALLOW_FAILURE" >> ~/.bashrc
+    echo "export SENTRY_ALLOW_FAILURE=$SENTRY_ALLOW_FAILURE" >> ~/.zshrc
 fi
 
 if [ ! -z "$GOOGLE_SERVICE_JSON" ]; then
