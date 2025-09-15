@@ -5,7 +5,7 @@ import {Switch} from 'react-native-switch';
 import Content from './Content';
 import Card from '@/components/Card';
 import {useTheme} from '@/contexts/ThemeContext';
-import {StorageHelper, STORAGE_KEYS} from '@/lib/storage';
+import {STORAGE_KEYS, StorageHelper} from '@/lib/storage';
 import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
@@ -37,9 +37,9 @@ const SettingCard = ({onClassChangePress}: {onClassChangePress: () => void}) => 
         <Content title="학교 변경" arrow onPress={() => navigation.navigate('SchoolSearch', {isFirstOpen: false})} />
         <Content title="학급 변경" arrow onPress={onClassChangePress} />
         <Content title="알림 설정" arrow onPress={() => navigation.navigate('Notification')} />
-        
+
         {/* 알레르기 표시 토글 */}
-        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4}}>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 2}}>
           <Text style={[typography.body, {color: theme.primaryText}]}>알레르기 정보 표시</Text>
           <Switch
             value={showAllergy}

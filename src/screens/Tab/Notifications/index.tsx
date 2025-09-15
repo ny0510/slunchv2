@@ -136,7 +136,7 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
                   style={{
                     marginBottom: index === noti.length - 1 ? 0 : 12,
                   }}>
-                  <Card title={item.title} titleIcon={isNew && icon} subtitle={date} arrow={!expandedIndices.includes(index)} style={{backgroundColor: theme.card}}>
+                  <Card title={item.title} notificationDot={isNew} subtitle={date} arrow={!expandedIndices.includes(index)} style={{backgroundColor: theme.card}}>
                     {expandedIndices.includes(index) && (
                       <View style={{marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.border}}>
                         <Text

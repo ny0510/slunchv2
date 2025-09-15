@@ -12,6 +12,7 @@ import {getMeal} from '@/api';
 import BannerAdCard from '@/components/BannerAdCard';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
+import EmptyState from '@/components/EmptyState';
 import Loading from '@/components/Loading';
 import {useTheme} from '@/contexts/ThemeContext';
 import {clearCache} from '@/lib/cache';
@@ -173,9 +174,7 @@ const Meal = () => {
               });
             })()
           ) : (
-            <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
-              <Text style={[typography.baseTextStyle, {color: theme.primaryText, fontWeight: '300', fontSize: 16}]}>급식 데이터가 없어요.</Text>
-            </View>
+            <EmptyState icon="utensils" title="급식 정보가 없어요" subtitle={'일시적인 오류일 수 있으니 잠시 후 다시 시도해 주세요.'} style={{marginTop: 48}} />
           )}
         </View>
       </Container>

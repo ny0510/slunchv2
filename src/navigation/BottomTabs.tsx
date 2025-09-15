@@ -32,6 +32,7 @@ const BottomTabs = () => {
       return unreadNotifications.length;
     } catch (error) {
       console.error('Error fetching unread count:', error);
+      setUnreadCount(0);
       return 0;
     }
   }, []);
