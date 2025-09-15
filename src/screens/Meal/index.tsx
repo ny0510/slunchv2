@@ -1,11 +1,10 @@
-import {ANDROID_HOME_BANNER_AD_UNIT_ID, ANDROID_MEAL_NATIVE_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID, IOS_MEAL_NATIVE_AD_UNIT_ID} from '@env';
+import {ANDROID_HOME_BANNER_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
 import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
-import {Platform, RefreshControl, ScrollView, Text, View} from 'react-native';
+import {Platform, RefreshControl, ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 import {trigger} from 'react-native-haptic-feedback';
 import Share from 'react-native-share';
-// import TouchableScale from '@/components/TouchableScale';
 import TouchableScale from 'react-native-touchable-scale';
 
 import Content from '../Tab/Settings/components/Content';
@@ -14,10 +13,9 @@ import BannerAdCard from '@/components/BannerAdCard';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
-import NativeAdCard from '@/components/NaviveAdCard';
 import {useTheme} from '@/contexts/ThemeContext';
 import {clearCache} from '@/lib/cache';
-import {StorageHelper, STORAGE_KEYS} from '@/lib/storage';
+import {STORAGE_KEYS, StorageHelper} from '@/lib/storage';
 import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {Meal as MealType} from '@/types/api';
@@ -26,6 +24,7 @@ import BottomSheet, {BottomSheetBackdrop, BottomSheetView} from '@gorhom/bottom-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Clipboard from '@react-native-clipboard/clipboard';
 import analytics from '@react-native-firebase/analytics';
+import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 
 const Meal = () => {
@@ -68,7 +67,7 @@ const Meal = () => {
       setMeal(afterToday);
     } catch (e: any) {
       console.error('Error fetching data:', e);
-      
+
       // 521 오류 체크
       if (e?.response?.status === 521) {
         showToast('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
@@ -159,7 +158,13 @@ const Meal = () => {
                   <Fragment key={i}>
                     {shouldShowAd && <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />}
                     <TouchableScale onLongPress={() => openBottomSheet(mealText, date)} activeScale={0.98} tension={40} friction={3}>
-                      <Card title={date}>
+                      <Card
+                        title={date}
+                        titleRight={
+                          <TouchableOpacity onPress={() => openBottomSheet(mealText, date)} style={{padding: 4}} accessibilityLabel="급식 공유">
+                            <FontAwesome6 name="share" size={14} color={theme.secondaryText} iconStyle="solid" />
+                          </TouchableOpacity>
+                        }>
                         <FlatList data={m.meal} renderItem={({item, index}) => renderMealItem(item, index)} scrollEnabled={false} />
                       </Card>
                     </TouchableScale>
