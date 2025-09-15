@@ -87,3 +87,8 @@ This is a React Native application for "NYL, aka 선린급식" (Sunrin School Me
 - Uses `.env` file with `react-native-dotenv`
 - Node.js >= 18 required
 - Uses Bun for package management (bun.lock present)
+
+## Important Instructions
+
+- **NEVER commit changes without explicit user permission**
+- **Follow the existing commit message format and style from previous commits**
