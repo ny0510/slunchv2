@@ -124,11 +124,46 @@ const SchoolCard = () => {
   return (
     <Container style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
       {isDemoUser || (user && isSunrinEmail) ? (
-        <IDCard name={name} schoolName="선린인터넷고등학교" generation={generation.toString()} grade={grade} classNum={classNum} number={number} barcodeValue={barcodeValue} handleBarcodePress={handleBarcodePress} />
+        <View style={{width: '100%', alignItems: 'center', gap: 16}}>
+          <IDCard name={name} schoolName="선린인터넷고등학교" generation={generation.toString()} grade={grade} classNum={classNum} number={number} barcodeValue={barcodeValue} handleBarcodePress={handleBarcodePress} />
+          <View style={{alignItems: 'center', gap: 8, marginTop: 8}}>
+            <TouchableOpacity
+              onPress={handleBarcodePress}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+                backgroundColor: theme.background,
+                borderRadius: 8,
+              }}>
+              <FontAwesome6 name="barcode" size={14} color={theme.primaryText} iconStyle="solid" />
+              <Text style={[typography.caption, {color: theme.primaryText, fontWeight: '500'}]}>바코드 확대</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       ) : (
-        <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
+        <View style={{justifyContent: 'center', alignItems: 'center', flex: 1, gap: 16}}>
+          {/* Login prompt with improved UI */}
+          <View style={{alignItems: 'center', gap: 8, marginBottom: 16}}>
+            {/* <FontAwesome6 name="id-card" size={48} color={theme.secondaryText} iconStyle="regular" /> */}
+            <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600'}]}>학생증을 사용하려면</Text>
+            <Text style={[typography.body, {color: theme.secondaryText}]}>선린 구글 계정으로 로그인해 주세요</Text>
+          </View>
+
           <TouchableOpacity
-            style={{backgroundColor: theme.border, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12}}
+            style={{
+              backgroundColor: theme.highlight,
+              paddingHorizontal: 20,
+              paddingVertical: 12,
+              borderRadius: 10,
+              shadowColor: '#000',
+              shadowOffset: {width: 0, height: 2},
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+              elevation: 3,
+            }}
             onPress={() => {
               logout();
               login()
@@ -150,10 +185,12 @@ const SchoolCard = () => {
                 .catch(error => showToast(`로그인에 실패했어요:\n${error.message}`));
             }}>
             <View style={{flexDirection: 'row', gap: 8, alignItems: 'center'}}>
-              <FontAwesome6 name="google" iconStyle="brand" size={22} color={theme.primaryText} />
-              <Text style={[typography.subtitle, {color: theme.primaryText}]}>로그인</Text>
+              <FontAwesome6 name="google" iconStyle="brand" size={18} color="white" />
+              <Text style={[typography.body, {color: 'white', fontWeight: '600'}]}>구글로 로그인</Text>
             </View>
           </TouchableOpacity>
+
+          <Text style={[typography.caption, {color: theme.secondaryText, textAlign: 'center', paddingHorizontal: 32}]}>@sunrint.hs.kr 도메인 계정만 사용 가능합니다</Text>
         </View>
       )}
       <View style={{elevation: 0, zIndex: 0}}>

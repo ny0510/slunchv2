@@ -1,7 +1,6 @@
 import {API_BASE_URL} from '@env';
 import React from 'react';
 import {Image, Text, View} from 'react-native';
-// import TouchableScale from '@/components/TouchableScale';
 import TouchableScale from 'react-native-touchable-scale';
 
 import Loading from '@/components/Loading';
@@ -31,18 +30,10 @@ const ProfileSection = () => {
           borderWidth: 1,
           gap: 12,
         }}>
-        <Image 
-          src={user && user.photoURL ? user.photoURL : `${API_BASE_URL}/public/default_profile.png`} 
-          style={{width: 48, height: 48, backgroundColor: theme.border, borderRadius: 24}} 
-          borderRadius={24} 
-        />
+        <Image src={user && user.photoURL ? user.photoURL : `${API_BASE_URL}/public/default_profile.png`} style={{width: 48, height: 48, backgroundColor: theme.border, borderRadius: 24}} borderRadius={24} />
         <View style={{flex: 1}}>
-          <Text style={[typography.body, {color: theme.primaryText, fontWeight: '600'}]}>
-            {user ? user.displayName : '게스트'}
-          </Text>
-          <Text style={[typography.caption, {color: theme.secondaryText}]}>
-            {user ? user.email : '로그인해 주세요'}
-          </Text>
+          <Text style={[typography.body, {color: theme.primaryText, fontWeight: '600'}]}>{user ? user.displayName : '게스트'}</Text>
+          <Text style={[typography.caption, {color: theme.secondaryText}]}>{user ? user.email : '로그인해 주세요'}</Text>
         </View>
         <TouchableScale
           activeScale={0.98}
@@ -59,15 +50,14 @@ const ProfileSection = () => {
                 .catch(error => showToast(`로그인에 실패했어요:\n${error.message}`));
             }
           }}>
-          <View style={{
-            paddingVertical: 6,
-            paddingHorizontal: 12,
-            backgroundColor: theme.background,
-            borderRadius: 8,
-          }}>
-            <Text style={[typography.caption, {color: theme.primaryText, fontWeight: '600'}]}>
-              {user ? '로그아웃' : '로그인'}
-            </Text>
+          <View
+            style={{
+              paddingVertical: 6,
+              paddingHorizontal: 12,
+              backgroundColor: theme.background,
+              borderRadius: 8,
+            }}>
+            <Text style={[typography.caption, {color: theme.primaryText, fontWeight: '600'}]}>{user ? '로그아웃' : '로그인'}</Text>
           </View>
         </TouchableScale>
       </View>

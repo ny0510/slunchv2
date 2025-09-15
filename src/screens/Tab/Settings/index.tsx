@@ -201,9 +201,20 @@ const Settings = () => {
     <>
       <Container scrollView bounce>
         <View style={{gap: 18, width: '100%', marginVertical: 16}}>
-          <ProfileSection />
+          {/* 계정 섹션 */}
           <View style={{gap: 8}}>
+            <ProfileSection />
+          </View>
+          
+          {/* 설정 섹션 */}
+          <View style={{gap: 8}}>
+            <Text style={[typography.caption, {color: theme.secondaryText, paddingHorizontal: 16, marginBottom: 4}]}>설정</Text>
             <SettingCard onClassChangePress={handleClassChangePress} />
+          </View>
+          
+          {/* 정보 섹션 */}
+          <View style={{gap: 8}}>
+            <Text style={[typography.caption, {color: theme.secondaryText, paddingHorizontal: 16, marginBottom: 4}]}>정보</Text>
             <MyInfoCard schoolInfo={schoolInfo} classInfo={classInfo} />
             <AppInfoCard onDeveloperOptionsEnabled={enabled => setDeveloperOptions(enabled)} />
             {developerOptions && <DeveloperSettingCard />}
@@ -243,7 +254,7 @@ const Settings = () => {
                   highlightBorderWidth={1}
                   onValueChange={handleGradeChange}
                   selectedIndex={gradeList.indexOf(selectedGrade)}
-                  renderItem={(data, index, isSelected) => (
+                  renderItem={(data, _index, isSelected) => (
                     <Text
                       style={{
                         fontSize: 20,
@@ -263,7 +274,7 @@ const Settings = () => {
                   highlightBorderWidth={1}
                   onValueChange={handleClassChange}
                   selectedIndex={classList[gradeList.indexOf(selectedGrade)]?.indexOf(selectedClass) || 0}
-                  renderItem={(data, index, isSelected) => (
+                  renderItem={(data, _index, isSelected) => (
                     <Text
                       style={{
                         fontSize: 20,

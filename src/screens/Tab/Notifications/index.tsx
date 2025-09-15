@@ -1,17 +1,18 @@
 import {ANDROID_MEAL_NATIVE_AD_UNIT_ID, IOS_NOTI_NATIVE_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
 import React, {useCallback, useEffect, useState} from 'react';
-import {Platform, RefreshControl, Text, View} from 'react-native';
-// import TouchableScale from '@/components/TouchableScale';
+import {Platform, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
 import TouchableScale from 'react-native-touchable-scale';
 
 import Ad from './components/Ad';
 import {getNotifications} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
+import EmptyState from '@/components/EmptyState';
 import Loading from '@/components/Loading';
 import {useTheme} from '@/contexts/ThemeContext';
 import {showToast} from '@/lib/toast';
+import {typography} from '@/theme';
 import {Notification} from '@/types/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
@@ -93,8 +94,35 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
       }>
       {/* <Ad adUnitId={Platform.OS === 'ios' ? IOS_NOTI_NATIVE_AD_UNIT_ID : ANDROID_MEAL_NATIVE_AD_UNIT_ID} /> */}
 
-      <View style={{gap: 16, width: '100%', paddingHorizontal: 16}}>
+      <View style={{gap: 4, width: '100%', paddingHorizontal: 16}}>
         {/* <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_NOTI_BANNER_AD_UNIT_ID : ANDROID_NOTI_BANNER_AD_UNIT_ID} /> */}
+
+        {/* {noti?.length > 0 && readNotifications.length < noti.length && (
+          <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8}}>
+            <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
+              <View style={{width: 8, height: 8, borderRadius: 4, backgroundColor: theme.highlight}} />
+              <Text style={[typography.caption, {color: theme.secondaryText}]}>새 알림 {noti.length - readNotifications.length}개</Text>
+            </View>
+            <TouchableOpacity
+              onPress={async () => {
+                const allIds = noti.map(n => n.id);
+                setReadNotifications(allIds);
+                await AsyncStorage.setItem('readNotifications', JSON.stringify(allIds));
+                onReadNotification();
+              }}
+              style={{
+                paddingVertical: 6,
+                paddingHorizontal: 12,
+                backgroundColor: theme.background,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: theme.border,
+              }}
+              accessibilityLabel="모든 알림 읽음 처리">
+              <Text style={[typography.caption, {color: theme.primaryText, fontWeight: '600'}]}>모두 읽음</Text>
+            </TouchableOpacity>
+          </View>
+        )} */}
 
         {noti?.length > 0 ? (
           noti.map((item, index) => {
@@ -103,27 +131,40 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
             const icon = <FontAwesome6 name="bullhorn" size={16} color={theme.primaryText} iconStyle="solid" />;
 
             return (
-              <TouchableScale key={index} onPress={() => handlePress(index, item.id)} activeScale={0.98} tension={40} friction={3}>
-                <Card title={item.title} titleIcon={icon} subtitle={date} arrow notificationDot={isNew}>
-                  {expandedIndices.includes(index) && (
-                    <Text
-                      style={{
-                        color: theme.primaryText,
-                        fontWeight: '400',
-                        fontSize: 16,
-                        lineHeight: 24,
-                      }}>
-                      {item.content}
-                    </Text>
-                  )}
-                </Card>
+              <TouchableScale key={index} onPress={() => handlePress(index, item.id)} activeScale={0.98} tension={10} friction={3}>
+                <View
+                  style={{
+                    marginBottom: index === noti.length - 1 ? 0 : 12,
+                  }}>
+                  <Card title={item.title} titleIcon={isNew && icon} subtitle={date} arrow={!expandedIndices.includes(index)} style={{backgroundColor: theme.card}}>
+                    {expandedIndices.includes(index) && (
+                      <View style={{marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.border}}>
+                        <Text
+                          style={[
+                            typography.body,
+                            {
+                              color: theme.primaryText,
+                              fontWeight: '400',
+                              lineHeight: 22,
+                            },
+                          ]}>
+                          {item.content}
+                        </Text>
+                        {isNew && (
+                          <View style={{flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8}}>
+                            <FontAwesome6 name="check" size={12} color={theme.secondaryText} iconStyle="solid" />
+                            <Text style={[typography.caption, {color: theme.secondaryText}]}>읽음 처리됨</Text>
+                          </View>
+                        )}
+                      </View>
+                    )}
+                  </Card>
+                </View>
               </TouchableScale>
             );
           })
         ) : (
-          <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
-            <Text style={{color: theme.primaryText, fontWeight: '300', fontSize: 16}}>알림이 없습니다.</Text>
-          </View>
+          <EmptyState icon="bell" title="알림이 없습니다" subtitle="새로운 소식이 있으면 알려드릴게요" style={{marginTop: 48}} />
         )}
       </View>
     </Container>
