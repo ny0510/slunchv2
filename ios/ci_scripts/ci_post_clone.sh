@@ -14,6 +14,19 @@ echo "Project root: $(pwd)"
 if [ ! -z "$SENTRY_PROPERTIES" ]; then
     echo "Creating sentry.properties..."
     echo "$SENTRY_PROPERTIES" | base64 -d > ios/sentry.properties
+    
+    # Verify sentry.properties file
+    if [ -f "ios/sentry.properties" ]; then
+        echo "✓ sentry.properties created successfully"
+        # Set environment variable to allow Sentry upload failures (for CI)
+        export SENTRY_ALLOW_FAILURE=true
+    else
+        echo "⚠️ sentry.properties creation failed"
+    fi
+else
+    echo "⚠️ SENTRY_PROPERTIES not set, disabling Sentry auto upload"
+    # Disable Sentry auto upload if no properties provided
+    export SENTRY_DISABLE_AUTO_UPLOAD=true
 fi
 
 if [ ! -z "$GOOGLE_SERVICE_JSON" ]; then
