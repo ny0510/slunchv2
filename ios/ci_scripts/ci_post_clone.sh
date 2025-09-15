@@ -10,72 +10,25 @@ cd ../../
 
 echo "Project root: $(pwd)"
 
-# Handle Sentry configuration
+# Disable Sentry for Xcode Cloud builds
+echo "⚠️ Disabling Sentry auto-upload for Xcode Cloud build"
+export SENTRY_DISABLE_AUTO_UPLOAD=true
+
+# Optionally handle Sentry configuration if needed for other purposes
 if [ ! -z "$SENTRY_PROPERTIES" ]; then
-    echo "Creating sentry.properties..."
-    
-    # Try different decoding methods
-    # Method 1: Standard base64 decode
-    if echo "$SENTRY_PROPERTIES" | base64 --decode > ios/sentry.properties 2>/dev/null; then
-        echo "Decoded with base64 --decode"
-    # Method 2: macOS base64 decode
-    elif echo "$SENTRY_PROPERTIES" | base64 -D > ios/sentry.properties 2>/dev/null; then
-        echo "Decoded with base64 -D"
-    # Method 3: Direct write (if already decoded)
-    else
-        echo "$SENTRY_PROPERTIES" > ios/sentry.properties
-        echo "Written directly (assumed already decoded)"
-    fi
-    
-    # Verify sentry.properties file
-    if [ -f "ios/sentry.properties" ] && [ -s "ios/sentry.properties" ]; then
-        echo "✓ sentry.properties file created"
-        echo "File size: $(wc -c < ios/sentry.properties) bytes"
-        
-        # Check if content is valid properties format
-        if grep -q "auth.token=" ios/sentry.properties 2>/dev/null || \
-           grep -q "defaults.org=" ios/sentry.properties 2>/dev/null; then
-            echo "✓ sentry.properties appears to be valid"
-            export SENTRY_ALLOW_FAILURE=true
-        else
-            echo "⚠️ sentry.properties may not be valid, checking if base64..."
-            # If it's still base64, try one more decode
-            if head -n1 ios/sentry.properties | grep -q "^[A-Za-z0-9+/=]*$" && \
-               [ $(head -n1 ios/sentry.properties | wc -c) -gt 50 ]; then
-                echo "Attempting double-decode..."
-                mv ios/sentry.properties ios/sentry.properties.b64
-                if base64 --decode < ios/sentry.properties.b64 > ios/sentry.properties 2>/dev/null || \
-                   base64 -D < ios/sentry.properties.b64 > ios/sentry.properties 2>/dev/null; then
-                    echo "✓ Double-decoded successfully"
-                    rm ios/sentry.properties.b64
-                else
-                    # Restore original if decode failed
-                    mv ios/sentry.properties.b64 ios/sentry.properties
-                    echo "⚠️ Double-decode failed, keeping original"
-                fi
-            fi
-            # Allow failures for CI
-            export SENTRY_ALLOW_FAILURE=true
-        fi
-    else
-        echo "⚠️ sentry.properties creation failed or file is empty"
-        export SENTRY_DISABLE_AUTO_UPLOAD=true
-    fi
-else
-    echo "⚠️ SENTRY_PROPERTIES not set, disabling Sentry auto upload"
-    export SENTRY_DISABLE_AUTO_UPLOAD=true
+    echo "SENTRY_PROPERTIES is set but Sentry upload is disabled for CI builds"
+    # Create an empty or minimal sentry.properties to avoid errors
+    echo "# Sentry disabled for CI" > ios/sentry.properties
 fi
 
 # Export Sentry environment variables for the build process
 echo "Setting Sentry environment variables..."
-if [ ! -z "$SENTRY_DISABLE_AUTO_UPLOAD" ]; then
-    echo "export SENTRY_DISABLE_AUTO_UPLOAD=$SENTRY_DISABLE_AUTO_UPLOAD" >> ~/.bashrc
-    echo "export SENTRY_DISABLE_AUTO_UPLOAD=$SENTRY_DISABLE_AUTO_UPLOAD" >> ~/.zshrc
-fi
-if [ ! -z "$SENTRY_ALLOW_FAILURE" ]; then
-    echo "export SENTRY_ALLOW_FAILURE=$SENTRY_ALLOW_FAILURE" >> ~/.bashrc
-    echo "export SENTRY_ALLOW_FAILURE=$SENTRY_ALLOW_FAILURE" >> ~/.zshrc
-fi
+echo "export SENTRY_DISABLE_AUTO_UPLOAD=true" >> ~/.bashrc
+echo "export SENTRY_DISABLE_AUTO_UPLOAD=true" >> ~/.zshrc
+# Also set in current shell's profile
+echo "export SENTRY_DISABLE_AUTO_UPLOAD=true" >> ~/.profile
+# Set for the current session
+export SENTRY_DISABLE_AUTO_UPLOAD=true
 
 if [ ! -z "$GOOGLE_SERVICE_JSON" ]; then
     echo "Creating GoogleService-Info.plist..."
