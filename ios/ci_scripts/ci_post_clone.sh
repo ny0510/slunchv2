@@ -10,57 +10,25 @@ cd ../../
 
 echo "Project root: $(pwd)"
 
-# Disable Sentry for Xcode Cloud builds
-echo "⚠️ Disabling Sentry auto-upload for Xcode Cloud build"
-export SENTRY_DISABLE_AUTO_UPLOAD=true
+echo "Creating sentry.properties..."
+echo $SENTRY_PROPERTIES | base64 -d > ios/sentry.properties
 
-# Optionally handle Sentry configuration if needed for other purposes
-if [ ! -z "$SENTRY_PROPERTIES" ]; then
-    echo "SENTRY_PROPERTIES is set but Sentry upload is disabled for CI builds"
-    # Create an empty or minimal sentry.properties to avoid errors
-    echo "# Sentry disabled for CI" > ios/sentry.properties
-fi
+echo "Creating GoogleService-Info.plist..."
+echo $GOOGLE_SERVICES_JSON | base64 -d > ios/GoogleService-Info.plist
 
-# Export Sentry environment variables for the build process
-echo "Setting Sentry environment variables..."
-echo "export SENTRY_DISABLE_AUTO_UPLOAD=true" >> ~/.bashrc
-echo "export SENTRY_DISABLE_AUTO_UPLOAD=true" >> ~/.zshrc
-# Also set in current shell's profile
-echo "export SENTRY_DISABLE_AUTO_UPLOAD=true" >> ~/.profile
-# Set for the current session
-export SENTRY_DISABLE_AUTO_UPLOAD=true
-
-if [ ! -z "$GOOGLE_SERVICE_JSON" ]; then
-    echo "Creating GoogleService-Info.plist..."
-    echo "$GOOGLE_SERVICE_JSON" | base64 -d > ios/GoogleService-Info.plist
-    
-    # Verify the plist file is valid
-    if plutil -lint ios/GoogleService-Info.plist 2>/dev/null; then
-        echo "✓ GoogleService-Info.plist is valid"
-    else
-        echo "✗ GoogleService-Info.plist validation failed"
-        echo "Attempting to fix plist format..."
-        # Try to convert to XML format if it's in binary format
-        plutil -convert xml1 ios/GoogleService-Info.plist 2>/dev/null || true
-    fi
-fi
-
-# Create .env file
-if [ ! -z "$ENV" ]; then
-    echo "Creating .env file..."
-    echo "$ENV" | base64 -d > .env
-fi
+echo "Creating .env file..."
+echo $ENV | base64 -d > .env
 
 # Setup Homebrew and dependencies
 export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
 export PATH="/opt/homebrew/bin:$PATH"
 
-# Install Node.js v22 (matching local environment)
+# Install Node.js v22 
 echo "Installing Node.js v22..."
 brew install node@22
 export PATH="/usr/local/opt/node@22/bin:$PATH"
 
-# Install Bun (matching local version 1.2.21)
+# Install Bun 
 echo "Installing Bun..."
 curl -fsSL https://bun.sh/install | bash
 export BUN_INSTALL="$HOME/.bun"
@@ -85,7 +53,7 @@ fi
 rbenv global 3.4.1
 rbenv rehash
 
-# Install CocoaPods 1.16.2 (matching local version)
+# Install CocoaPods 1.16.2 
 echo "Installing CocoaPods 1.16.2..."
 rbenv exec gem install cocoapods -v 1.16.2
 
@@ -99,12 +67,6 @@ echo "Pod version: $(rbenv exec pod --version || echo 'Pod not found')"
 # Install Node dependencies
 echo "Installing Node dependencies with Bun..."
 bun install --frozen-lockfile
-
-# Verify bun installation
-if [ ! -d "node_modules" ]; then
-    echo "Error: node_modules not created. Retrying with npm..."
-    npm install
-fi
 
 # Install iOS dependencies
 echo "Installing CocoaPods dependencies..."
@@ -138,50 +100,3 @@ if [ $? -ne 0 ]; then
     echo "Pod install failed, trying with repo update..."
     rbenv exec pod install --repo-update
 fi
-
-# Verify iOS dependencies
-echo "Verifying iOS dependencies..."
-if [ -d "Pods" ]; then
-    echo "✓ Pods directory created"
-    echo "Number of pods installed: $(ls -1 Pods | wc -l)"
-else
-    echo "✗ Pods directory missing - build will likely fail"
-    # Don't exit with error, let the build process handle it
-    # exit 1
-fi
-
-cd ..
-
-# Verify created files (without printing sensitive content)
-echo "\nVerifying configuration files..."
-if [ -f "ios/sentry.properties" ]; then
-    echo "✓ sentry.properties created"
-else
-    echo "⚠️  sentry.properties missing (may not be required)"
-fi
-
-if [ -f "ios/GoogleService-Info.plist" ]; then
-    echo "✓ GoogleService-Info.plist created"
-else
-    echo "✗ GoogleService-Info.plist missing - Firebase will not work"
-fi
-
-if [ -f ".env" ]; then
-    echo "✓ .env created"
-else
-    echo "✗ .env missing - API calls will fail"
-    # Don't exit with error, let the build process handle it
-    # exit 1
-fi
-
-# Verify node_modules
-if [ -d "node_modules" ]; then
-    echo "✓ node_modules created"
-    echo "Number of packages: $(ls -1 node_modules | wc -l)"
-else
-    echo "✗ node_modules missing - build will fail"
-    # Don't exit with error, let the build process handle it
-    # exit 1
-fi
-
-echo "\n✅ Post-clone script completed successfully!"
