@@ -32,13 +32,7 @@ export PATH="/opt/homebrew/bin:$PATH"
 # Install Node.js v22 (matching local environment)
 echo "Installing Node.js v22..."
 brew install node@22
-export PATH="/opt/homebrew/opt/node@22/bin:$PATH"
-
-# Create symlink for node executable (for CocoaPods)
-echo "Creating node symlink for CocoaPods..."
-if [ ! -L "/usr/local/bin/node" ]; then
-    sudo ln -sf /opt/homebrew/opt/node@22/bin/node /usr/local/bin/node
-fi
+export PATH="/usr/local/opt/node@22/bin:$PATH"
 
 # Install Bun (matching local version 1.2.21)
 echo "Installing Bun..."
