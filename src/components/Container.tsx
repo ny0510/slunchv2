@@ -11,7 +11,7 @@ interface Props {
 const Container = ({scrollView = false, bounce = false, style, children, ...rest}: Props & {[key: string]: any}) => {
   if (scrollView) {
     return (
-      <ScrollView ref={rest.scrollViewRef} contentContainerStyle={[s.container, style]} bounces={bounce} keyboardShouldPersistTaps="handled" scrollEventThrottle={16} nestedScrollEnabled={true} scrollIndicatorInsets={{right: 1}} removeClippedSubviews={false} {...rest}>
+      <ScrollView ref={rest.scrollViewRef} contentContainerStyle={[s.container, style]} bounces={bounce} keyboardShouldPersistTaps="never" scrollEventThrottle={16} nestedScrollEnabled={true} scrollIndicatorInsets={{right: 1}} removeClippedSubviews={false} {...rest}>
         {children}
       </ScrollView>
     );

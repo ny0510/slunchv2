@@ -22,6 +22,8 @@ interface CardProps extends Omit<ViewProps, 'style'> {
   style?: ViewStyle;
   /** 제목 옆 아이콘 */
   titleIcon?: React.ReactNode;
+  /** 제목 오른쪽 컴포넌트 */
+  titleRight?: React.ReactNode;
   /** 자식 컴포넌트 */
   children?: React.ReactNode;
 }
@@ -34,6 +36,7 @@ const Card = ({
   style,
   arrow,
   titleIcon,
+  titleRight,
   children,
   notificationDot,
   ...rest
@@ -101,6 +104,7 @@ const Card = ({
             {subtitle && <Text style={subtitleTextStyle}>{subtitle}</Text>}
           </View>
           <View style={rightContainerStyle}>
+            {titleRight}
             {notificationDot && <View style={notificationDotStyle} />}
             {arrow && (
               <FontAwesome6
