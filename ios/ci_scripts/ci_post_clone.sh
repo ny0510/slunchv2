@@ -34,6 +34,12 @@ echo "Installing Node.js v22..."
 brew install node@22
 export PATH="/opt/homebrew/opt/node@22/bin:$PATH"
 
+# Create symlink for node executable (for CocoaPods)
+echo "Creating node symlink for CocoaPods..."
+if [ ! -L "/usr/local/bin/node" ]; then
+    sudo ln -sf /opt/homebrew/opt/node@22/bin/node /usr/local/bin/node
+fi
+
 # Install Bun (matching local version 1.2.21)
 echo "Installing Bun..."
 curl -fsSL https://bun.sh/install | bash
@@ -64,10 +70,11 @@ echo "Installing CocoaPods 1.16.2..."
 rbenv exec gem install cocoapods -v 1.16.2
 
 # Verify versions
-echo "Node version: $(node --version)"
-echo "Bun version: $(bun --version)"
-echo "Ruby version: $(ruby --version)"
-echo "Pod version: $(rbenv exec pod --version)"
+echo "Node version: $(node --version || echo 'Node not found')"
+echo "Node path: $(which node || echo 'Node not in PATH')"
+echo "Bun version: $(bun --version || echo 'Bun not found')"
+echo "Ruby version: $(ruby --version || echo 'Ruby not found')"
+echo "Pod version: $(rbenv exec pod --version || echo 'Pod not found')"
 
 # Install Node dependencies
 echo "Installing Node dependencies with Bun..."
@@ -93,6 +100,14 @@ fi
 # Ensure rbenv is properly initialized for pod commands
 export PATH="$HOME/.rbenv/bin:$PATH"
 eval "$(rbenv init -)"
+
+# Ensure node is available for CocoaPods
+export PATH="/opt/homebrew/opt/node@22/bin:/usr/local/bin:$PATH"
+
+# Debug: Check node availability
+echo "Checking node for CocoaPods..."
+echo "Node location: $(which node)"
+echo "Node version: $(node --version)"
 
 # Install pods (matching local setup)
 echo "Running pod install..."
