@@ -1,7 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 import React, {useCallback, useEffect, useState} from 'react';
 import {GestureResponderEvent} from 'react-native';
-// import TouchableScale from '@/components/TouchableScale';
 import TouchableScale from 'react-native-touchable-scale';
 
 import {getNotifications} from '@/api';
