@@ -16,14 +16,16 @@ if [ ! -z "$SENTRY_PROPERTIES" ]; then
     echo $SENTRY_PROPERTIES | base64 -d > ios/sentry.properties
 fi
 
-if [ ! -z "$GOOGLE_SERVICES_JSON" ]; then
+if [ ! -z "$GOOGLE_SERVICE_JSON" ]; then
     echo "Creating GoogleService-Info.plist..."
     echo $GOOGLE_SERVICES_JSON | base64 -d > ios/GoogleService-Info.plist
 fi
 
 # Create .env file
-echo "Creating .env file..."
-echo "API_BASE_URL='$API_BASE_URL'" > .env
+if [ ! -z "$ENV" ]; then
+    echo "Creating sentry.properties..."
+    echo $ENV | base64 -d > .env
+fi
 
 # Setup Homebrew and dependencies
 export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
