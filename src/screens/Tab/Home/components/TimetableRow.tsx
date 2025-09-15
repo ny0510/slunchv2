@@ -20,7 +20,12 @@ const TimetableRow = ({item, index, todayIndex, openBottomSheet}: TimetableRowPr
     <View style={s.timetableRow}>
       {item.map((subject, subIndex) => (
         <View key={`${subject.subject}-${index}-${subIndex}`} style={[s.timetableCell, {backgroundColor: subIndex === todayIndex ? theme.background : theme.card}]}>
-          <TouchableOpacity onLongPress={() => openBottomSheet({row: index, col: subIndex})} delayPressIn={0} hitSlop={{top: 4, bottom: 4, left: 4, right: 4}}>
+          <TouchableOpacity 
+            onLongPress={() => openBottomSheet({row: index, col: subIndex})} 
+            delayPressIn={0} 
+            hitSlop={{top: 4, bottom: 4, left: 4, right: 4}}
+            accessibilityLabel={`${subject.subject} ${subject.teacher}`}
+          >
             <Text
               style={[
                 typography.baseTextStyle,

@@ -1,28 +1,28 @@
 import {ANDROID_HOME_BANNER_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
-import React, {Fragment, ReactNode, useCallback, useEffect, useState} from 'react';
+import React, {Fragment, ReactNode, useCallback, useEffect} from 'react';
 import {AppState, FlatList, Keyboard, Platform, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
 import {trigger} from 'react-native-haptic-feedback';
 import Midnight from 'react-native-midnight';
 
+import HomeCard from './components/HomeCard';
+import LoadingView from './components/LoadingView';
+import ScheduleItem from './components/ScheduleItem';
+import TimetableRow from './components/TimetableRow';
+import {useHomeData} from './hooks/useHomeData';
+import {useTimeTableEditor} from './hooks/useTimeTableEditor';
 import {styles as s} from './styles';
 import Logo from '@/assets/images/logo.svg';
 import BannerAdCard from '@/components/BannerAdCard';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
-import TouchableScale from '@/components/TouchableScale';
-import HomeCard from './components/HomeCard';
-import LoadingView from './components/LoadingView';
-import ScheduleItem from './components/ScheduleItem';
-import TimetableRow from './components/TimetableRow';
+import EmptyState from '@/components/EmptyState';
+import {SkeletonCard} from '@/components/SkeletonLoader';
 import {useTheme} from '@/contexts/ThemeContext';
 import {useUser} from '@/contexts/UserContext';
-import {useHomeData} from './hooks/useHomeData';
-import {useTimeTableEditor} from './hooks/useTimeTableEditor';
 import {clearCache} from '@/lib/cache';
-import {StorageHelper, STORAGE_KEYS} from '@/lib/storage';
+import {STORAGE_KEYS, StorageHelper} from '@/lib/storage';
 import {RootStackParamList} from '@/navigation/RootStacks';
-import {Timetable} from '@/types/api';
 import {MealItem} from '@/types/meal';
 import BottomSheet, {BottomSheetBackdrop, BottomSheetTextInput, BottomSheetView} from '@gorhom/bottom-sheet';
 import analytics from '@react-native-firebase/analytics';
@@ -35,33 +35,10 @@ const Home = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   // 홈 데이터 관리 훅
-  const {
-    timetable,
-    meal,
-    schedules,
-    loading,
-    refreshing,
-    showAllergy,
-    todayIndex,
-    mealDayOffset,
-    setMidnightTrigger,
-    fetchData,
-    handleRefresh,
-    dispatch,
-  } = useHomeData();
+  const {timetable, meal, schedules, loading, refreshing, showAllergy, todayIndex, mealDayOffset, setMidnightTrigger, fetchData, handleRefresh, dispatch} = useHomeData();
 
   // 시간표 편집 훅
-  const {
-    selectedSubject,
-    selectedSubjectIndices,
-    tempSubject,
-    bottomSheetRef,
-    handleSubjectSelect,
-    updateTempSubject,
-    saveSubject,
-    resetSubject,
-    closeBottomSheet,
-  } = useTimeTableEditor(timetable, (newTimetable) => {
+  const {selectedSubject, selectedSubjectIndices, tempSubject, bottomSheetRef, handleSubjectSelect, updateTempSubject, saveSubject, resetSubject, closeBottomSheet} = useTimeTableEditor(timetable, newTimetable => {
     dispatch({type: 'SET_TIMETABLE', payload: newTimetable});
   });
 
@@ -89,7 +66,7 @@ const Home = () => {
       // 설정 다시 로드하여 알레르기 표시 여부 업데이트
       const settings = await StorageHelper.getItem<{showAllergy?: boolean}>(STORAGE_KEYS.SETTINGS, {});
       const currentShowAllergy = settings.showAllergy ?? true;
-      
+
       // 설정이 변경되었으면 데이터 다시 가져오기
       if (currentShowAllergy !== showAllergy) {
         await fetchData(currentShowAllergy);
@@ -129,9 +106,7 @@ const Home = () => {
     async (index: number) => {
       if (index === -1) {
         // BottomSheet가 닫힐 때 변경 사항 저장
-        if (tempSubject && selectedSubject && 
-           (tempSubject.subject !== selectedSubject.subject || 
-            tempSubject.teacher !== selectedSubject.teacher)) {
+        if (tempSubject && selectedSubject && (tempSubject.subject !== selectedSubject.subject || tempSubject.teacher !== selectedSubject.teacher)) {
           await saveSubject();
         }
         closeBottomSheet();
@@ -177,13 +152,29 @@ const Home = () => {
           <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
 
           <HomeCard title="학사일정" titleIcon={<FontAwesome6 name="calendar" size={16} color={theme.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Schedules')}>
-            {loading ? <LoadingView height={100} /> : schedules.length === 0 ? <Text style={[typography.caption, {color: theme.secondaryText}]}>학사일정이 없어요.</Text> : <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />}
+            {loading ? (
+              <View style={{gap: 8}}>
+                <SkeletonCard />
+              </View>
+            ) : schedules.length === 0 ? (
+              <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 12, gap: 8}}>
+                <FontAwesome6 name="calendar-xmark" size={16} color={theme.secondaryText} iconStyle="regular" />
+                <Text style={[typography.body, {color: theme.secondaryText, fontWeight: '300'}]}>학사일정이 없어요</Text>
+              </View>
+            ) : (
+              <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />
+            )}
           </HomeCard>
           <HomeCard title="급식" titleIcon={<FontAwesome6 name="utensils" size={16} color={theme.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Meal')}>
             {loading ? (
-              <LoadingView height={100} />
+              <View style={{gap: 8}}>
+                <SkeletonCard />
+              </View>
             ) : meal.length === 0 ? (
-              <Text style={[typography.caption, {color: theme.secondaryText}]}>급식 정보가 없어요.</Text>
+              <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 12, gap: 8}}>
+                <FontAwesome6 name="utensils" size={16} color={theme.secondaryText} iconStyle="solid" />
+                <Text style={[typography.body, {color: theme.secondaryText, fontWeight: '300'}]}>급식 정보가 없어요</Text>
+              </View>
             ) : (
               <View style={{gap: 4}}>
                 <FlatList data={meal} renderItem={({item}) => <View>{item.meal.map(renderMealItem)}</View>} scrollEnabled={false} />
@@ -195,11 +186,11 @@ const Home = () => {
               </View>
             )}
           </HomeCard>
-          <Card title="시간표" titleIcon={<FontAwesome6 name="table" size={16} color={theme.primaryText} iconStyle="solid" />}>
+          <Card title="시간표" subtitle="길게 눌러 편집" titleIcon={<FontAwesome6 name="table" size={16} color={theme.primaryText} iconStyle="solid" />}>
             {loading ? (
               <LoadingView height={250} />
             ) : timetable.length === 0 ? (
-              <Text style={[typography.caption, {color: theme.secondaryText}]}>이번주 시간표가 없어요.</Text>
+              <EmptyState icon="table" title="시간표가 없어요" subtitle="이번 주 시간표가 등록되지 않았습니다" style={{padding: 16}} />
             ) : (
               <FlatList data={timetable} contentContainerStyle={{gap: 3}} renderItem={({item, index}) => <TimetableRow item={item} index={index} todayIndex={todayIndex} openBottomSheet={openBottomSheet} />} scrollEnabled={false} />
             )}
@@ -290,6 +281,5 @@ const Home = () => {
     </Fragment>
   );
 };
-
 
 export default Home;
