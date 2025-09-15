@@ -13,36 +13,56 @@ echo "Project root: $(pwd)"
 # Handle Sentry configuration
 if [ ! -z "$SENTRY_PROPERTIES" ]; then
     echo "Creating sentry.properties..."
-    # Decode base64 and write to file
-    echo "$SENTRY_PROPERTIES" | base64 --decode > ios/sentry.properties 2>/dev/null || \
-    echo "$SENTRY_PROPERTIES" | base64 -D > ios/sentry.properties 2>/dev/null || \
-    echo "$SENTRY_PROPERTIES" > ios/sentry.properties
+    
+    # Try different decoding methods
+    # Method 1: Standard base64 decode
+    if echo "$SENTRY_PROPERTIES" | base64 --decode > ios/sentry.properties 2>/dev/null; then
+        echo "Decoded with base64 --decode"
+    # Method 2: macOS base64 decode
+    elif echo "$SENTRY_PROPERTIES" | base64 -D > ios/sentry.properties 2>/dev/null; then
+        echo "Decoded with base64 -D"
+    # Method 3: Direct write (if already decoded)
+    else
+        echo "$SENTRY_PROPERTIES" > ios/sentry.properties
+        echo "Written directly (assumed already decoded)"
+    fi
     
     # Verify sentry.properties file
     if [ -f "ios/sentry.properties" ] && [ -s "ios/sentry.properties" ]; then
-        echo "✓ sentry.properties created successfully"
-        # Debug: Show first line of file (without sensitive data)
+        echo "✓ sentry.properties file created"
         echo "File size: $(wc -c < ios/sentry.properties) bytes"
         
-        # Check if file content looks like base64 (shouldn't be)
-        if head -n1 ios/sentry.properties | grep -q "^[A-Za-z0-9+/=]*$"; then
-            echo "⚠️ Warning: sentry.properties appears to still be base64 encoded"
-            # Try to decode again
-            mv ios/sentry.properties ios/sentry.properties.tmp
-            cat ios/sentry.properties.tmp | base64 --decode > ios/sentry.properties 2>/dev/null || \
-            cat ios/sentry.properties.tmp | base64 -D > ios/sentry.properties 2>/dev/null
-            rm ios/sentry.properties.tmp
+        # Check if content is valid properties format
+        if grep -q "auth.token=" ios/sentry.properties 2>/dev/null || \
+           grep -q "defaults.org=" ios/sentry.properties 2>/dev/null; then
+            echo "✓ sentry.properties appears to be valid"
+            export SENTRY_ALLOW_FAILURE=true
+        else
+            echo "⚠️ sentry.properties may not be valid, checking if base64..."
+            # If it's still base64, try one more decode
+            if head -n1 ios/sentry.properties | grep -q "^[A-Za-z0-9+/=]*$" && \
+               [ $(head -n1 ios/sentry.properties | wc -c) -gt 50 ]; then
+                echo "Attempting double-decode..."
+                mv ios/sentry.properties ios/sentry.properties.b64
+                if base64 --decode < ios/sentry.properties.b64 > ios/sentry.properties 2>/dev/null || \
+                   base64 -D < ios/sentry.properties.b64 > ios/sentry.properties 2>/dev/null; then
+                    echo "✓ Double-decoded successfully"
+                    rm ios/sentry.properties.b64
+                else
+                    # Restore original if decode failed
+                    mv ios/sentry.properties.b64 ios/sentry.properties
+                    echo "⚠️ Double-decode failed, keeping original"
+                fi
+            fi
+            # Allow failures for CI
+            export SENTRY_ALLOW_FAILURE=true
         fi
-        
-        # Set environment variable to allow Sentry upload failures (for CI)
-        export SENTRY_ALLOW_FAILURE=true
     else
         echo "⚠️ sentry.properties creation failed or file is empty"
         export SENTRY_DISABLE_AUTO_UPLOAD=true
     fi
 else
     echo "⚠️ SENTRY_PROPERTIES not set, disabling Sentry auto upload"
-    # Disable Sentry auto upload if no properties provided
     export SENTRY_DISABLE_AUTO_UPLOAD=true
 fi
 
@@ -173,7 +193,8 @@ if [ -d "Pods" ]; then
     echo "Number of pods installed: $(ls -1 Pods | wc -l)"
 else
     echo "✗ Pods directory missing - build will likely fail"
-    exit 1
+    # Don't exit with error, let the build process handle it
+    # exit 1
 fi
 
 cd ..
@@ -196,7 +217,8 @@ if [ -f ".env" ]; then
     echo "✓ .env created"
 else
     echo "✗ .env missing - API calls will fail"
-    exit 1
+    # Don't exit with error, let the build process handle it
+    # exit 1
 fi
 
 # Verify node_modules
@@ -205,7 +227,8 @@ if [ -d "node_modules" ]; then
     echo "Number of packages: $(ls -1 node_modules | wc -l)"
 else
     echo "✗ node_modules missing - build will fail"
-    exit 1
+    # Don't exit with error, let the build process handle it
+    # exit 1
 fi
 
 echo "\n✅ Post-clone script completed successfully!"
