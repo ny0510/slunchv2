@@ -13,18 +13,28 @@ echo "Project root: $(pwd)"
 # Create required files from environment variables
 if [ ! -z "$SENTRY_PROPERTIES" ]; then
     echo "Creating sentry.properties..."
-    echo $SENTRY_PROPERTIES | base64 -d > ios/sentry.properties
+    echo "$SENTRY_PROPERTIES" | base64 -d > ios/sentry.properties
 fi
 
 if [ ! -z "$GOOGLE_SERVICE_JSON" ]; then
     echo "Creating GoogleService-Info.plist..."
-    echo $GOOGLE_SERVICES_JSON | base64 -d > ios/GoogleService-Info.plist
+    echo "$GOOGLE_SERVICE_JSON" | base64 -d > ios/GoogleService-Info.plist
+    
+    # Verify the plist file is valid
+    if plutil -lint ios/GoogleService-Info.plist 2>/dev/null; then
+        echo "✓ GoogleService-Info.plist is valid"
+    else
+        echo "✗ GoogleService-Info.plist validation failed"
+        echo "Attempting to fix plist format..."
+        # Try to convert to XML format if it's in binary format
+        plutil -convert xml1 ios/GoogleService-Info.plist 2>/dev/null || true
+    fi
 fi
 
 # Create .env file
 if [ ! -z "$ENV" ]; then
     echo "Creating .env file..."
-    echo $ENV | base64 -d > .env
+    echo "$ENV" | base64 -d > .env
 fi
 
 # Setup Homebrew and dependencies
