@@ -9,29 +9,35 @@ This is a React Native application for "NYL, aka 선린급식" (Sunrin School Me
 ## Development Commands
 
 ### Starting the Application
-- `npm start` - Start Metro bundler
-- `npm run start:reset` - Start Metro with cache reset
-- `npm run android` - Run on Android device/emulator (active arch only)
-- `npm run ios` - Run on iOS device/simulator
+
+- `bun start` - Start Metro bundler
+- `bun run start:reset` - Start Metro with cache reset
+- `bun run android` - Run on Android device/emulator (active arch only)
+- `bun run ios` - Run on iOS device/simulator
 
 ### Platform-specific Commands
+
 **Android:**
-- `npm run android:clean` - Clean Android build
-- `npm run android:assemble` - Build release APK
-- `npm run android:bundle` - Build release AAB
+
+- `bun run android:clean` - Clean Android build
+- `bun run android:assemble` - Build release APK
+- `bun run android:bundle` - Build release AAB
 
 **iOS:**
-- `npm run ios:pod` - Install/update CocoaPods dependencies
-- `npm run ios:pod:clean` - Remove CocoaPods integration
-- `npm run ios:xcode` - Open Xcode workspace
+
+- `bun run ios:pod` - Install/update CocoaPods dependencies
+- `bun run ios:pod:clean` - Remove CocoaPods integration
+- `bun run ios:xcode` - Open Xcode workspace
 
 ### Code Quality
-- `npm run lint` - Run ESLint
-- `npm test` - Run Jest tests
+
+- `bun run lint` - Run ESLint
+- `bun test` - Run Jest tests
 
 ## Project Architecture
 
 ### Directory Structure
+
 - `src/` - Main source code
   - `components/` - Reusable UI components
   - `screens/` - Screen components organized by feature
@@ -49,6 +55,7 @@ This is a React Native application for "NYL, aka 선린급식" (Sunrin School Me
   - `assets/` - Static assets (images, fonts)
 
 ### Key Technologies
+
 - **React Native 0.78.2** with React 19.0.0
 - **TypeScript** with path mapping (`@/*` → `src/*`)
 - **Navigation**: React Navigation v7 (stack + bottom tabs)
@@ -58,6 +65,7 @@ This is a React Native application for "NYL, aka 선린급식" (Sunrin School Me
 - **Development**: ESLint, Prettier with import sorting, Jest
 
 ### Code Style
+
 - Uses Prettier with custom config:
   - 300 character line width
   - Single quotes, no trailing semicolons
@@ -66,6 +74,7 @@ This is a React Native application for "NYL, aka 선린급식" (Sunrin School Me
 - Path alias `@/` points to `src/`
 
 ### Key Features
+
 - Dark/light theme support with context
 - Firebase analytics and push notifications
 - Google Mobile Ads integration
@@ -74,6 +83,7 @@ This is a React Native application for "NYL, aka 선린급식" (Sunrin School Me
 - Version checking and maintenance alerts
 
 ### Environment
+
 - Uses `.env` file with `react-native-dotenv`
 - Node.js >= 18 required
 - Uses Bun for package management (bun.lock present)
