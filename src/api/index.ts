@@ -18,7 +18,7 @@ export const getClassList = async (schoolCode: number): Promise<ClassList[]> => 
 
 export const getTimetable = async (schoolCode: number, grade: number, classNum: number): Promise<Timetable[][]> => {
   const cacheKey = `timetable_${schoolCode}_${grade}_${classNum}`;
-  const cachedData = await getCachedData(cacheKey);
+  const cachedData = await getCachedData<Timetable[][]>(cacheKey);
   if (cachedData) {
     return cachedData;
   }
@@ -27,7 +27,7 @@ export const getTimetable = async (schoolCode: number, grade: number, classNum: 
     params: {schoolCode, grade, class: classNum},
   });
   await setCachedData(cacheKey, response.data);
-  return response.data;
+  return response.data || [];
 };
 
 export const neisSchoolSearch = async (schoolName: string): Promise<School[]> => {
@@ -37,9 +37,9 @@ export const neisSchoolSearch = async (schoolName: string): Promise<School[]> =>
   return response.data;
 };
 
-export const getMeal = async (schoolCode: number, regionCode: string, year: string, month: string, day?: string, showAllergy: boolean = false, showOrigin: boolean = false, showNutrition: boolean = false): Promise<Meal[]> => {
+export const getMeal = async (schoolCode: number, regionCode: string, year: number, month: number, day?: number, showAllergy: boolean = false, showOrigin: boolean = false, showNutrition: boolean = false): Promise<Meal[]> => {
   const cacheKey = `meal_${schoolCode}_${regionCode}_${year}_${month}_${day}`;
-  const cachedData = await getCachedData(cacheKey);
+  const cachedData = await getCachedData<Meal[]>(cacheKey);
   if (cachedData) {
     return cachedData;
   }
@@ -61,12 +61,12 @@ export const getMeal = async (schoolCode: number, regionCode: string, year: stri
     return [];
   }
   await setCachedData(cacheKey, response.data);
-  return response.data;
+  return response.data || [];
 };
 
-export const getSchedules = async (schoolCode: number, regionCode: string, year: string, month: string, day?: string): Promise<Schedule[]> => {
+export const getSchedules = async (schoolCode: number, regionCode: string, year: number, month: number, day?: number): Promise<Schedule[]> => {
   const cacheKey = `schedules_${schoolCode}_${regionCode}_${year}_${month}`;
-  const cachedData = await getCachedData(cacheKey);
+  const cachedData = await getCachedData<Schedule[]>(cacheKey);
   if (cachedData) {
     return cachedData;
   }
@@ -79,7 +79,7 @@ export const getSchedules = async (schoolCode: number, regionCode: string, year:
     return [];
   }
   await setCachedData(cacheKey, response.data);
-  return response.data;
+  return response.data || [];
 };
 
 export const getNotifications = async (): Promise<Notification[]> => {

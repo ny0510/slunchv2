@@ -30,7 +30,7 @@ const Schedules = () => {
       const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
       const today = dayjs();
 
-      const scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'));
+      const scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, parseInt(today.format('YYYY')), parseInt(today.format('MM')));
       setSchedules(scheduleResponse);
     } catch (e) {
       const err = e as Error;

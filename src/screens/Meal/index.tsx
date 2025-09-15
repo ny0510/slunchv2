@@ -17,6 +17,7 @@ import Loading from '@/components/Loading';
 import NativeAdCard from '@/components/NaviveAdCard';
 import {useTheme} from '@/contexts/ThemeContext';
 import {clearCache} from '@/lib/cache';
+import {StorageHelper, STORAGE_KEYS} from '@/lib/storage';
 import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {Meal as MealType} from '@/types/api';
@@ -50,29 +51,42 @@ const Meal = () => {
   }, []);
 
   const fetchData = useCallback(async () => {
-    const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
+    const settings = await StorageHelper.getItem<{showAllergy?: boolean}>(STORAGE_KEYS.SETTINGS, {});
     const today = dayjs();
-    setShowAllergy(settings.showAllergy);
+    const allergyPreference = settings.showAllergy ?? true;
+    setShowAllergy(allergyPreference);
 
     try {
       const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
 
-      const mealResponse = await getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), undefined, showAllergy, true, true);
+      const mealResponse = await getMeal(school.neisCode, school.neisRegionCode, parseInt(today.format('YYYY')), parseInt(today.format('MM')), undefined, allergyPreference, true, true);
       const afterToday = mealResponse.filter(m => dayjs(m.date).isSame(today, 'day') || dayjs(m.date).isAfter(today, 'day'));
       if (afterToday.length === 0) {
         showToast('급식이 없습니다.');
         return;
       }
       setMeal(afterToday);
-    } catch (e) {
-      const err = e as Error;
-
-      showToast('급식을 불러오는 중 오류가 발생했어요.');
-      console.error('Error fetching data:', err);
+    } catch (e: any) {
+      console.error('Error fetching data:', e);
+      
+      // 521 오류 체크
+      if (e?.response?.status === 521) {
+        showToast('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+      } else {
+        showToast('급식을 불러오는 중 오류가 발생했어요.');
+      }
     } finally {
       setLoading(false);
     }
-  }, [showAllergy]);
+  }, []);
+
+  // 화면 포커스 시 알레르기 설정 확인 및 데이터 재로드
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchData();
+    });
+    return unsubscribe;
+  }, [navigation, fetchData]);
 
   useEffect(() => {
     analytics().logScreenView({screen_name: '급식 상세 페이지', screen_class: 'Meal'});

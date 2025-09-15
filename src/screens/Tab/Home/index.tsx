@@ -1,164 +1,77 @@
 import {ANDROID_HOME_BANNER_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
-import React, {Fragment, ReactNode, useCallback, useEffect, useRef, useState} from 'react';
+import React, {Fragment, ReactNode, useCallback, useEffect, useState} from 'react';
 import {AppState, FlatList, Keyboard, Platform, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
 import {trigger} from 'react-native-haptic-feedback';
 import Midnight from 'react-native-midnight';
-import TouchableScale from 'react-native-touchable-scale';
 
 import {styles as s} from './styles';
-import {getMeal, getSchedules, getTimetable} from '@/api';
 import Logo from '@/assets/images/logo.svg';
 import BannerAdCard from '@/components/BannerAdCard';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
-import Loading from '@/components/Loading';
-// import TouchableScale from '@/components/TouchableScale';
+import TouchableScale from '@/components/TouchableScale';
+import HomeCard from './components/HomeCard';
+import LoadingView from './components/LoadingView';
+import ScheduleItem from './components/ScheduleItem';
+import TimetableRow from './components/TimetableRow';
 import {useTheme} from '@/contexts/ThemeContext';
 import {useUser} from '@/contexts/UserContext';
+import {useHomeData} from './hooks/useHomeData';
+import {useTimeTableEditor} from './hooks/useTimeTableEditor';
 import {clearCache} from '@/lib/cache';
-import {showToast} from '@/lib/toast';
+import {StorageHelper, STORAGE_KEYS} from '@/lib/storage';
 import {RootStackParamList} from '@/navigation/RootStacks';
-import {Meal, Schedule, Timetable} from '@/types/api';
+import {Timetable} from '@/types/api';
 import {MealItem} from '@/types/meal';
 import BottomSheet, {BottomSheetBackdrop, BottomSheetTextInput, BottomSheetView} from '@gorhom/bottom-sheet';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 
 const Home = () => {
-  const [timetable, setTimetable] = useState<Timetable[][]>([]);
-  const [meal, setMeal] = useState<Meal[]>([]);
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [showAllergy, setShowAllergy] = useState<boolean>(true);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [todayIndex, setTodayIndex] = useState<number>(dayjs().day() - 1);
-  const [midnightTrigger, setMidnightTrigger] = useState<boolean>(false);
-  const [mealDayOffset, setMealDayOffset] = useState<number>(0);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [selectedSubject, setSelectedSubject] = useState<Timetable | null>(null);
-  const [selectedSubjectIndices, setSelectedSubjectIndices] = useState<{row: number; col: number} | null>(null);
-  const bottomSheetRef = useRef<BottomSheet>(null);
-
   const {theme, typography} = useTheme();
-  const {schoolInfo, classInfo, classChangedTrigger, setClassChangedTrigger} = useUser();
+  const {schoolInfo} = useUser();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const getSettings = useCallback(async () => {
-    const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
-    setShowAllergy(settings.showAllergy);
-  }, []);
+  // 홈 데이터 관리 훅
+  const {
+    timetable,
+    meal,
+    schedules,
+    loading,
+    refreshing,
+    showAllergy,
+    todayIndex,
+    mealDayOffset,
+    setMidnightTrigger,
+    fetchData,
+    handleRefresh,
+    dispatch,
+  } = useHomeData();
 
-  const transpose = useCallback((array: Timetable[][]) => {
-    const maxColLength = Math.max(...array.map(row => row.length));
-    return Array.from({length: maxColLength}, (_, colIndex) =>
-      array.map(row => {
-        const entry = row[colIndex];
-        if (!entry) {
-          return {subject: '-', teacher: '-', changed: false};
-        }
-        return {
-          ...entry,
-          subject: entry.subject === '없음' ? '-' : entry.subject,
-          teacher: entry.teacher === '없음' ? '-' : entry.teacher,
-        };
-      }),
-    );
-  }, []);
+  // 시간표 편집 훅
+  const {
+    selectedSubject,
+    selectedSubjectIndices,
+    tempSubject,
+    bottomSheetRef,
+    handleSubjectSelect,
+    updateTempSubject,
+    saveSubject,
+    resetSubject,
+    closeBottomSheet,
+  } = useTimeTableEditor(timetable, (newTimetable) => {
+    dispatch({type: 'SET_TIMETABLE', payload: newTimetable});
+  });
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    await getSettings();
+  // 중복된 함수들은 훅으로 이동됨
 
-    try {
-      const today = dayjs();
-      const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
-      const classData: {grade: number; class: number} = JSON.parse((await AsyncStorage.getItem('class')) || '{}');
-
-      // Promise.allSettled를 사용하여 병렬 처리하고 실패한 API가 있어도 다른 API는 계속 실행
-      const [timetableResult, mealResult, scheduleResult] = await Promise.allSettled([
-        getTimetable(school.comciganCode, classData.grade, classData.class),
-        getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), today.format('DD'), showAllergy, true, true),
-        getSchedules(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM')),
-      ]);
-
-      // 시간표 처리
-      if (timetableResult.status === 'fulfilled') {
-        const newTimetable = transpose(timetableResult.value);
-
-        // 기존 커스텀 시간표가 있는 경우, 사용자가 변경한 항목만 보존
-        const existingCustomTimetable = JSON.parse((await AsyncStorage.getItem('customTimetable')) || 'null');
-
-        if (existingCustomTimetable) {
-          const mergedTimetable = newTimetable.map((row, rowIndex) =>
-            row.map((subject, colIndex) => {
-              const existingSubject = existingCustomTimetable[rowIndex]?.[colIndex];
-              // userChanged가 true인 항목만 보존
-              if (existingSubject?.userChanged) {
-                return existingSubject;
-              }
-              return subject;
-            }),
-          );
-          setTimetable(mergedTimetable);
-        } else {
-          setTimetable(newTimetable);
-        }
-      } else {
-        console.error('Error fetching timetable:', timetableResult.reason);
-        showToast('시간표를 불러오는 중 오류가 발생했어요.');
-      }
-
-      // 급식 처리
-      if (mealResult.status === 'fulfilled') {
-        let mealResponse = mealResult.value;
-        const isPastNoon = today.hour() > 14;
-        setMealDayOffset(0);
-
-        if (mealResponse.length === 0 || isPastNoon) {
-          // 순차적으로 다음날들을 확인
-          for (let i = 1; i <= 3; i++) {
-            try {
-              const nextDay = today.add(i, 'day');
-              mealResponse = await getMeal(school.neisCode, school.neisRegionCode, nextDay.format('YYYY'), nextDay.format('MM'), nextDay.format('DD'), showAllergy, true, true);
-              if (mealResponse.length > 0) {
-                setMealDayOffset(i);
-                break;
-              }
-            } catch (e) {
-              console.error(`Error fetching meal for day +${i}:`, e);
-            }
-          }
-        }
-        setMeal(mealResponse);
-      } else {
-        console.error('Error fetching meal:', mealResult.reason);
-        showToast('급식을 불러오는 중 오류가 발생했어요.');
-      }
-
-      // 학사일정 처리
-      if (scheduleResult.status === 'fulfilled') {
-        const scheduleResponse = scheduleResult.value?.length > 0 ? scheduleResult.value.filter(schedule => dayjs(schedule.date.start).isAfter(today)) : [];
-        setSchedules(scheduleResponse);
-      } else {
-        console.error('Error fetching schedules:', scheduleResult.reason);
-        showToast('학사일정을 불러오는 중 오류가 발생했어요.');
-      }
-    } catch (e) {
-      console.error('Unexpected error:', e);
-      showToast('데이터를 불러오는 중 오류가 발생했어요.');
-    } finally {
-      setLoading(false);
-    }
-  }, [showAllergy, getSettings, transpose]);
-
+  // 새로고침 시 캐시 정리 추가
   const onRefresh = useCallback(async () => {
-    setRefreshing(true);
     await clearCache('@cache/');
-    await fetchData();
-    setRefreshing(false);
-  }, [fetchData]);
+    await handleRefresh();
+  }, [handleRefresh]);
 
   useEffect(() => {
     analytics().logScreenView({screen_name: '홈', screen_class: 'Home'});
@@ -166,58 +79,32 @@ const Home = () => {
 
   // 탭 이동 시 BottomSheet 자동 닫힘
   useEffect(() => {
-    const unsubscribe = navigation.addListener('blur', () => {
-      if (bottomSheetRef.current) {
-        bottomSheetRef.current.close();
-      }
-    });
+    const unsubscribe = navigation.addListener('blur', closeBottomSheet);
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, closeBottomSheet]);
 
-  // 다른 탭에 있다 홈으로 이동시 classChangedTrigger가 true라면 데이터 갱신
+  // 화면 포커스 시 알레르기 설정 다시 로드
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
-      console.log('Home screen focused, checking for class changes...');
-      console.log(classChangedTrigger);
-      if (classChangedTrigger) {
-        console.log('Class changed trigger is true, refreshing data...');
-        setRefreshing(true);
-        await clearCache('@cache/');
-        await fetchData();
-        setRefreshing(false);
-        setClassChangedTrigger(false);
+      // 설정 다시 로드하여 알레르기 표시 여부 업데이트
+      const settings = await StorageHelper.getItem<{showAllergy?: boolean}>(STORAGE_KEYS.SETTINGS, {});
+      const currentShowAllergy = settings.showAllergy ?? true;
+      
+      // 설정이 변경되었으면 데이터 다시 가져오기
+      if (currentShowAllergy !== showAllergy) {
+        await fetchData(currentShowAllergy);
       }
     });
     return unsubscribe;
-  }, [navigation, classChangedTrigger, setClassChangedTrigger, fetchData]);
+  }, [navigation, showAllergy, fetchData]);
 
-  // 매일 자정마다 데이터를 갱신
+  // 매일 자정마다 오늘 인덱스 업데이트
   useEffect(() => {
     const listener = Midnight.addListener(() => setMidnightTrigger(prev => !prev));
     return () => listener.remove();
   }, []);
 
-  // 앱이 백그라운드에서 포그라운드로 돌아올 때 데이터를 갱신
-  useEffect(() => {
-    const checkOnForeground = AppState.addEventListener('change', nextAppState => {
-      if (nextAppState === 'active') {
-        fetchData();
-      }
-    });
-
-    return () => checkOnForeground.remove();
-  }, [fetchData]);
-
-  useEffect(() => {
-    setTodayIndex(dayjs().day() - 1);
-    fetchData();
-  }, [fetchData, midnightTrigger]);
-
-  useEffect(() => {
-    if (timetable.length > 0) {
-      AsyncStorage.setItem('customTimetable', JSON.stringify(timetable));
-    }
-  }, [timetable]);
+  // 시간표가 변경될 때 저장 (useHomeData와 useTimeTableEditor에서 처리됨)
 
   const renderMealItem = (mealItem: string | MealItem, index: number) => {
     if (typeof mealItem === 'string') {
@@ -228,38 +115,41 @@ const Home = () => {
       );
     }
 
-    const allergyInfo = showAllergy && mealItem.allergy && mealItem.allergy.length > 0 ? ` (${mealItem.allergy.map(allergy => allergy.code).join(', ')})` : '';
+    const allergyInfo = showAllergy && mealItem.allergy && mealItem.allergy.length > 0 ? ` ${mealItem.allergy.map(allergy => allergy.code).join(', ')}` : '';
 
     return (
       <Text key={index} style={[typography.body, {color: theme.primaryText, fontWeight: 300}]}>
         - {mealItem.food}
-        <Text style={typography.small}>{allergyInfo}</Text>
+        <Text style={[typography.small, {color: theme.secondaryText}]}>{allergyInfo}</Text>
       </Text>
     );
   };
 
   const handleSheetChanges = useCallback(
-    (index: number) => {
+    async (index: number) => {
       if (index === -1) {
-        setSelectedSubject(null);
-        setSelectedSubjectIndices(null);
-        showToast('시간표가 변경되었어요.');
+        // BottomSheet가 닫힐 때 변경 사항 저장
+        if (tempSubject && selectedSubject && 
+           (tempSubject.subject !== selectedSubject.subject || 
+            tempSubject.teacher !== selectedSubject.teacher)) {
+          await saveSubject();
+        }
+        closeBottomSheet();
       }
     },
-    [setSelectedSubject, setSelectedSubjectIndices],
+    [closeBottomSheet, saveSubject, tempSubject, selectedSubject],
   );
 
-  const openBottomSheet = ({row, col}: {row: number; col: number}) => {
-    if (bottomSheetRef.current) {
+  const openBottomSheet = useCallback(
+    ({row, col}: {row: number; col: number}) => {
       trigger('impactLight');
-      setSelectedSubject(timetable[row]?.[col] || null);
-      setSelectedSubjectIndices({row, col});
-      bottomSheetRef.current.snapToIndex(0);
-    }
-  };
+      handleSubjectSelect(timetable[row]?.[col] || null, row, col);
+    },
+    [timetable, handleSubjectSelect],
+  );
 
   const renderBackdrop = useCallback(
-    (props: any) => (
+    (props: Parameters<typeof BottomSheetBackdrop>[0]) => (
       <BottomSheetBackdrop
         {...props}
         pressBehavior="close"
@@ -349,13 +239,12 @@ const Home = () => {
               placeholder="과목명"
               placeholderTextColor={theme.secondaryText}
               onChangeText={text => {
-                if (selectedSubjectIndices) {
+                if (selectedSubjectIndices && tempSubject) {
                   const formattedText = text === '없음' ? '-' : text;
-                  setTimetable(prev => prev.map((row, rowIdx) => row.map((subject, colIdx) => (rowIdx === selectedSubjectIndices.row && colIdx === selectedSubjectIndices.col ? {...subject, subject: formattedText, userChanged: true} : subject))));
-                  setSelectedSubject(prev => (prev ? {...prev, subject: formattedText, userChanged: true} : prev));
+                  updateTempSubject(formattedText, tempSubject.teacher);
                 }
               }}
-              value={selectedSubject ? selectedSubject.subject : ''}
+              value={tempSubject ? tempSubject.subject : ''}
               autoCapitalize="none"
               autoCorrect={false}
               autoComplete="off"
@@ -377,12 +266,11 @@ const Home = () => {
               placeholder="선생님"
               placeholderTextColor={theme.secondaryText}
               onChangeText={text => {
-                if (selectedSubjectIndices) {
-                  setTimetable(prev => prev.map((row, rowIdx) => row.map((subject, colIdx) => (rowIdx === selectedSubjectIndices.row && colIdx === selectedSubjectIndices.col ? {...subject, teacher: text, userChanged: true} : subject))));
-                  setSelectedSubject(prev => (prev ? {...prev, teacher: text, userChanged: true} : prev));
+                if (selectedSubjectIndices && tempSubject) {
+                  updateTempSubject(tempSubject.subject, text);
                 }
               }}
-              value={selectedSubject ? selectedSubject.teacher : ''}
+              value={tempSubject ? tempSubject.teacher : ''}
               autoCapitalize="none"
               autoCorrect={false}
               autoComplete="off"
@@ -394,27 +282,7 @@ const Home = () => {
             delayPressIn={0}
             hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
             style={{backgroundColor: theme.background, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 16, borderWidth: 1, borderColor: theme.border, width: '100%', minHeight: 44}}
-            onPress={async () => {
-              if (!selectedSubjectIndices) {
-                return;
-              }
-              const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
-              const classData = JSON.parse((await AsyncStorage.getItem('class')) || '{}');
-              try {
-                const apiTimetable = await getTimetable(school.comciganCode, classData.grade, classData.class);
-                const raw = apiTimetable[selectedSubjectIndices.col]?.[selectedSubjectIndices.row] || {subject: '-', teacher: '-', changed: false};
-                const original = {
-                  ...raw,
-                  subject: raw.subject === '없음' ? '-' : raw.subject,
-                  teacher: raw.teacher === '없음' ? '-' : raw.teacher,
-                };
-                setTimetable(prev => prev.map((row, rowIdx) => row.map((subject, colIdx) => (rowIdx === selectedSubjectIndices.row && colIdx === selectedSubjectIndices.col ? {...original, userChanged: false} : subject))));
-                setSelectedSubject({...original, userChanged: false});
-                showToast('원래 시간표로 되돌렸어요.');
-              } catch (e) {
-                showToast('원래 시간표를 불러오지 못했어요.');
-              }
-            }}>
+            onPress={resetSubject}>
             <Text style={[typography.baseTextStyle, {color: theme.primaryText, textAlign: 'center', fontWeight: '600'}]}>원래 시간표로 되돌리기</Text>
           </TouchableOpacity>
         </BottomSheetView>
@@ -423,68 +291,5 @@ const Home = () => {
   );
 };
 
-const HomeCard = ({title, titleIcon, arrow, onPress, notificationDot, children, ...rest}: {title?: string; titleIcon?: ReactNode; arrow?: boolean; onPress?: () => void; notificationDot?: boolean; children?: ReactNode} & {[key: string]: any}) => (
-  <TouchableScale onPress={onPress} activeScale={0.98} tension={60} friction={3} {...rest}>
-    {/* <TouchableOpacity activeOpacity={0.7} onPress={onPress}> */}
-    <Card title={title} titleIcon={titleIcon} arrow={arrow} notificationDot={notificationDot}>
-      {children}
-    </Card>
-    {/* </TouchableOpacity> */}
-  </TouchableScale>
-);
-
-const LoadingView = ({height}: {height: number}) => (
-  <View style={[s.loadingView, {height}]}>
-    <Loading />
-  </View>
-);
-
-const ScheduleItem = ({item}: {item: Schedule}) => {
-  const startDate = dayjs(item.date.start);
-  const endDate = dayjs(item.date.end || item.date.start);
-  const isSameDay = startDate.isSame(endDate, 'day');
-
-  const {theme, typography} = useTheme();
-
-  return (
-    <View style={s.scheduleItemContainer}>
-      <Text style={[typography.baseTextStyle, {color: theme.primaryText, fontWeight: 500, fontSize: 16}]}>
-        {startDate.format('M/D')}
-        {!isSameDay && ` ~ ${endDate.format('M/D')}`}
-      </Text>
-      <Text style={[typography.baseTextStyle, {color: theme.primaryText, fontWeight: 300, fontSize: 16}]}>{item.schedule}</Text>
-      <Text style={[typography.caption, {color: theme.secondaryText}]}>{endDate.diff(startDate, 'day') > 0 && `(${endDate.diff(startDate, 'day') + 1}일)`}</Text>
-    </View>
-  );
-};
-
-const TimetableRow = ({item, index, todayIndex, openBottomSheet}: {item: Timetable[]; index: number; todayIndex: number; openBottomSheet: (params: {row: number; col: number}) => void}) => {
-  const {theme, typography} = useTheme();
-
-  return (
-    <View style={s.timetableRow}>
-      {item.map((subject, subIndex) => (
-        <View key={`${subject.subject}-${index}-${subIndex}`} style={[s.timetableCell, {backgroundColor: subIndex === todayIndex ? theme.background : theme.card}]}>
-          <TouchableOpacity onLongPress={() => openBottomSheet({row: index, col: subIndex})} delayPressIn={0} hitSlop={{top: 4, bottom: 4, left: 4, right: 4}}>
-            <Text
-              style={[
-                typography.baseTextStyle,
-                {
-                  flexShrink: 1,
-                  textAlign: 'center',
-                  color: subject.userChanged ? theme.highlightSecondary : subject.changed ? theme.highlightLight : theme.primaryText,
-                  fontWeight: '500',
-                  fontSize: 16,
-                },
-              ]}>
-              {subject.subject}
-            </Text>
-            <Text style={[typography.caption, {textAlign: 'center', color: subject.userChanged ? theme.highlightSecondary : subject.changed ? theme.highlightLight : theme.secondaryText}]}>{subject.teacher}</Text>
-          </TouchableOpacity>
-        </View>
-      ))}
-    </View>
-  );
-};
 
 export default Home;
