@@ -9,6 +9,7 @@ import BannerAdCard from '@/components/BannerAdCard';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
+import EmptyState from '@/components/EmptyState';
 import NativeAdCard from '@/components/NaviveAdCard';
 import {useTheme} from '@/contexts/ThemeContext';
 import {clearCache} from '@/lib/cache';
@@ -82,10 +83,12 @@ const Schedules = () => {
             });
           })()
         ) : (
-          <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
-            <Text style={{color: theme.primaryText, fontWeight: '300', fontSize: 16}}>학사일정 데이터가 없어요.</Text>
-            <Text style={{color: theme.primaryText, fontWeight: '300', fontSize: 16}}>학교에서 제공하지 않는 경우도 있어요.</Text>
-          </View>
+          <EmptyState 
+            icon="calendar" 
+            title="학사일정이 없어요" 
+            subtitle={"이번 달에는 등록된 행사가 없거나\n학교에서 제공하지 않는 경우예요"} 
+            style={{marginTop: 48}}
+          />
         )}
       </View>
     </Container>
