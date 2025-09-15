@@ -23,7 +23,7 @@ fi
 
 # Create .env file
 if [ ! -z "$ENV" ]; then
-    echo "Creating sentry.properties..."
+    echo "Creating .env file..."
     echo $ENV | base64 -d > .env
 fi
 
