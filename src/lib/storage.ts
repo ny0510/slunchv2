@@ -135,6 +135,8 @@ export const STORAGE_KEYS = {
   LAST_UPDATE: 'lastUpdate',
   APP_VERSION: 'appVersion',
   ONBOARDING_COMPLETED: 'onboardingCompleted',
+  ORIGINAL_TIMETABLE: 'originalTimetable',
+  LAST_REFRESH_TIME: 'lastRefreshTime',
 } as const;
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];
