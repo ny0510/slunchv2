@@ -76,52 +76,80 @@ const ShareScreen = ({route}: StackScreenProps<RootStackParamList, 'Share'>) => 
   };
 
   return (
-    <Container style={{flex: 1, justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 28}}>
-      <View />
+    <Container style={{flex: 1, justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20}}>
+      {/* Header with back button indication */}
+      <View style={{alignSelf: 'flex-start', paddingTop: 8}}>
+        <Text style={[typography.caption, {color: theme.secondaryText}]}>급식 이미지로 공유</Text>
+      </View>
 
-      <TouchableScale activeScale={0.98} tension={40} friction={3}>
-        <ViewShot options={{format: 'png', result: 'base64'}} ref={viewShotRef} style={{alignItems: 'center', margin: 2}}>
-          <View
-            style={{
-              width: '100%',
-              aspectRatio: 1 / 1,
-              justifyContent: 'space-between',
-              borderColor: theme.highlightLight,
-              borderWidth: 6,
-              padding: 22,
-              backgroundColor: theme.background,
-            }}>
-            <View>
-              <Text style={[typography.body, {color: theme.primaryText}]}>{data.date}</Text>
-              <Text style={[typography.body, {color: theme.primaryText}]}>{data.school} 급식</Text>
+      {/* Enhanced preview card */}
+      <View style={{flex: 1, justifyContent: 'center', paddingVertical: 20}}>
+        <TouchableScale activeScale={0.98} tension={40} friction={3}>
+          <ViewShot options={{format: 'png', result: 'base64'}} ref={viewShotRef} style={{alignItems: 'center'}}>
+            <View
+              style={{
+                width: '100%',
+                aspectRatio: 1 / 1,
+                justifyContent: 'space-between',
+                borderRadius: 16,
+                padding: 24,
+                backgroundColor: theme.card,
+                shadowColor: '#000',
+                shadowOffset: {width: 0, height: 2},
+                shadowOpacity: 0.1,
+                shadowRadius: 8,
+                elevation: 5,
+              }}>
+              {/* Date and school header */}
+              <View style={{gap: 4}}>
+                <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+                  <FontAwesome6 name="calendar" size={14} color={theme.secondaryText} iconStyle="regular" />
+                  <Text style={[typography.caption, {color: theme.secondaryText}]}>{data.date}</Text>
+                </View>
+                <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600'}]}>{data.school} 급식</Text>
+              </View>
+              
+              {/* Meal items with improved layout */}
+              <View style={{flex: 1, justifyContent: 'center', gap: 2}}>
+                {data.meal.split('\n').map((meal, index) => (
+                  <View key={index} style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+                    <View style={{width: 4, height: 4, borderRadius: 2, backgroundColor: theme.highlight}} />
+                    <Text style={[typography.body, {fontWeight: '600', color: theme.primaryText, fontSize: 17}]} numberOfLines={1} adjustsFontSizeToFit>
+                      {meal}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+              
+              {/* Watermark with improved positioning */}
+              <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
+                <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
+                  <Logo width={16} height={16} />
+                  <Text style={[typography.body, {color: theme.secondaryText, fontWeight: '500'}]}>NYL</Text>
+                </View>
+                <FontAwesome6 name="utensils" size={14} color={theme.secondaryText} iconStyle="solid" />
+              </View>
             </View>
-            <View>
-              {data.meal.split('\n').map((meal, index) => (
-                <Text key={index} style={[typography.body, {fontWeight: '700', color: theme.primaryText, fontSize: 18}]} numberOfLines={1} adjustsFontSizeToFit>
-                  {meal}
-                </Text>
-              ))}
-            </View>
-            <View style={{position: 'absolute', top: 22, right: 22, flexDirection: 'row', alignItems: 'center', gap: 4, opacity: 0.8}}>
-              <Logo width={14} height={14} />
-              <Text style={[typography.caption, {color: theme.primaryText, fontWeight: '400'}]}>NYL</Text>
-            </View>
-          </View>
-        </ViewShot>
-      </TouchableScale>
+          </ViewShot>
+        </TouchableScale>
+        
+        {/* Preview hint */}
+        <Text style={[typography.caption, {color: theme.secondaryText, textAlign: 'center', marginTop: 12}]}>미리보기</Text>
+      </View>
 
-      <View style={{width: '100%', gap: 16}}>
-        <TouchableScale activeScale={0.98} tension={40} friction={3} onPress={shareToImage}>
-          <View style={{paddingVertical: 14, alignItems: 'center', gap: 6, backgroundColor: theme.card, borderRadius: 12, flexDirection: 'row', justifyContent: 'center', alignContent: 'center'}}>
-            <FontAwesome6 name="image" size={20} color={theme.primaryText} />
-            <Text style={[typography.subtitle, {color: theme.primaryText}]}>공유하기</Text>
+      {/* Enhanced share buttons */}
+      <View style={{width: '100%', gap: 12, paddingBottom: 8}}>
+        <TouchableScale activeScale={0.98} tension={40} friction={3} onPress={shareToImage} delayPressIn={100}>
+          <View style={{paddingVertical: 16, backgroundColor: theme.highlight, borderRadius: 12, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8}}>
+            <FontAwesome6 name="share-nodes" size={18} color="white" iconStyle="solid" />
+            <Text style={[typography.subtitle, {color: 'white', fontWeight: '600'}]}>이미지로 공유하기</Text>
           </View>
         </TouchableScale>
 
-        <TouchableScale activeScale={0.98} tension={40} friction={3} onPress={shareToInstagramStory}>
-          <View style={{paddingVertical: 14, alignItems: 'center', gap: 6, backgroundColor: theme.card, borderRadius: 12, flexDirection: 'row', justifyContent: 'center', alignContent: 'center'}}>
-            <FontAwesome6 name="instagram" size={20} color={theme.primaryText} iconStyle="brand" />
-            <Text style={[typography.subtitle, {color: theme.primaryText}]}>인스타그램 스토리에 업로드</Text>
+        <TouchableScale activeScale={0.98} tension={40} friction={3} onPress={shareToInstagramStory} delayPressIn={100}>
+          <View style={{paddingVertical: 16, backgroundColor: theme.card, borderRadius: 12, borderWidth: 1, borderColor: theme.border, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8}}>
+            <FontAwesome6 name="instagram" size={18} color={theme.primaryText} iconStyle="brand" />
+            <Text style={[typography.subtitle, {color: theme.primaryText}]}>인스타그램 스토리</Text>
           </View>
         </TouchableScale>
       </View>
