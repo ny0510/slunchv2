@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 import ScrollPicker from 'react-native-wheel-scrollview-picker';
 
@@ -29,6 +29,7 @@ const Settings = () => {
   const [selectedClass, setSelectedClass] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
 
   const bottomSheetRef = useRef<BottomSheet>(null);
   const classScrollPickerRef = useRef<any>(null);
@@ -49,6 +50,7 @@ const Settings = () => {
       if (bottomSheetRef.current) {
         bottomSheetRef.current.close();
       }
+      setIsBottomSheetOpen(false);
     });
     return unsubscribe;
   }, [navigation]);
@@ -63,27 +65,32 @@ const Settings = () => {
     setSelectedGrade(currentGrade);
     setSelectedClass(currentClass);
 
-    bottomSheetRef.current?.expand();
+    setIsBottomSheetOpen(true);
 
-    // ScrollPicker를 현재 학급으로 이동
+    // BottomSheet가 렌더링된 후 expand 호출
     setTimeout(() => {
-      if (gradeList.length > 0) {
-        const gradeIndex = gradeList.indexOf(currentGrade);
-        if (gradeIndex !== -1) {
-          gradeScrollPickerRef.current?.scrollToTargetIndex(gradeIndex);
-        }
-      }
+      bottomSheetRef.current?.expand();
 
-      if (classList.length > 0) {
-        const gradeIndex = gradeList.indexOf(currentGrade);
-        if (gradeIndex !== -1 && classList[gradeIndex]) {
-          const classIndex = classList[gradeIndex].indexOf(currentClass);
-          if (classIndex !== -1) {
-            classScrollPickerRef.current?.scrollToTargetIndex(classIndex);
+      // ScrollPicker를 현재 학급으로 이동
+      setTimeout(() => {
+        if (gradeList.length > 0) {
+          const gradeIndex = gradeList.indexOf(currentGrade);
+          if (gradeIndex !== -1) {
+            gradeScrollPickerRef.current?.scrollToTargetIndex(gradeIndex);
           }
         }
-      }
-    }, 300); // Bottom sheet 애니메이션 완료 후 실행
+
+        if (classList.length > 0) {
+          const gradeIndex = gradeList.indexOf(currentGrade);
+          if (gradeIndex !== -1 && classList[gradeIndex]) {
+            const classIndex = classList[gradeIndex].indexOf(currentClass);
+            if (classIndex !== -1) {
+              classScrollPickerRef.current?.scrollToTargetIndex(classIndex);
+            }
+          }
+        }
+      }, 300); // Bottom sheet 애니메이션 완료 후 실행
+    }, 100); // BottomSheet 렌더링 대기
   }, [classInfo.grade, classInfo.class, gradeList, classList, isLoading, isButtonDisabled]);
 
   const loadClassData = useCallback(async () => {
@@ -183,6 +190,7 @@ const Settings = () => {
       setClassChangedTrigger(true);
 
       bottomSheetRef.current?.close();
+      setIsBottomSheetOpen(false);
     } catch (error) {
       console.error('Error saving class change:', error);
       showToast('학급 정보 변경에 실패했어요.');
@@ -198,20 +206,20 @@ const Settings = () => {
   const renderBackdrop = useCallback((props: any) => <BottomSheetBackdrop {...props} pressBehavior="close" disappearsOnIndex={-1} />, []);
 
   return (
-    <>
+    <Fragment>
       <Container scrollView bounce>
         <View style={{gap: 18, width: '100%', marginVertical: 16}}>
           {/* 계정 섹션 */}
           <View style={{gap: 8}}>
             <ProfileSection />
           </View>
-          
+
           {/* 설정 섹션 */}
           <View style={{gap: 8}}>
             <Text style={[typography.caption, {color: theme.secondaryText, paddingHorizontal: 16, marginBottom: 4}]}>설정</Text>
             <SettingCard onClassChangePress={handleClassChangePress} />
           </View>
-          
+
           {/* 정보 섹션 */}
           <View style={{gap: 8}}>
             <Text style={[typography.caption, {color: theme.secondaryText, paddingHorizontal: 16, marginBottom: 4}]}>정보</Text>
@@ -222,97 +230,100 @@ const Settings = () => {
         </View>
       </Container>
 
-      <BottomSheet
-        ref={bottomSheetRef}
-        enableContentPanningGesture={false}
-        index={-1}
-        backdropComponent={renderBackdrop}
-        enablePanDownToClose={true}
-        backgroundStyle={{backgroundColor: theme.card}}
-        handleIndicatorStyle={{backgroundColor: theme.secondaryText}}
-        keyboardBehavior="extend"
-        android_keyboardInputMode="adjustResize">
-        <BottomSheetView style={{flex: 1, padding: 20}}>
-          <View style={{gap: 20, flex: 1}}>
-            <View>
-              <Text style={[typography.title, {color: theme.primaryText}]}>학급 변경</Text>
-              <Text style={[typography.subtitle, {color: theme.secondaryText}]}>변경할 학년과 반을 선택해주세요</Text>
+      {isBottomSheetOpen && (
+        <BottomSheet
+          ref={bottomSheetRef}
+          enableContentPanningGesture={false}
+          index={-1}
+          backdropComponent={renderBackdrop}
+          enablePanDownToClose={true}
+          backgroundStyle={{backgroundColor: theme.card}}
+          handleIndicatorStyle={{backgroundColor: theme.secondaryText}}
+          keyboardBehavior="extend"
+          android_keyboardInputMode="adjustResize"
+          onClose={() => setIsBottomSheetOpen(false)}>
+          <BottomSheetView style={{flex: 1, padding: 20}}>
+            <View style={{gap: 20, flex: 1}}>
+              <View>
+                <Text style={[typography.title, {color: theme.primaryText}]}>학급 변경</Text>
+                <Text style={[typography.subtitle, {color: theme.secondaryText}]}>변경할 학년과 반을 선택해주세요</Text>
+              </View>
+
+              {isLoading ? (
+                <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                  <Loading />
+                </View>
+              ) : (
+                <View style={{flex: 1, flexDirection: 'row'}}>
+                  <ScrollPicker
+                    ref={gradeScrollPickerRef}
+                    dataSource={gradeList}
+                    wrapperBackground={'transparent'}
+                    itemHeight={50}
+                    highlightColor={theme.secondaryText}
+                    highlightBorderWidth={1}
+                    onValueChange={handleGradeChange}
+                    selectedIndex={gradeList.indexOf(selectedGrade)}
+                    renderItem={(data, _index, isSelected) => (
+                      <Text
+                        style={{
+                          fontSize: 20,
+                          color: isSelected ? theme.primaryText : theme.secondaryText,
+                          fontWeight: '500',
+                        }}>
+                        {data}학년
+                      </Text>
+                    )}
+                  />
+                  <ScrollPicker
+                    ref={classScrollPickerRef}
+                    dataSource={classList[gradeList.indexOf(selectedGrade)] || []}
+                    wrapperBackground={'transparent'}
+                    itemHeight={50}
+                    highlightColor={theme.secondaryText}
+                    highlightBorderWidth={1}
+                    onValueChange={handleClassChange}
+                    selectedIndex={classList[gradeList.indexOf(selectedGrade)]?.indexOf(selectedClass) || 0}
+                    renderItem={(data, _index, isSelected) => (
+                      <Text
+                        style={{
+                          fontSize: 20,
+                          color: isSelected ? theme.primaryText : theme.secondaryText,
+                          fontWeight: '500',
+                        }}>
+                        {data}반
+                      </Text>
+                    )}
+                  />
+                </View>
+              )}
+
+              <TouchableOpacity
+                style={{
+                  backgroundColor: theme.border,
+                  paddingVertical: 14,
+                  paddingHorizontal: 20,
+                  borderRadius: 12,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  opacity: isButtonDisabled || isLoading ? 0.5 : 1,
+                  minHeight: 44,
+                }}
+                onPress={handleSaveClassChange}
+                disabled={isButtonDisabled || isLoading}
+                activeOpacity={0.7}
+                delayPressIn={0}
+                hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
+                <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '700'}]}>변경하기</Text>
+                <FontAwesome6 name="check" iconStyle="solid" size={16} color={theme.primaryText} />
+              </TouchableOpacity>
             </View>
-
-            {isLoading ? (
-              <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                <Loading />
-              </View>
-            ) : (
-              <View style={{flex: 1, flexDirection: 'row'}}>
-                <ScrollPicker
-                  ref={gradeScrollPickerRef}
-                  dataSource={gradeList}
-                  wrapperBackground={'transparent'}
-                  itemHeight={50}
-                  highlightColor={theme.secondaryText}
-                  highlightBorderWidth={1}
-                  onValueChange={handleGradeChange}
-                  selectedIndex={gradeList.indexOf(selectedGrade)}
-                  renderItem={(data, _index, isSelected) => (
-                    <Text
-                      style={{
-                        fontSize: 20,
-                        color: isSelected ? theme.primaryText : theme.secondaryText,
-                        fontWeight: '500',
-                      }}>
-                      {data}학년
-                    </Text>
-                  )}
-                />
-                <ScrollPicker
-                  ref={classScrollPickerRef}
-                  dataSource={classList[gradeList.indexOf(selectedGrade)] || []}
-                  wrapperBackground={'transparent'}
-                  itemHeight={50}
-                  highlightColor={theme.secondaryText}
-                  highlightBorderWidth={1}
-                  onValueChange={handleClassChange}
-                  selectedIndex={classList[gradeList.indexOf(selectedGrade)]?.indexOf(selectedClass) || 0}
-                  renderItem={(data, _index, isSelected) => (
-                    <Text
-                      style={{
-                        fontSize: 20,
-                        color: isSelected ? theme.primaryText : theme.secondaryText,
-                        fontWeight: '500',
-                      }}>
-                      {data}반
-                    </Text>
-                  )}
-                />
-              </View>
-            )}
-
-            <TouchableOpacity
-              style={{
-                backgroundColor: theme.border,
-                paddingVertical: 14,
-                paddingHorizontal: 20,
-                borderRadius: 12,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                opacity: isButtonDisabled || isLoading ? 0.5 : 1,
-                minHeight: 44,
-              }}
-              onPress={handleSaveClassChange}
-              disabled={isButtonDisabled || isLoading}
-              activeOpacity={0.7}
-              delayPressIn={0}
-              hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
-              <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '700'}]}>변경하기</Text>
-              <FontAwesome6 name="check" iconStyle="solid" size={16} color={theme.primaryText} />
-            </TouchableOpacity>
-          </View>
-        </BottomSheetView>
-      </BottomSheet>
-    </>
+          </BottomSheetView>
+        </BottomSheet>
+      )}
+    </Fragment>
   );
 };
 
