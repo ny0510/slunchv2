@@ -121,7 +121,7 @@ export const IntroScreen = () => {
             await setStorageItems({
               demoMode: 'true',
               school: JSON.stringify(DEMO_SCHOOL_DATA),
-              class: JSON.stringify({grade: 1, class: 1}),
+              class: JSON.stringify({grade: '1', class: '1'}),
             });
             navigation.navigate('Tab');
           } catch (error) {
@@ -350,7 +350,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
         neisRegionCode: neisSchool.regionCode,
       };
 
-      const classData: ClassData = {grade: selectedGrade, class: selectedClass};
+      const classData: ClassData = {grade: selectedGrade.toString(), class: selectedClass.toString()};
 
       // Set storage items
       await Promise.all([

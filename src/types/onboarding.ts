@@ -8,6 +8,6 @@ export interface SchoolData {
 }
 
 export interface ClassData {
-  grade: number;
-  class: number;
+  grade: string;
+  class: string;
 }

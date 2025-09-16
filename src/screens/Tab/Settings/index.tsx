@@ -7,14 +7,14 @@ import DeveloperSettingCard from './components/DeveloperSettingCard';
 import MyInfoCard from './components/MyInfoCard';
 import ProfileSection from './components/ProfileSection';
 import SettingCard from './components/SettingCard';
-import {getClassList, neisSchoolSearch, removeFcmToken} from '@/api';
+import {getClassList, removeFcmToken} from '@/api';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
 import {useTheme} from '@/contexts/ThemeContext';
 import {useUser} from '@/contexts/UserContext';
 import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
-import {ClassData, SchoolData} from '@/types/onboarding';
+import {ClassData} from '@/types/onboarding';
 import BottomSheet, {BottomSheetBackdrop, BottomSheetView} from '@gorhom/bottom-sheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
@@ -44,16 +44,25 @@ const Settings = () => {
     AsyncStorage.getItem('developerOptions').then(val => setDeveloperOptions(!!JSON.parse(val ?? 'false')));
   }, []);
 
-  // 탭 이동 시 BottomSheet 자동 닫힘
+  // 탭 이동 시 BottomSheet 자동 닫힘 및 학교 변경 후 데이터 갱신
   useEffect(() => {
-    const unsubscribe = navigation.addListener('blur', () => {
+    const unsubscribeFocus = navigation.addListener('focus', () => {
+      // 학교 변경 후 돌아왔을 때 데이터 갱신
+      refreshUserData();
+    });
+
+    const unsubscribeBlur = navigation.addListener('blur', () => {
       if (bottomSheetRef.current) {
         bottomSheetRef.current.close();
       }
       setIsBottomSheetOpen(false);
     });
-    return unsubscribe;
-  }, [navigation]);
+
+    return () => {
+      unsubscribeFocus();
+      unsubscribeBlur();
+    };
+  }, [navigation, refreshUserData]);
 
   const handleClassChangePress = useCallback(() => {
     if (isLoading || isButtonDisabled) return;
@@ -164,7 +173,7 @@ const Settings = () => {
     setIsLoading(true);
 
     try {
-      const classData: ClassData = {grade: selectedGrade, class: selectedClass};
+      const classData: ClassData = {grade: selectedGrade.toString(), class: selectedClass.toString()};
 
       // Update class information
       await AsyncStorage.setItem('class', JSON.stringify(classData));
