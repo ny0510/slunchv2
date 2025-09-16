@@ -33,7 +33,7 @@ const SettingCard = ({onClassChangePress}: {onClassChangePress: () => void}) => 
 
   return (
     <Card title="앱 설정" titleStyle={{fontSize: typography.body.fontSize}}>
-      <View style={{gap: 8, marginTop: 8}} pointerEvents="box-none">
+      <View style={{gap: 8, marginTop: 8}}>
         <Content title="학교 변경" arrow onPress={() => navigation.navigate('SchoolSearch', {isFirstOpen: false})} />
         <Content title="학급 변경" arrow onPress={onClassChangePress} />
         <Content title="알림 설정" arrow onPress={() => navigation.navigate('Notification')} />

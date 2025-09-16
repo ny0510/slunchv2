@@ -4,6 +4,7 @@ import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {interpolate, useAnimatedStyle, useSharedValue, withSpring} from 'react-native-reanimated';
 
 import Barcode from './Barcode';
+import SunrinLogo from '@/assets/images/sunrin.svg';
 import {useTheme} from '@/contexts/ThemeContext';
 
 interface Props {
@@ -78,7 +79,8 @@ const IDCard: React.FC<Props> = ({name, schoolName, generation, grade, classNum,
               <Text style={[typography.caption, {color: theme.primaryText, fontWeight: '600', marginTop: 2}]}>모바일 학생증</Text>
             </View>
             <View style={{width: 40, height: 40, borderRadius: 20, backgroundColor: theme.background, alignItems: 'center', justifyContent: 'center'}}>
-              <Text style={[typography.caption, {color: theme.highlight, fontWeight: '700'}]}>ID</Text>
+              <SunrinLogo width={24} height={24} />
+              {/* <Text style={[typography.caption, {color: theme.highlight, fontWeight: '700'}]}>ID</Text> */}
             </View>
           </View>
 
