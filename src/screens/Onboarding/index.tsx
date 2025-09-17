@@ -286,7 +286,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
   useEffect(() => {
     const fetchClassList = async () => {
       try {
-        const response = await getClassList(Number(school.schoolCode));
+        const response = await getClassList(school.schoolCode);
         const _gradeList = response.map(item => item.grade);
         const _classList = response.map(item => item.classes);
 

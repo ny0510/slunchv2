@@ -9,14 +9,14 @@ export const comciganSchoolSearch = async (schoolName: string): Promise<School[]
   return response.data;
 };
 
-export const getClassList = async (schoolCode: number): Promise<ClassList[]> => {
+export const getClassList = async (schoolCode: number | string): Promise<ClassList[]> => {
   const response = await httpClient.get('/comcigan/classList', {
     params: {schoolCode},
   });
   return response.data;
 };
 
-export const getTimetable = async (schoolCode: number, grade: number, classNum: number): Promise<Timetable[][]> => {
+export const getTimetable = async (schoolCode: number | string, grade: number | string, classNum: number | string): Promise<Timetable[][]> => {
   const cacheKey = `timetable_${schoolCode}_${grade}_${classNum}`;
   const cachedData = await getCachedData(cacheKey);
   if (cachedData) {
@@ -37,7 +37,7 @@ export const neisSchoolSearch = async (schoolName: string): Promise<School[]> =>
   return response.data;
 };
 
-export const getMeal = async (schoolCode: number, regionCode: string, year: string, month: string, day?: string, showAllergy: boolean = false, showOrigin: boolean = false, showNutrition: boolean = false): Promise<Meal[]> => {
+export const getMeal = async (schoolCode: number | string, regionCode: string, year: string, month: string, day?: string, showAllergy: boolean = false, showOrigin: boolean = false, showNutrition: boolean = false): Promise<Meal[]> => {
   const cacheKey = `meal_${schoolCode}_${regionCode}_${year}_${month}_${day}`;
   const cachedData = await getCachedData(cacheKey);
   if (cachedData) {
@@ -64,7 +64,7 @@ export const getMeal = async (schoolCode: number, regionCode: string, year: stri
   return response.data;
 };
 
-export const getSchedules = async (schoolCode: number, regionCode: string, year: string, month: string, day?: string): Promise<Schedule[]> => {
+export const getSchedules = async (schoolCode: number | string, regionCode: string, year: string, month: string, day?: string): Promise<Schedule[]> => {
   const cacheKey = `schedules_${schoolCode}_${regionCode}_${year}_${month}`;
   const cachedData = await getCachedData(cacheKey);
   if (cachedData) {
@@ -87,7 +87,7 @@ export const getNotifications = async (): Promise<Notification[]> => {
   return response.data;
 };
 
-export const addFcmToken = async (fcmToken: string, time: string, schoolCode: string, regionCode: string): Promise<void> => {
+export const addFcmToken = async (fcmToken: string, time: string, schoolCode: number | string, regionCode: string): Promise<void> => {
   const response = await httpClient.post('/fcm', {token: fcmToken, time, schoolCode, regionCode});
   return response.data;
 };
@@ -102,7 +102,7 @@ export const checkFcmToken = async (fcmToken: string): Promise<boolean> => {
   return response.status === 200;
 };
 
-export const editFcmTime = async (fcmToken: string, time: string, schoolCode: string, regionCode: string): Promise<void> => {
+export const editFcmTime = async (fcmToken: string, time: string, schoolCode: number | string, regionCode: string): Promise<void> => {
   const response = await httpClient.put('/fcm', {token: fcmToken, time, schoolCode, regionCode});
   return response.data;
 };

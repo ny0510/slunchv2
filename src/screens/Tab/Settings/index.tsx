@@ -89,7 +89,7 @@ const Settings = () => {
   const loadClassData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await getClassList(Number(schoolInfo.comciganCode));
+      const response = await getClassList(schoolInfo.comciganCode);
 
       // Check if response is valid and is an array
       if (!response || !Array.isArray(response)) {

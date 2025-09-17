@@ -82,7 +82,7 @@ const Home = () => {
 
       // Promise.allSettled를 사용하여 병렬 처리하고 실패한 API가 있어도 다른 API는 계속 실행
       const [timetableResult, mealResult, scheduleResult] = await Promise.allSettled([
-        getTimetable(schoolInfo.comciganCode, Number(classInfo.grade), Number(classInfo.class)),
+        getTimetable(schoolInfo.comciganCode, classInfo.grade, classInfo.class),
         getMeal(schoolInfo.neisCode, schoolInfo.neisRegionCode, today.format('YYYY'), today.format('MM'), today.format('DD'), showAllergy, true, true),
         getSchedules(schoolInfo.neisCode, schoolInfo.neisRegionCode, today.format('YYYY'), today.format('MM')),
       ]);
@@ -426,7 +426,7 @@ const Home = () => {
                 return;
               }
               try {
-                const apiTimetable = await getTimetable(schoolInfo.comciganCode, Number(classInfo.grade), Number(classInfo.class));
+                const apiTimetable = await getTimetable(schoolInfo.comciganCode, classInfo.grade, classInfo.class);
                 const raw = apiTimetable[selectedSubjectIndices.col]?.[selectedSubjectIndices.row] || {subject: '-', teacher: '-', changed: false};
                 const original = {
                   ...raw,
