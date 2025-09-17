@@ -278,6 +278,19 @@ const Home = () => {
     [setSelectedSubject, setSelectedSubjectIndices],
   );
 
+  // 키보드가 닫힐 때 BottomSheet 위치 재설정
+  useEffect(() => {
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      if (isBottomSheetOpen && bottomSheetRef.current) {
+        bottomSheetRef.current.snapToIndex(0);
+      }
+    });
+
+    return () => {
+      keyboardDidHideListener.remove();
+    };
+  }, [isBottomSheetOpen]);
+
   const openBottomSheet = ({row, col}: {row: number; col: number}) => {
     trigger('impactLight');
     setSelectedSubject(timetable[row]?.[col] || null);
@@ -351,9 +364,9 @@ const Home = () => {
         <BottomSheet
           keyboardBehavior="interactive"
           keyboardBlurBehavior="restore"
+          android_keyboardInputMode="adjustPan"
           backdropComponent={renderBackdrop}
           ref={bottomSheetRef}
-          index={-1}
           enablePanDownToClose
           onChange={handleSheetChanges}
           onClose={() => setIsBottomSheetOpen(false)}
@@ -425,7 +438,7 @@ const Home = () => {
               activeOpacity={0.7}
               delayPressIn={0}
               hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
-              style={{backgroundColor: theme.background, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 16, borderWidth: 1, borderColor: theme.border, width: '100%', minHeight: 44}}
+              style={{backgroundColor: theme.background, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 16, borderWidth: 1, borderColor: theme.border, width: '100%'}}
               onPress={async () => {
                 if (!selectedSubjectIndices) {
                   return;
