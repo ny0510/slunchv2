@@ -10,6 +10,7 @@ import {comciganSchoolSearch, getClassList, neisSchoolSearch, removeFcmToken} fr
 import Loading from '@/components/Loading';
 import SlotMachine from '@/components/SlotMachine';
 import {useTheme} from '@/contexts/ThemeContext';
+import {useUser} from '@/contexts/UserContext';
 import {useFirstOpen} from '@/hooks/useFirstOpen';
 import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
@@ -102,6 +103,7 @@ const SchoolListItem = React.memo<{
 
 export const IntroScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const {refreshUserData} = useUser();
 
   const {theme, typography, isDark} = useTheme();
   const s = createStyles(theme, typography);
@@ -123,6 +125,7 @@ export const IntroScreen = () => {
               school: JSON.stringify(DEMO_SCHOOL_DATA),
               class: JSON.stringify({grade: 1, class: 1}),
             });
+            refreshUserData();
             navigation.navigate('Tab');
           } catch (error) {
             handleError(error, 'Demo mode setup failed');
@@ -261,6 +264,7 @@ export const SchoolSearchScreen = ({route}: StackScreenProps<RootStackParamList,
 export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 'ClassSelect'>) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const {school, isFirstOpen = true} = route.params;
+  const {refreshUserData} = useUser();
 
   const [gradeList, setGradeList] = useState<number[]>([]);
   const [classList, setClassList] = useState<number[][]>([]);
@@ -374,6 +378,9 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
       } catch (e) {
         console.error('Error removing FCM token:', e);
       }
+
+      // Refresh user data in context
+      refreshUserData();
 
       if (isFirstOpen) {
         await completeOnboarding();

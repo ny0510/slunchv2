@@ -71,6 +71,12 @@ const Home = () => {
     setLoading(true);
     await getSettings();
 
+    // Check if school and class info are available
+    if (!schoolInfo.comciganCode || !schoolInfo.neisCode || !classInfo.grade || !classInfo.class) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const today = dayjs();
 

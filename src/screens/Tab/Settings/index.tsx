@@ -57,8 +57,8 @@ const Settings = () => {
     if (isLoading || isButtonDisabled) return;
 
     // Set current user's grade and class as selected values
-    const currentGrade = parseInt(classInfo.grade);
-    const currentClass = parseInt(classInfo.class);
+    const currentGrade = classInfo.grade ? parseInt(classInfo.grade) : 1;
+    const currentClass = classInfo.class ? parseInt(classInfo.class) : 1;
 
     setSelectedGrade(currentGrade);
     setSelectedClass(currentClass);

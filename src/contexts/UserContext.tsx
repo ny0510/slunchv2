@@ -14,8 +14,18 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{children: React.ReactNode}> = ({children}) => {
-  const [schoolInfo, setSchoolInfo] = useState<UserSchoolInfo>({} as UserSchoolInfo);
-  const [classInfo, setClassInfo] = useState<UserClassInfo>({} as UserClassInfo);
+  const [schoolInfo, setSchoolInfo] = useState<UserSchoolInfo>({
+    schoolName: '',
+    comciganCode: 0,
+    comciganRegion: '',
+    neisCode: 0,
+    neisRegion: '',
+    neisRegionCode: '',
+  });
+  const [classInfo, setClassInfo] = useState<UserClassInfo>({
+    grade: '',
+    class: '',
+  });
   const [refreshKey, setRefreshKey] = useState(0);
   const [classChangedTrigger, setClassChangedTrigger] = useState(false);
 
