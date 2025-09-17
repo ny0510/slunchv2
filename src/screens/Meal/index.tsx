@@ -35,6 +35,7 @@ const Meal = () => {
   const [schoolName, setSchoolName] = useState<string>('알 수 없음');
   const [selectedMeal, setSelectedMeal] = useState<string>('');
   const [selectedMealDate, setSelectedMealDate] = useState<string>('');
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
 
   const {theme, typography} = useTheme();
   const scrollViewRef = useRef<ScrollView | null>(null);
@@ -112,9 +113,10 @@ const Meal = () => {
     trigger('impactLight');
     setSelectedMeal(_meal);
     setSelectedMealDate(date);
-    if (bottomSheetRef.current) {
-      bottomSheetRef.current.snapToIndex(0);
-    }
+    setIsBottomSheetOpen(true);
+    setTimeout(() => {
+      bottomSheetRef.current?.snapToIndex(0);
+    }, 100);
   };
 
   const renderBackdrop = useCallback((props: any) => <BottomSheetBackdrop {...props} pressBehavior="close" disappearsOnIndex={-1} />, []);
@@ -161,8 +163,18 @@ const Meal = () => {
         </View>
       </Container>
 
-      <BottomSheet backdropComponent={renderBackdrop} ref={bottomSheetRef} index={-1} enablePanDownToClose backgroundStyle={{backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}} handleIndicatorStyle={{backgroundColor: theme.secondaryText}}>
-        <BottomSheetView style={{paddingHorizontal: 18, paddingVertical: 20, gap: 16, backgroundColor: theme.card, justifyContent: 'center'}}>
+      {isBottomSheetOpen && (
+        <BottomSheet
+          backdropComponent={renderBackdrop}
+          ref={bottomSheetRef}
+          index={-1}
+          enablePanDownToClose
+          onClose={() => setIsBottomSheetOpen(false)}
+          backgroundStyle={{backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}}
+          handleIndicatorStyle={{backgroundColor: theme.secondaryText}}
+          keyboardBehavior="interactive"
+          keyboardBlurBehavior="restore">
+        <BottomSheetView style={{paddingHorizontal: 18, paddingBottom: 12, gap: 16, backgroundColor: theme.card, justifyContent: 'center'}}>
           <Content
             title="복사하기"
             arrow
@@ -171,6 +183,7 @@ const Meal = () => {
               Clipboard.setString(`🍴${schoolName} ${selectedMealDate} 급식\n\n- ${selectedMeal.split('\n').join('\n- ')}`);
               showToast('클립보드에 복사되었어요.');
               bottomSheetRef.current?.close();
+              setIsBottomSheetOpen(false);
             }}
           />
           <Content
@@ -186,6 +199,7 @@ const Meal = () => {
                 .then(res => console.log(res))
                 .catch(err => console.log(err));
               bottomSheetRef.current?.close();
+              setIsBottomSheetOpen(false);
             }}
           />
           <Content
@@ -195,10 +209,12 @@ const Meal = () => {
               analytics().logEvent('meal_instagram_share');
               navigation.navigate('Share', {data: {meal: selectedMeal, date: selectedMealDate, school: schoolName}});
               bottomSheetRef.current?.close();
+              setIsBottomSheetOpen(false);
             }}
           />
         </BottomSheetView>
-      </BottomSheet>
+        </BottomSheet>
+      )}
     </>
   );
 };

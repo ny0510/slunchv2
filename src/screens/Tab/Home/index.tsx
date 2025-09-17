@@ -38,6 +38,7 @@ const Home = () => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [selectedSubject, setSelectedSubject] = useState<Timetable | null>(null);
   const [selectedSubjectIndices, setSelectedSubjectIndices] = useState<{row: number; col: number} | null>(null);
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const backPressedOnceRef = useRef(false);
 
@@ -125,8 +126,8 @@ const Home = () => {
           const nextDayPromises = [1, 2, 3].map(i => {
             const nextDay = today.add(i, 'day');
             return getMeal(schoolInfo.neisCode, schoolInfo.neisRegionCode, nextDay.format('YYYY'), nextDay.format('MM'), nextDay.format('DD'), showAllergy, true, true)
-              .then(data => ({ data, offset: i }))
-              .catch(() => ({ data: [], offset: i }));
+              .then(data => ({data, offset: i}))
+              .catch(() => ({data: [], offset: i}));
           });
 
           const nextDayResults = await Promise.all(nextDayPromises);
@@ -188,7 +189,7 @@ const Home = () => {
         const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
         return () => subscription.remove();
       }
-    }, [])
+    }, []),
   );
 
   // 탭 이동 시 BottomSheet 자동 닫힘
@@ -197,6 +198,7 @@ const Home = () => {
       if (bottomSheetRef.current) {
         bottomSheetRef.current.close();
       }
+      setIsBottomSheetOpen(false);
     });
     return unsubscribe;
   }, [navigation]);
@@ -277,12 +279,13 @@ const Home = () => {
   );
 
   const openBottomSheet = ({row, col}: {row: number; col: number}) => {
-    if (bottomSheetRef.current) {
-      trigger('impactLight');
-      setSelectedSubject(timetable[row]?.[col] || null);
-      setSelectedSubjectIndices({row, col});
-      bottomSheetRef.current.snapToIndex(0);
-    }
+    trigger('impactLight');
+    setSelectedSubject(timetable[row]?.[col] || null);
+    setSelectedSubjectIndices({row, col});
+    setIsBottomSheetOpen(true);
+    setTimeout(() => {
+      bottomSheetRef.current?.snapToIndex(0);
+    }, 100);
   };
 
   const renderBackdrop = useCallback(
@@ -344,106 +347,109 @@ const Home = () => {
         </View>
       </Container>
 
-      <BottomSheet
-        keyboardBehavior="interactive"
-        keyboardBlurBehavior="restore"
-        backdropComponent={renderBackdrop}
-        ref={bottomSheetRef}
-        index={-1}
-        enablePanDownToClose
-        onChange={handleSheetChanges}
-        backgroundStyle={{backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}}
-        handleIndicatorStyle={{backgroundColor: theme.secondaryText}}>
-        <BottomSheetView style={{padding: 18, backgroundColor: theme.card, justifyContent: 'center', alignItems: 'center', gap: 8}}>
-          <View style={{gap: 4, width: '100%'}}>
-            <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600', alignSelf: 'flex-start'}]}>과목명 변경</Text>
-            <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', alignSelf: 'flex-start'}]}>시간표가 알맞지 않다면 직접 변경해주세요.</Text>
-          </View>
-          <View style={{flexDirection: 'row', gap: 8, width: '100%'}}>
-            <BottomSheetTextInput
-              style={{
-                flex: 1,
-                backgroundColor: theme.background,
-                color: theme.primaryText,
-                fontSize: 16,
-                fontWeight: '500',
-                padding: 12,
-                borderRadius: 8,
-                borderWidth: 1,
-                borderColor: theme.border,
-              }}
-              maxLength={5}
-              placeholder="과목명"
-              placeholderTextColor={theme.secondaryText}
-              onChangeText={text => {
-                if (selectedSubjectIndices) {
-                  const formattedText = text === '없음' ? '-' : text;
-                  setTimetable(prev => prev.map((row, rowIdx) => row.map((subject, colIdx) => (rowIdx === selectedSubjectIndices.row && colIdx === selectedSubjectIndices.col ? {...subject, subject: formattedText, userChanged: true} : subject))));
-                  setSelectedSubject(prev => (prev ? {...prev, subject: formattedText, userChanged: true} : prev));
+      {isBottomSheetOpen && (
+        <BottomSheet
+          keyboardBehavior="interactive"
+          keyboardBlurBehavior="restore"
+          backdropComponent={renderBackdrop}
+          ref={bottomSheetRef}
+          index={-1}
+          enablePanDownToClose
+          onChange={handleSheetChanges}
+          onClose={() => setIsBottomSheetOpen(false)}
+          backgroundStyle={{backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}}
+          handleIndicatorStyle={{backgroundColor: theme.secondaryText}}>
+          <BottomSheetView style={{paddingHorizontal: 18, paddingBottom: 12, backgroundColor: theme.card, justifyContent: 'center', alignItems: 'center', gap: 8}}>
+            <View style={{gap: 4, width: '100%'}}>
+              <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600', alignSelf: 'flex-start'}]}>과목명 변경</Text>
+              <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', alignSelf: 'flex-start'}]}>시간표가 알맞지 않다면 직접 변경해주세요.</Text>
+            </View>
+            <View style={{flexDirection: 'row', gap: 8, width: '100%'}}>
+              <BottomSheetTextInput
+                style={{
+                  flex: 1,
+                  backgroundColor: theme.background,
+                  color: theme.primaryText,
+                  fontSize: 16,
+                  fontWeight: '500',
+                  padding: 12,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: theme.border,
+                }}
+                maxLength={5}
+                placeholder="과목명"
+                placeholderTextColor={theme.secondaryText}
+                onChangeText={text => {
+                  if (selectedSubjectIndices) {
+                    const formattedText = text === '없음' ? '-' : text;
+                    setTimetable(prev => prev.map((row, rowIdx) => row.map((subject, colIdx) => (rowIdx === selectedSubjectIndices.row && colIdx === selectedSubjectIndices.col ? {...subject, subject: formattedText, userChanged: true} : subject))));
+                    setSelectedSubject(prev => (prev ? {...prev, subject: formattedText, userChanged: true} : prev));
+                  }
+                }}
+                value={selectedSubject ? selectedSubject.subject : ''}
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="off"
+                returnKeyType="done"
+              />
+              <BottomSheetTextInput
+                style={{
+                  flex: 1,
+                  backgroundColor: theme.background,
+                  color: theme.primaryText,
+                  fontSize: 16,
+                  fontWeight: '500',
+                  padding: 12,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: theme.border,
+                }}
+                maxLength={5}
+                placeholder="선생님"
+                placeholderTextColor={theme.secondaryText}
+                onChangeText={text => {
+                  if (selectedSubjectIndices) {
+                    setTimetable(prev => prev.map((row, rowIdx) => row.map((subject, colIdx) => (rowIdx === selectedSubjectIndices.row && colIdx === selectedSubjectIndices.col ? {...subject, teacher: text, userChanged: true} : subject))));
+                    setSelectedSubject(prev => (prev ? {...prev, teacher: text, userChanged: true} : prev));
+                  }
+                }}
+                value={selectedSubject ? selectedSubject.teacher : ''}
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="off"
+                returnKeyType="done"
+              />
+            </View>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              delayPressIn={0}
+              hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
+              style={{backgroundColor: theme.background, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 16, borderWidth: 1, borderColor: theme.border, width: '100%', minHeight: 44}}
+              onPress={async () => {
+                if (!selectedSubjectIndices) {
+                  return;
                 }
-              }}
-              value={selectedSubject ? selectedSubject.subject : ''}
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="off"
-              returnKeyType="done"
-            />
-            <BottomSheetTextInput
-              style={{
-                flex: 1,
-                backgroundColor: theme.background,
-                color: theme.primaryText,
-                fontSize: 16,
-                fontWeight: '500',
-                padding: 12,
-                borderRadius: 8,
-                borderWidth: 1,
-                borderColor: theme.border,
-              }}
-              maxLength={5}
-              placeholder="선생님"
-              placeholderTextColor={theme.secondaryText}
-              onChangeText={text => {
-                if (selectedSubjectIndices) {
-                  setTimetable(prev => prev.map((row, rowIdx) => row.map((subject, colIdx) => (rowIdx === selectedSubjectIndices.row && colIdx === selectedSubjectIndices.col ? {...subject, teacher: text, userChanged: true} : subject))));
-                  setSelectedSubject(prev => (prev ? {...prev, teacher: text, userChanged: true} : prev));
+                try {
+                  const apiTimetable = await getTimetable(schoolInfo.comciganCode, classInfo.grade, classInfo.class);
+                  const raw = apiTimetable[selectedSubjectIndices.col]?.[selectedSubjectIndices.row] || {subject: '-', teacher: '-', changed: false};
+                  const original = {
+                    ...raw,
+                    subject: raw.subject === '없음' ? '-' : raw.subject,
+                    teacher: raw.teacher === '없음' ? '-' : raw.teacher,
+                  };
+                  setTimetable(prev => prev.map((row, rowIdx) => row.map((subject, colIdx) => (rowIdx === selectedSubjectIndices.row && colIdx === selectedSubjectIndices.col ? {...original, userChanged: false} : subject))));
+                  setSelectedSubject({...original, userChanged: false});
+                  showToast('원래 시간표로 되돌렸어요.');
+                } catch (e) {
+                  showToast('원래 시간표를 불러오지 못했어요.');
                 }
-              }}
-              value={selectedSubject ? selectedSubject.teacher : ''}
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="off"
-              returnKeyType="done"
-            />
-          </View>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            delayPressIn={0}
-            hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
-            style={{backgroundColor: theme.background, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 16, borderWidth: 1, borderColor: theme.border, width: '100%', minHeight: 44}}
-            onPress={async () => {
-              if (!selectedSubjectIndices) {
-                return;
-              }
-              try {
-                const apiTimetable = await getTimetable(schoolInfo.comciganCode, classInfo.grade, classInfo.class);
-                const raw = apiTimetable[selectedSubjectIndices.col]?.[selectedSubjectIndices.row] || {subject: '-', teacher: '-', changed: false};
-                const original = {
-                  ...raw,
-                  subject: raw.subject === '없음' ? '-' : raw.subject,
-                  teacher: raw.teacher === '없음' ? '-' : raw.teacher,
-                };
-                setTimetable(prev => prev.map((row, rowIdx) => row.map((subject, colIdx) => (rowIdx === selectedSubjectIndices.row && colIdx === selectedSubjectIndices.col ? {...original, userChanged: false} : subject))));
-                setSelectedSubject({...original, userChanged: false});
-                showToast('원래 시간표로 되돌렸어요.');
-              } catch (e) {
-                showToast('원래 시간표를 불러오지 못했어요.');
-              }
-            }}>
-            <Text style={[typography.baseTextStyle, {color: theme.primaryText, textAlign: 'center', fontWeight: '600'}]}>원래 시간표로 되돌리기</Text>
-          </TouchableOpacity>
-        </BottomSheetView>
-      </BottomSheet>
+              }}>
+              <Text style={[typography.baseTextStyle, {color: theme.primaryText, textAlign: 'center', fontWeight: '600'}]}>원래 시간표로 되돌리기</Text>
+            </TouchableOpacity>
+          </BottomSheetView>
+        </BottomSheet>
+      )}
     </Fragment>
   );
 };

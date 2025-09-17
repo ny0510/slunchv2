@@ -20,6 +20,7 @@ const Notification = () => {
   const [isEnabled, setIsEnabled] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [time, setTime] = useState<Date>(dayjs().set('hour', 7).set('minute', 30).toDate());
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   const {theme, typography} = useTheme();
@@ -153,9 +154,10 @@ const Notification = () => {
   };
 
   const openBottomSheet = () => {
-    if (bottomSheetRef.current) {
-      bottomSheetRef.current.snapToIndex(0);
-    }
+    setIsBottomSheetOpen(true);
+    setTimeout(() => {
+      bottomSheetRef.current?.snapToIndex(0);
+    }, 100);
   };
 
   const renderBackdrop = useCallback((props: any) => <BottomSheetBackdrop {...props} pressBehavior="close" disappearsOnIndex={-1} />, []);
@@ -198,12 +200,24 @@ const Notification = () => {
         </Card>
       </Container>
 
-      <BottomSheet backdropComponent={renderBackdrop} ref={bottomSheetRef} index={-1} enablePanDownToClose onChange={handleSheetChanges} backgroundStyle={{backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}} handleIndicatorStyle={{backgroundColor: theme.secondaryText}}>
-        <BottomSheetView style={{padding: 18, backgroundColor: theme.card, justifyContent: 'center', alignItems: 'center'}}>
-          <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600', alignSelf: 'flex-start'}]}>알림 시간 변경</Text>
-          <DatePicker mode="time" date={time} theme="dark" dividerColor={theme.secondaryText} onDateChange={setTime} />
-        </BottomSheetView>
-      </BottomSheet>
+      {isBottomSheetOpen && (
+        <BottomSheet
+          backdropComponent={renderBackdrop}
+          ref={bottomSheetRef}
+          index={-1}
+          enablePanDownToClose
+          onChange={handleSheetChanges}
+          onClose={() => setIsBottomSheetOpen(false)}
+          backgroundStyle={{backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}}
+          handleIndicatorStyle={{backgroundColor: theme.secondaryText}}
+          keyboardBehavior="interactive"
+          keyboardBlurBehavior="restore">
+          <BottomSheetView style={{paddingHorizontal: 18, paddingBottom: 12, backgroundColor: theme.card, justifyContent: 'center', alignItems: 'center'}}>
+            <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600', alignSelf: 'flex-start'}]}>알림 시간 변경</Text>
+            <DatePicker mode="time" date={time} theme="dark" dividerColor={theme.secondaryText} onDateChange={setTime} />
+          </BottomSheetView>
+        </BottomSheet>
+      )}
     </>
   );
 };
