@@ -1,7 +1,7 @@
 import {ANDROID_HOME_BANNER_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
 import React, {Fragment, ReactNode, useCallback, useEffect, useRef, useState} from 'react';
-import {AppState, FlatList, Keyboard, Platform, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
+import {AppState, BackHandler, FlatList, Keyboard, Platform, RefreshControl, Text, ToastAndroid, TouchableOpacity, View} from 'react-native';
 import {trigger} from 'react-native-haptic-feedback';
 import Midnight from 'react-native-midnight';
 import TouchableScale from 'react-native-touchable-scale';
@@ -25,7 +25,7 @@ import BottomSheet, {BottomSheetBackdrop, BottomSheetTextInput, BottomSheetView}
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
-import {NavigationProp, useNavigation} from '@react-navigation/native';
+import {NavigationProp, useFocusEffect, useNavigation} from '@react-navigation/native';
 
 const Home = () => {
   const [timetable, setTimetable] = useState<Timetable[][]>([]);
@@ -40,6 +40,7 @@ const Home = () => {
   const [selectedSubject, setSelectedSubject] = useState<Timetable | null>(null);
   const [selectedSubjectIndices, setSelectedSubjectIndices] = useState<{row: number; col: number} | null>(null);
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const backPressedOnceRef = useRef(false);
 
   const {theme, typography} = useTheme();
   const {schoolInfo, classInfo, classChangedTrigger, setClassChangedTrigger} = useUser();
@@ -163,6 +164,27 @@ const Home = () => {
   useEffect(() => {
     analytics().logScreenView({screen_name: '홈', screen_class: 'Home'});
   }, []);
+
+  // Android 뒤로가기 버튼 처리
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'android') {
+        const onBackPress = () => {
+          if (backPressedOnceRef.current) {
+            BackHandler.exitApp();
+            return true;
+          }
+          backPressedOnceRef.current = true;
+          ToastAndroid.show('뒤로가기를 한 번 더 누르면 종료돼요.', ToastAndroid.SHORT);
+          setTimeout(() => (backPressedOnceRef.current = false), 2000);
+          return true;
+        };
+
+        const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+        return () => subscription.remove();
+      }
+    }, [])
+  );
 
   // 탭 이동 시 BottomSheet 자동 닫힘
   useEffect(() => {

@@ -20,6 +20,17 @@ class MainActivity : ReactActivity() {
     super.onCreate(null)
   }
 
+  override fun onBackPressed() {
+    // Let React Native handle back press
+    super.onBackPressed()
+  }
+
+  override fun finish() {
+    // Override exit animation before calling super.finish()
+    overridePendingTransition(0, 0)
+    super.finish()
+  }
+
   /**
    * Returns the instance of the [ReactActivityDelegate]. We use [DefaultReactActivityDelegate]
    * which allows you to enable New Architecture with a single boolean flags [fabricEnabled]

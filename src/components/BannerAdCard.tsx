@@ -20,7 +20,7 @@ const BannerAdCard = ({adUnitId}: {adUnitId: string}) => {
   return (
     <View style={{backgroundColor: theme.card, borderRadius: 12, padding: 6, borderColor: theme.border, borderWidth: 1}}>
       <View style={{borderRadius: 6, overflow: 'hidden', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', minHeight: 60}}>
-        <BannerAd ref={bannerRef} unitId={adUnitId} size={BannerAdSize.FULL_BANNER} onAdFailedToLoad={error => console.error('Ad failed to load:', error)} />
+        <BannerAd ref={bannerRef} unitId={adUnitId} size={BannerAdSize.FULL_BANNER} />
       </View>
     </View>
   );

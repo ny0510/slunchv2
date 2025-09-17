@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import React, {useEffect, useRef} from 'react';
-import {Alert, AppState, BackHandler, Linking, Platform, StatusBar, ToastAndroid} from 'react-native';
+import {Alert, AppState, Linking, Platform, StatusBar} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {hideSplash} from 'react-native-splash-view';
@@ -40,7 +40,6 @@ const showMaintenanceAlert = () => {
 
 const App = () => {
   const {theme, isDark} = useTheme();
-  const backPressedOnceRef = useRef(false);
 
   useEffect(() => {
     setTimeout(hideSplash, 250);
@@ -61,7 +60,6 @@ const App = () => {
           ],
           {cancelable: true},
         );
-        backPressedOnceRef.current = false;
       }
     } catch (e) {
       console.error(`Update check failed: ${(e as Error).message}`);
@@ -85,24 +83,6 @@ const App = () => {
     });
 
     return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (Platform.OS === 'android') {
-      const backAction = () => {
-        if (backPressedOnceRef.current) {
-          BackHandler.exitApp();
-          return true;
-        }
-        backPressedOnceRef.current = true;
-        ToastAndroid.show('뒤로가기를 한 번 더 누르면 종료돼요.', ToastAndroid.SHORT);
-        setTimeout(() => (backPressedOnceRef.current = false), 2000);
-        return true;
-      };
-
-      const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
-      return () => backHandler.remove();
-    }
   }, []);
 
   return (
