@@ -66,29 +66,31 @@ const Settings = () => {
     setSelectedClass(currentClass);
 
     setIsBottomSheetOpen(true);
+
+    // BottomSheet가 완전히 열린 후 ScrollPicker 초기화
     setTimeout(() => {
       bottomSheetRef.current?.expand();
-    }, 100);
 
-    // ScrollPicker를 현재 학급으로 이동
-    setTimeout(() => {
-      if (gradeList.length > 0) {
-        const gradeIndex = gradeList.indexOf(currentGrade);
-        if (gradeIndex !== -1) {
-          gradeScrollPickerRef.current?.scrollToTargetIndex(gradeIndex);
-        }
-      }
-
-      if (classList.length > 0) {
-        const gradeIndex = gradeList.indexOf(currentGrade);
-        if (gradeIndex !== -1 && classList[gradeIndex]) {
-          const classIndex = classList[gradeIndex].indexOf(currentClass);
-          if (classIndex !== -1) {
-            classScrollPickerRef.current?.scrollToTargetIndex(classIndex);
+      // BottomSheet expand 애니메이션 완료 후 ScrollPicker 설정
+      setTimeout(() => {
+        if (gradeList.length > 0) {
+          const gradeIndex = gradeList.indexOf(currentGrade);
+          if (gradeIndex !== -1 && gradeScrollPickerRef.current) {
+            gradeScrollPickerRef.current?.scrollToTargetIndex(gradeIndex);
           }
         }
-      }
-    }, 300); // Bottom sheet 애니메이션 완료 후 실행
+
+        if (classList.length > 0) {
+          const gradeIndex = gradeList.indexOf(currentGrade);
+          if (gradeIndex !== -1 && classList[gradeIndex]) {
+            const classIndex = classList[gradeIndex].indexOf(currentClass);
+            if (classIndex !== -1 && classScrollPickerRef.current) {
+              classScrollPickerRef.current?.scrollToTargetIndex(classIndex);
+            }
+          }
+        }
+      }, 500); // BottomSheet expand 애니메이션 시간 증가
+    }, 100);
   }, [classInfo.grade, classInfo.class, gradeList, classList, isLoading, isButtonDisabled]);
 
   const loadClassData = useCallback(async () => {
@@ -251,7 +253,7 @@ const Settings = () => {
                     highlightBorderWidth={1}
                     onValueChange={handleGradeChange}
                     selectedIndex={gradeList.indexOf(selectedGrade)}
-                    renderItem={(data, index, isSelected) => (
+                    renderItem={(data, _, isSelected) => (
                       <Text
                         style={{
                           fontSize: 20,
@@ -271,7 +273,7 @@ const Settings = () => {
                     highlightBorderWidth={1}
                     onValueChange={handleClassChange}
                     selectedIndex={classList[gradeList.indexOf(selectedGrade)]?.indexOf(selectedClass) || 0}
-                    renderItem={(data, index, isSelected) => (
+                    renderItem={(data, _, isSelected) => (
                       <Text
                         style={{
                           fontSize: 20,
