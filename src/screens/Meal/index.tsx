@@ -90,16 +90,6 @@ const Meal = () => {
     setRefreshing(false);
   }, [fetchData]);
 
-  // 급식 유형별 색상 지정
-  const getMealTypeColor = (mealType?: string) => {
-    if (!mealType) return theme.primaryText;
-
-    if (mealType.includes('조식')) return '#FF9500'; // 주황색
-    if (mealType.includes('중식')) return theme.highlight; // 파란색
-    if (mealType.includes('석식')) return theme.highlightSecondary; // 보라색
-    return theme.primaryText;
-  };
-
   const openBottomSheet = (_meal: string, date: string) => {
     trigger('impactLight');
     setSelectedMeal(_meal);
@@ -281,10 +271,10 @@ const MealCard = ({date, isToday, meal, mealType, showAllergy, onLongPress}: {da
         {/* 급식 내용 */}
         <View style={{gap: 6}}>{meal.meal.map((item, idx) => renderMealItem(item, idx))}</View>
 
-        {/* 영양 정보가 있으면 표시 */}
-        {meal.nutrition && meal.nutrition.length > 0 && (
+        {/* 열량 정보가 있으면 표시 */}
+        {meal.calorie && (
           <View style={{marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: theme.border}}>
-            <Text style={[typography.caption, {color: theme.secondaryText}]}>{meal.nutrition.find(n => n.type === '열량')?.amount || '영양정보 없음'}</Text>
+            <Text style={[typography.caption, {color: theme.secondaryText}]}>{meal.calorie} kcal</Text>
           </View>
         )}
       </View>

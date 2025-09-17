@@ -22,6 +22,7 @@ export interface Timetable {
 }
 
 export interface Meal {
+  calorie: number;
   date: string;
   meal: (string | MealItem)[];
   type?: string;
