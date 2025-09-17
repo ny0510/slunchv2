@@ -50,7 +50,7 @@ const App = () => {
   const checkForUpdate = async () => {
     try {
       const res = await VersionCheck.needUpdate({depth: 2});
-      if (res.isNeeded && res.storeUrl) {
+      if (res && res.isNeeded && res.storeUrl) {
         Alert.alert(
           '새로운 버전이 출시되었습니다',
           '앱을 업데이트 해주세요',

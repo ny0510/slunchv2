@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {GestureResponderEvent} from 'react-native';
 // import TouchableScale from '@/components/TouchableScale';
 import TouchableScale from 'react-native-touchable-scale';
@@ -22,6 +22,29 @@ const BottomTabs = () => {
   const [isSunrin, setIsSunrin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+  const scrollRefs = useRef<{[key: string]: any}>({});
+
+  // Generic tab press handler for scroll-to-top
+  const createTabPressListener = (routeName: string) => ({
+    navigation,
+  }: {
+    navigation: any;
+  }) => ({
+    tabPress: () => {
+      const state = navigation.getState();
+      const currentRoute = state?.routes[state.index];
+
+      // If already on this tab and scroll ref exists, scroll to top
+      if (currentRoute?.name === routeName && scrollRefs.current[routeName]) {
+        scrollRefs.current[routeName].scrollToTop();
+      }
+    },
+  });
+
+  // Helper to create scroll ref setter
+  const createScrollRefSetter = (routeName: string) => (ref: any) => {
+    scrollRefs.current[routeName] = ref;
+  };
 
   const fetchUnreadCount = useCallback(async () => {
     try {
@@ -106,7 +129,12 @@ const BottomTabs = () => {
         tabBarButton: props => (props.onPress ? <TabBarButton children={props.children} onPress={event => props.onPress && props.onPress(event!)} /> : null),
         tabBarIcon: props => <TabBarIcon route={route} size={20} color={props.color} />,
       })}>
-      <BottomTab.Screen name="Home" component={Home} options={{title: '홈'}} />
+      <BottomTab.Screen
+        name="Home"
+        options={{title: '홈'}}
+        listeners={createTabPressListener('Home')}>
+        {props => <Home {...props} setScrollRef={createScrollRefSetter('Home')} />}
+      </BottomTab.Screen>
       {isSunrin && <BottomTab.Screen name="SchoolCard" component={SchoolCard} options={{title: '학생증'}} />}
       <BottomTab.Screen
         name="Notifications"
@@ -117,10 +145,16 @@ const BottomTabs = () => {
             fontSize: 12,
             fontWeight: '500',
           },
-        }}>
-        {() => <Notifications onReadNotification={fetchUnreadCount} />}
+        }}
+        listeners={createTabPressListener('Notifications')}>
+        {props => <Notifications {...props} onReadNotification={fetchUnreadCount} setScrollRef={createScrollRefSetter('Notifications')} />}
       </BottomTab.Screen>
-      <BottomTab.Screen name="Settings" component={Settings} options={{title: '설정'}} />
+      <BottomTab.Screen
+        name="Settings"
+        options={{title: '설정'}}
+        listeners={createTabPressListener('Settings')}>
+        {props => <Settings {...props} setScrollRef={createScrollRefSetter('Settings')} />}
+      </BottomTab.Screen>
     </BottomTab.Navigator>
   );
 };

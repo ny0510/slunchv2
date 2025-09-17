@@ -2,12 +2,12 @@ import dayjs from 'dayjs';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Alert, Text, View} from 'react-native';
 import DatePicker from 'react-native-date-picker';
-import {Switch} from 'react-native-switch';
 
 import Content from '../../components/Content';
 import {addFcmToken, checkFcmToken, editFcmTime, removeFcmToken} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
+import ToggleSwitch from '@/components/ToggleSwitch';
 import {useTheme} from '@/contexts/ThemeContext';
 import {useUser} from '@/contexts/UserContext';
 import {showToast} from '@/lib/toast';
@@ -178,22 +178,7 @@ const Notification = () => {
           <View style={{gap: 8, marginTop: 8}}>
             <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
               <Text style={[typography.body, {color: theme.primaryText}]}>알림 받기</Text>
-              <Switch
-                value={isEnabled}
-                onValueChange={toggleSwitch}
-                disabled={isProcessing}
-                circleSize={22}
-                barHeight={22}
-                circleBorderWidth={2}
-                circleBorderActiveColor={theme.highlight}
-                circleBorderInactiveColor={theme.border}
-                backgroundActive={theme.highlight}
-                backgroundInactive={theme.border}
-                circleActiveColor={'#fff'}
-                circleInActiveColor={'#fff'}
-                renderActiveText={false}
-                renderInActiveText={false}
-              />
+              <ToggleSwitch value={isEnabled} onValueChange={toggleSwitch} disabled={isProcessing} />
             </View>
             <Content title="알림 시간 변경" arrow onPress={openBottomSheet} disabled={!isEnabled} arrowText={dayjs(time).format('A hh:mm')} />
           </View>

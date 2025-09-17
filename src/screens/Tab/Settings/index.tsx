@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {BackHandler, Text, TouchableOpacity, View} from 'react-native';
 import ScrollPicker from 'react-native-wheel-scrollview-picker';
 
 import AppInfoCard from './components/AppInfoCard';
@@ -12,6 +12,7 @@ import Container from '@/components/Container';
 import Loading from '@/components/Loading';
 import {useTheme} from '@/contexts/ThemeContext';
 import {useUser} from '@/contexts/UserContext';
+import {useScrollToTop} from '@/hooks/useScrollToTop';
 import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {ClassData, SchoolData} from '@/types/onboarding';
@@ -21,7 +22,7 @@ import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 
-const Settings = () => {
+const Settings = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
   const [developerOptions, setDeveloperOptions] = useState(false);
   const [gradeList, setGradeList] = useState<number[]>([]);
   const [classList, setClassList] = useState<number[][]>([]);
@@ -34,17 +35,21 @@ const Settings = () => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const classScrollPickerRef = useRef<any>(null);
   const gradeScrollPickerRef = useRef<any>(null);
+  const scrollViewRef = useRef<any>(null);
 
   const {theme, typography} = useTheme();
   const {schoolInfo, classInfo, refreshUserData, setClassChangedTrigger} = useUser();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  // Use the scroll-to-top hook
+  useScrollToTop(scrollViewRef, setScrollRef);
 
   useEffect(() => {
     analytics().logScreenView({screen_name: '설정 페이지', screen_class: 'Settings'});
     AsyncStorage.getItem('developerOptions').then(val => setDeveloperOptions(!!JSON.parse(val ?? 'false')));
   }, []);
 
-  // 탭 이동 시 BottomSheet 자동 닫힘
+  // 탭 이동 시 BottomSheet 자동 닫힘 및 뒤로가기 버튼 처리
   useEffect(() => {
     const unsubscribe = navigation.addListener('blur', () => {
       if (bottomSheetRef.current) {
@@ -52,8 +57,22 @@ const Settings = () => {
       }
       setIsBottomSheetOpen(false);
     });
-    return unsubscribe;
-  }, [navigation]);
+
+    // 뒤로가기 버튼 처리
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (isBottomSheetOpen) {
+        bottomSheetRef.current?.close();
+        setIsBottomSheetOpen(false);
+        return true; // 이벤트 처리 완료
+      }
+      return false; // 기본 동작 수행
+    });
+
+    return () => {
+      unsubscribe();
+      backHandler.remove();
+    };
+  }, [navigation, isBottomSheetOpen]);
 
   const handleClassChangePress = useCallback(() => {
     if (isLoading || isButtonDisabled) return;
@@ -207,7 +226,7 @@ const Settings = () => {
 
   return (
     <>
-      <Container scrollView bounce>
+      <Container scrollView bounce scrollViewRef={scrollViewRef}>
         <View style={{gap: 18, width: '100%', marginVertical: 16}}>
           {/* 계정 섹션 */}
           <View style={{gap: 8}}>
@@ -259,7 +278,7 @@ const Settings = () => {
                     ref={gradeScrollPickerRef}
                     dataSource={gradeList}
                     wrapperBackground={'transparent'}
-                    itemHeight={40}
+                    itemHeight={45}
                     highlightColor={theme.secondaryText}
                     highlightBorderWidth={1}
                     onValueChange={handleGradeChange}
@@ -279,7 +298,7 @@ const Settings = () => {
                     ref={classScrollPickerRef}
                     dataSource={classList[gradeList.indexOf(selectedGrade)] || []}
                     wrapperBackground={'transparent'}
-                    itemHeight={40}
+                    itemHeight={45}
                     highlightColor={theme.secondaryText}
                     highlightBorderWidth={1}
                     onValueChange={handleClassChange}

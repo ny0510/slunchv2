@@ -17,6 +17,7 @@ import Loading from '@/components/Loading';
 // import TouchableScale from '@/components/TouchableScale';
 import {useTheme} from '@/contexts/ThemeContext';
 import {useUser} from '@/contexts/UserContext';
+import {useScrollToTop} from '@/hooks/useScrollToTop';
 import {clearCache} from '@/lib/cache';
 import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
@@ -31,7 +32,7 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 
 dayjs.extend(isSameOrAfter);
 
-const Home = () => {
+const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
   const [timetable, setTimetable] = useState<Timetable[][]>([]);
   const [meal, setMeal] = useState<Meal[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -45,14 +46,18 @@ const Home = () => {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const backPressedOnceRef = useRef(false);
+  const scrollViewRef = useRef<any>(null);
 
   const {theme, typography} = useTheme();
   const {schoolInfo, classInfo, classChangedTrigger, setClassChangedTrigger} = useUser();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
+  // Use the scroll-to-top hook
+  useScrollToTop(scrollViewRef, setScrollRef);
+
   const getSettings = useCallback(async () => {
     const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
-    setShowAllergy(settings.showAllergy);
+    setShowAllergy(settings.showAllergy || false);
   }, []);
 
   const transpose = useCallback((array: Timetable[][]) => {
@@ -127,11 +132,14 @@ const Home = () => {
 
         if (mealResponse.length === 0 || isPastNoon) {
           // 병렬로 다음 3일 확인
-          const nextDayPromises = [1, 2, 3].map(i => {
+          const nextDayPromises = [1, 2, 3].map(async i => {
             const nextDay = today.add(i, 'day');
-            return getMeal(schoolInfo.neisCode, schoolInfo.neisRegionCode, nextDay.format('YYYY'), nextDay.format('MM'), nextDay.format('DD'), showAllergy, true, true)
-              .then(data => ({data, offset: i}))
-              .catch(() => ({data: [], offset: i}));
+            try {
+              const data = await getMeal(schoolInfo.neisCode, schoolInfo.neisRegionCode, nextDay.format('YYYY'), nextDay.format('MM'), nextDay.format('DD'), showAllergy, true, true);
+              return {data, offset: i};
+            } catch {
+              return {data: [], offset: i};
+            }
           });
 
           const nextDayResults = await Promise.all(nextDayPromises);
@@ -188,6 +196,14 @@ const Home = () => {
     useCallback(() => {
       if (Platform.OS === 'android') {
         const onBackPress = () => {
+          // Bottom Sheet가 열려있으면 먼저 닫기
+          if (isBottomSheetOpen) {
+            bottomSheetRef.current?.close();
+            setIsBottomSheetOpen(false);
+            return true;
+          }
+
+          // 앱 종료 로직
           if (backPressedOnceRef.current) {
             BackHandler.exitApp();
             return true;
@@ -201,7 +217,7 @@ const Home = () => {
         const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
         return () => subscription.remove();
       }
-    }, []),
+    }, [isBottomSheetOpen]),
   );
 
   // 탭 이동 시 BottomSheet 자동 닫힘
@@ -218,16 +234,23 @@ const Home = () => {
   // 다른 탭에 있다 홈으로 이동시 classChangedTrigger가 true라면 데이터 갱신
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
+      // Always reload allergy settings when screen is focused
+      await getSettings();
+
+      // If allergy setting changed or classChangedTrigger is true, refresh data
       if (classChangedTrigger) {
         setRefreshing(true);
         await clearCache('@cache/');
         await fetchData();
         setRefreshing(false);
         setClassChangedTrigger(false);
+      } else {
+        // Just refetch meal data if allergy setting changed
+        await fetchData();
       }
     });
     return unsubscribe;
-  }, [navigation, classChangedTrigger, setClassChangedTrigger, fetchData]);
+  }, [navigation, classChangedTrigger, setClassChangedTrigger, fetchData, getSettings]);
 
   // 매일 자정마다 데이터를 갱신
   useEffect(() => {
@@ -270,12 +293,12 @@ const Home = () => {
       );
     }
 
-    const allergyInfo = showAllergy && mealItem.allergy && mealItem.allergy.length > 0 ? ` (${mealItem.allergy.map(allergy => allergy.code).join(', ')})` : '';
+    const allergyInfo = showAllergy && mealItem.allergy && mealItem.allergy.length > 0 ? ` ${mealItem.allergy.map(allergy => allergy.code).join(', ')}` : '';
 
     return (
       <View key={index} style={{flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 3}}>
-        <View style={{width: 5, height: 5, borderRadius: 2.5, backgroundColor: theme.highlight}} />
-        <Text style={{fontSize: 15, fontWeight: '400', color: theme.primaryText, flex: 1}}>
+        <View style={{width: 4, height: 4, borderRadius: 2, backgroundColor: theme.secondaryText}} />
+        <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', flex: 1}]}>
           {mealItem.food}
           <Text style={{fontSize: 12, color: theme.secondaryText}}>{allergyInfo}</Text>
         </Text>
@@ -336,7 +359,7 @@ const Home = () => {
 
   return (
     <Fragment>
-      <Container bounce scrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}>
+      <Container bounce scrollView scrollViewRef={scrollViewRef} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}>
         <View style={s.container}>
           <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8}}>
             {schoolInfo.schoolName === '선린인터넷고' ? <SunrinLogo width={22} height={22} /> : <Logo width={22} height={22} />}

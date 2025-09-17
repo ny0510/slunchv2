@@ -1,6 +1,7 @@
 import {ANDROID_MEAL_NATIVE_AD_UNIT_ID, ANDROID_NOTI_BANNER_AD_UNIT_ID, IOS_NOTI_BANNER_AD_UNIT_ID, IOS_NOTI_NATIVE_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {useScrollToTop} from '@/hooks/useScrollToTop';
 import {Platform, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
 import TouchableScale from 'react-native-touchable-scale';
 
@@ -18,7 +19,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 
-const Notifications = ({onReadNotification}: {onReadNotification: () => void}) => {
+const Notifications = ({onReadNotification, setScrollRef}: {onReadNotification: () => void; setScrollRef?: (ref: any) => void}) => {
   const [expandedIndices, setExpandedIndices] = useState<number[]>([]);
   const [noti, setNoti] = useState<Notification[]>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -26,6 +27,10 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
   const [loading, setLoading] = useState<boolean>(true);
 
   const {theme} = useTheme();
+  const scrollViewRef = useRef<any>(null);
+
+  // Use the scroll-to-top hook
+  useScrollToTop(scrollViewRef, setScrollRef);
 
   const fetchReadNotifications = async () => {
     try {
@@ -81,6 +86,7 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
     <Container
       scrollView
       bounce
+      scrollViewRef={scrollViewRef}
       style={{paddingHorizontal: 0}}
       refreshControl={
         <RefreshControl

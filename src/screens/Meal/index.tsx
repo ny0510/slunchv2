@@ -219,7 +219,7 @@ const MealCard = ({date, isToday, meal, mealType, showAllergy, onLongPress}: {da
       );
     }
 
-    const allergyInfo = showAllergy && mealItem.allergy && mealItem.allergy.length > 0 ? ` (${mealItem.allergy.map(allergy => allergy.code).join(', ')})` : '';
+    const allergyInfo = showAllergy && mealItem.allergy && mealItem.allergy.length > 0 ? ` ${mealItem.allergy.map(allergy => allergy.code).join(', ')}` : '';
 
     return (
       <View key={index} style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
