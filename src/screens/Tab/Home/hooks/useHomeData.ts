@@ -213,12 +213,12 @@ export const useHomeData = () => {
     }
   }, [classChangedTrigger, fetchData, setClassChangedTrigger]);
 
-  // 초기 데이터 로드
+  // 초기 데이터 로드 및 학교/학급 정보 변경 시 재로드
   useEffect(() => {
-    if (schoolInfo && classInfo) {
+    if (schoolInfo && classInfo && schoolInfo.comciganCode && classInfo.grade && classInfo.class) {
       fetchData();
     }
-  }, [schoolInfo, classInfo]); // fetchData를 의존성에 추가하면 무한 루프가 될 수 있으므로 조건부로 실행
+  }, [schoolInfo?.comciganCode, schoolInfo?.neisCode, classInfo?.grade, classInfo?.class]); // 특정 속성만 의존성에 추가하여 실제 변경 시만 실행
 
   return {
     ...state,

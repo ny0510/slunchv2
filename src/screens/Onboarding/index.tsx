@@ -10,6 +10,7 @@ import {comciganSchoolSearch, getClassList, neisSchoolSearch, removeFcmToken} fr
 import Loading from '@/components/Loading';
 import SlotMachine from '@/components/SlotMachine';
 import {useTheme} from '@/contexts/ThemeContext';
+import {useUser} from '@/contexts/UserContext';
 import {useFirstOpen} from '@/hooks/useFirstOpen';
 import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
@@ -271,6 +272,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
 
   const {completeOnboarding} = useFirstOpen();
   const {theme, typography} = useTheme();
+  const {refreshUserData} = useUser();
   const s = createStyles(theme, typography);
 
   const classScrollPickerRef = useRef<any>(null);
@@ -379,10 +381,16 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
         await completeOnboarding();
       }
 
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'Tab'}],
-      });
+      // Refresh user data in context to ensure Home screen gets updated data
+      refreshUserData();
+
+      // Small delay to ensure context is updated before navigation
+      setTimeout(() => {
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'Tab'}],
+        });
+      }, 100);
     } catch (error) {
       handleError(error, '학교 정보를 불러오는 중 오류가 발생했어요.');
     } finally {
