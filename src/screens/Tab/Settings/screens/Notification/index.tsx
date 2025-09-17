@@ -189,10 +189,10 @@ const Notification = () => {
                 circleBorderInactiveColor={theme.border}
                 backgroundActive={theme.highlight}
                 backgroundInactive={theme.border}
-                changeValueImmediately={true}
+                circleActiveColor={'#fff'}
+                circleInActiveColor={'#fff'}
                 renderActiveText={false}
                 renderInActiveText={false}
-                switchBorderRadius={20}
               />
             </View>
             <Content title="알림 시간 변경" arrow onPress={openBottomSheet} disabled={!isEnabled} arrowText={dayjs(time).format('A hh:mm')} />
@@ -213,7 +213,10 @@ const Notification = () => {
           keyboardBehavior="interactive"
           keyboardBlurBehavior="restore">
           <BottomSheetView style={{paddingHorizontal: 18, paddingBottom: 12, backgroundColor: theme.card, justifyContent: 'center', alignItems: 'center'}}>
-            <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600', alignSelf: 'flex-start'}]}>알림 시간 변경</Text>
+            <View style={{gap: 4, width: '100%'}}>
+              <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600', alignSelf: 'flex-start'}]}>알림 시간 변경</Text>
+              <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', alignSelf: 'flex-start'}]}>원하는 시간으로 설정해보세요.</Text>
+            </View>
             <DatePicker mode="time" date={time} theme="dark" dividerColor={theme.secondaryText} onDateChange={setTime} />
           </BottomSheetView>
         </BottomSheet>

@@ -231,9 +231,9 @@ const Settings = () => {
           keyboardBlurBehavior="restore">
           <BottomSheetView style={{paddingHorizontal: 18, paddingBottom: 12}}>
             <View style={{gap: 20, flex: 1}}>
-              <View>
-                <Text style={[typography.title, {color: theme.primaryText}]}>학급 변경</Text>
-                <Text style={[typography.subtitle, {color: theme.secondaryText}]}>변경할 학년과 반을 선택해주세요</Text>
+              <View style={{gap: 4, width: '100%'}}>
+                <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600', alignSelf: 'flex-start'}]}>학급 변경</Text>
+                <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', alignSelf: 'flex-start'}]}>변경할 학년과 반을 선택해주세요.</Text>
               </View>
 
               {isLoading ? (
