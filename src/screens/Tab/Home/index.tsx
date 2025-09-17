@@ -265,7 +265,7 @@ const Home = () => {
       return (
         <View key={index} style={{flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 3}}>
           <View style={{width: 4, height: 4, borderRadius: 2, backgroundColor: theme.secondaryText}} />
-          <Text style={{fontSize: 15, fontWeight: '400', color: theme.primaryText, flex: 1}}>{mealItem}</Text>
+          <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', flex: 1}]}>{mealItem}</Text>
         </View>
       );
     }
@@ -346,13 +346,13 @@ const Home = () => {
           <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
 
           <HomeCard title="학사일정" titleIcon={<FontAwesome6 name="calendar" size={16} color={theme.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Schedules')}>
-            {loading ? <LoadingView height={100} /> : schedules.length === 0 ? <Text style={[typography.caption, {color: theme.secondaryText}]}>학사일정이 없어요.</Text> : <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />}
+            {loading ? <LoadingView height={100} /> : schedules.length === 0 ? <Text style={[typography.body, {color: theme.secondaryText}]}>학사일정이 없어요.</Text> : <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />}
           </HomeCard>
           <HomeCard title="급식" titleIcon={<FontAwesome6 name="utensils" size={16} color={theme.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Meal')}>
             {loading ? (
               <LoadingView height={100} />
             ) : meal.length === 0 ? (
-              <Text style={[typography.caption, {color: theme.secondaryText}]}>급식 정보가 없어요.</Text>
+              <Text style={[typography.body, {color: theme.secondaryText}]}>급식 정보가 없어요.</Text>
             ) : (
               <View style={{gap: 4}}>
                 <FlatList data={meal} renderItem={({item}) => <View>{item.meal.map(renderMealItem)}</View>} scrollEnabled={false} />
@@ -364,7 +364,7 @@ const Home = () => {
               </View>
             )}
           </HomeCard>
-          <Card title="시간표" titleIcon={<FontAwesome6 name="table" size={16} color={theme.primaryText} iconStyle="solid" />}>
+          <Card title="시간표" subtitle="길게 눌러 편집" titleIcon={<FontAwesome6 name="table" size={16} color={theme.primaryText} iconStyle="solid" />}>
             {loading ? (
               <LoadingView height={250} />
             ) : timetable.length === 0 ? (
@@ -521,7 +521,7 @@ const ScheduleItem = ({item}: {item: Schedule}) => {
       <View style={{flexDirection: 'row', alignItems: 'flex-start', gap: 12}}>
         <View style={{width: 4, height: 4, borderRadius: 2, backgroundColor: theme.secondaryText, marginTop: 8}} />
         <View style={{flex: 1, gap: 2}}>
-          <Text style={{fontSize: 16, fontWeight: '500', color: theme.primaryText}}>{item.schedule}</Text>
+          <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', flex: 1}]}>{item.schedule}</Text>
           <Text style={{fontSize: 14, fontWeight: '400', color: theme.secondaryText}}>
             {startDate.format('M월 D일')}
             {!isSameDay && ` ~ ${endDate.format('M월 D일')}`}

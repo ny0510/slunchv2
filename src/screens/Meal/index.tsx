@@ -110,6 +110,8 @@ const Meal = () => {
     <>
       <Container scrollView bounce={!loading} scrollViewRef={scrollViewRef} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}>
         <View style={{gap: 24, width: '100%'}}>
+          <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
+
           {meal?.length > 0 ? (
             <View style={{gap: 12}}>
               {meal.map((m, index) => {

@@ -209,12 +209,23 @@ const Settings = () => {
     <>
       <Container scrollView bounce>
         <View style={{gap: 18, width: '100%', marginVertical: 16}}>
-          <ProfileSection />
+          {/* 계정 섹션 */}
           <View style={{gap: 8}}>
+            <ProfileSection />
+          </View>
+
+          {/* 설정 섹션 */}
+          <View style={{gap: 8}}>
+            <Text style={[typography.caption, {color: theme.secondaryText, paddingHorizontal: 16, marginBottom: 4}]}>설정</Text>
             <SettingCard onClassChangePress={handleClassChangePress} />
+            {developerOptions && <DeveloperSettingCard />}
+          </View>
+
+          {/* 정보 섹션 */}
+          <View style={{gap: 8}}>
+            <Text style={[typography.caption, {color: theme.secondaryText, paddingHorizontal: 16, marginBottom: 4}]}>정보</Text>
             <MyInfoCard schoolInfo={schoolInfo} classInfo={classInfo} />
             <AppInfoCard onDeveloperOptionsEnabled={enabled => setDeveloperOptions(enabled)} />
-            {developerOptions && <DeveloperSettingCard />}
           </View>
         </View>
       </Container>
@@ -248,7 +259,7 @@ const Settings = () => {
                     ref={gradeScrollPickerRef}
                     dataSource={gradeList}
                     wrapperBackground={'transparent'}
-                    itemHeight={50}
+                    itemHeight={40}
                     highlightColor={theme.secondaryText}
                     highlightBorderWidth={1}
                     onValueChange={handleGradeChange}
@@ -268,7 +279,7 @@ const Settings = () => {
                     ref={classScrollPickerRef}
                     dataSource={classList[gradeList.indexOf(selectedGrade)] || []}
                     wrapperBackground={'transparent'}
-                    itemHeight={50}
+                    itemHeight={40}
                     highlightColor={theme.secondaryText}
                     highlightBorderWidth={1}
                     onValueChange={handleClassChange}
@@ -289,16 +300,15 @@ const Settings = () => {
 
               <TouchableOpacity
                 style={{
-                  backgroundColor: theme.border,
-                  paddingVertical: 14,
-                  paddingHorizontal: 20,
+                  flex: 1,
+                  backgroundColor: theme.background,
+                  padding: 12,
                   borderRadius: 12,
-                  flexDirection: 'row',
+                  borderWidth: 1,
+                  borderColor: theme.border,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: 8,
                   opacity: isButtonDisabled || isLoading ? 0.5 : 1,
-                  minHeight: 44,
                 }}
                 onPress={handleSaveClassChange}
                 disabled={isButtonDisabled || isLoading}
@@ -306,7 +316,6 @@ const Settings = () => {
                 delayPressIn={0}
                 hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
                 <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '700'}]}>변경하기</Text>
-                <FontAwesome6 name="check" iconStyle="solid" size={16} color={theme.primaryText} />
               </TouchableOpacity>
             </View>
           </BottomSheetView>

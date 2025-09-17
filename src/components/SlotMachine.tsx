@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
-import Reanimated, {Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Reanimated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 interface Props {
   list: string[];
@@ -13,29 +13,42 @@ interface Props {
 const SlotMachine = ({list, height = 45, delay = 1500, duration = 500, style}: Props) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const translateY = useSharedValue(-height);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const animationRef = useRef<boolean>(true);
+
+  list = list.sort(() => Math.random() - 0.5);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{translateY: translateY.value}],
   }));
 
-  const animateStep = () => {
-    translateY.value = withTiming(0, {duration: duration, easing: Easing.ease}, finished => {
-      if (finished) {
-        runOnJS(handleAnimationEnd)();
-      }
-    });
-  };
+  const animateStep = useCallback(() => {
+    if (!animationRef.current) return;
 
-  const handleAnimationEnd = () => {
-    setCurrentIndex(prev => (prev - 1 + list.length) % list.length);
-    translateY.value = -height;
-    setTimeout(animateStep, delay);
-  };
+    translateY.value = withTiming(0, {duration: duration, easing: Easing.ease});
+
+    // Use setTimeout to handle the animation completion
+    setTimeout(() => {
+      if (animationRef.current) {
+        setCurrentIndex(prev => (prev - 1 + list.length) % list.length);
+        translateY.value = -height;
+        timeoutRef.current = setTimeout(animateStep, delay);
+      }
+    }, duration);
+  }, [translateY, duration, height, delay, list.length]);
 
   useEffect(() => {
-    animateStep();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // Start the animation
+    timeoutRef.current = setTimeout(animateStep, delay);
+
+    // Cleanup function to stop animation and clear timeout when component unmounts
+    return () => {
+      animationRef.current = false;
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [animateStep, delay]);
 
   const prevIndex = (currentIndex - 1 + list.length) % list.length;
   const nextIndex = (currentIndex + 1) % list.length;

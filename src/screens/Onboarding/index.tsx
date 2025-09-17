@@ -38,7 +38,26 @@ const LONG_PRESS_DELAY = 2000;
 const SLOT_MACHINE_DELAY = 1500;
 const SLOT_MACHINE_DURATION = 300;
 
-const INTRO_MESSAGES = ['🍽️ 급식 뭐 나오지?', '📚 오늘 1교시가,,', '📅 중요한 학사일정은?', '🎈 곧 있을 학교 행사는?'];
+const INTRO_MESSAGES = [
+  '🍽️ 급식 뭐 나오지?',
+  '📚 오늘 1교시가..',
+  '📅 중요한 학사일정은?',
+  '🎈 곧 있을 학교 행사는?',
+  '⏰ 내일 시간표는?',
+  '🍕 오늘 점심 맛있을까?',
+  '📝 시험 언제였지?',
+  '🎒 내일 준비물은?',
+  '🏃 체육 있는 날인가?',
+  '📖 과제 뭐 있었지?',
+  '🚌 몇 시에 끝나지?',
+  '☔ 우산 챙겨야 하나?',
+  '📌 오늘 공지사항은?',
+  '🎯 놓친 일정 없나?',
+  '💭 방과후 뭐하지?',
+  '🤷 오늘 뭐 먹지?',
+  '📚 다음 수업 뭐더라?',
+  '🎪 이번 주 행사는?',
+]; // const INTRO_MESSAGES = ['🚀 학교생활이 편해진다', '✨ 모든 정보를 한눈에', '📱 스마트한 학교생활', '🎯 놓치는 일정이 없도록'];
 
 // Utility functions
 const logScreenView = (screenName: string, screenClass: string) => {
@@ -136,28 +155,73 @@ export const IntroScreen = () => {
   }, [navigation]);
 
   useEffect(() => {
-    logScreenView('인트로 스크린', 'Intro');
+    logScreenView('온보딩 스크린', 'Onboarding');
   }, []);
 
   return (
     <View style={s.introContainer}>
-      {isDark && <LinearGradient colors={[theme.background, 'transparent']} style={{position: 'absolute', top: 0, left: 0, right: 0, height: 150, zIndex: 10}} />}
-      <View style={s.onboardingImageContainer}>
-        <ImageBackground blurRadius={Platform.OS === 'ios' ? 8 : 5} source={isDark ? require('@/assets/images/onboarding_dark.png') : require('@/assets/images/onboarding_white.png')} style={s.onboardingImage} />
+      <LinearGradient colors={[theme.background, 'transparent']} style={s.introGradientTop} />
+      <View style={s.introImageContainer}>
+        <ImageBackground blurRadius={Platform.OS === 'ios' ? 10 : 6} source={isDark ? require('@/assets/images/onboarding_dark.png') : require('@/assets/images/onboarding_white.png')} style={s.introBackgroundImage} />
       </View>
-      <LinearGradient colors={['transparent', theme.background]} style={{position: 'absolute', bottom: 0, left: 0, right: 0, height: 250}} />
-      <View style={s.introContent}>
-        <View style={{gap: 8}}>
-          <SlotMachine list={INTRO_MESSAGES} style={s.introTitle} delay={SLOT_MACHINE_DELAY} duration={SLOT_MACHINE_DURATION} />
-          <View>
-            <Text style={[typography.body, {color: theme.primaryText, fontWeight: '600'}]}>챙기기 번거로운 학사일정, 시간표 및 급식을 간편하게</Text>
-            <Text style={[typography.body, {color: theme.primaryText, fontWeight: '600'}]}>확인하세요!</Text>
+
+      <LinearGradient colors={['transparent', theme.background, theme.background]} style={s.introGradientBottom} />
+
+      <View style={s.introContentWrapper}>
+        <View style={s.introTopContent}>
+          <SlotMachine list={INTRO_MESSAGES} style={s.introSlotMachine} delay={SLOT_MACHINE_DELAY} duration={SLOT_MACHINE_DURATION} />
+
+          <View style={s.introFeatureGrid}>
+            <LinearGradient colors={[`${theme.highlight}15`, `${theme.highlight}05`]} style={s.introFeatureCard} start={{x: 0, y: 0}} end={{x: 1, y: 1}}>
+              <View style={[s.introFeatureIconWrapper, {backgroundColor: '#FF6B6B'}]}>
+                <FontAwesome6 name="utensils" iconStyle="solid" size={22} color={theme.white} />
+              </View>
+              <View style={s.introFeatureContent}>
+                <Text style={s.introFeatureTitle}>급식</Text>
+              </View>
+            </LinearGradient>
+
+            <LinearGradient colors={[`${theme.highlight}15`, `${theme.highlight}05`]} style={s.introFeatureCard} start={{x: 0, y: 0}} end={{x: 1, y: 1}}>
+              <View style={[s.introFeatureIconWrapper, {backgroundColor: '#4ECDC4'}]}>
+                <FontAwesome6 name="clock" iconStyle="solid" size={22} color={theme.white} />
+              </View>
+              <View style={s.introFeatureContent}>
+                <Text style={s.introFeatureTitle}>시간표</Text>
+              </View>
+            </LinearGradient>
+
+            <LinearGradient colors={[`${theme.highlight}15`, `${theme.highlight}05`]} style={s.introFeatureCard} start={{x: 0, y: 0}} end={{x: 1, y: 1}}>
+              <View style={[s.introFeatureIconWrapper, {backgroundColor: '#95e1aa'}]}>
+                <FontAwesome6 name="calendar-check" iconStyle="solid" size={22} color={theme.white} />
+              </View>
+              <View style={s.introFeatureContent}>
+                <Text style={s.introFeatureTitle}>학사일정</Text>
+              </View>
+            </LinearGradient>
+
+            <LinearGradient colors={[`${theme.highlight}15`, `${theme.highlight}05`]} style={s.introFeatureCard} start={{x: 0, y: 0}} end={{x: 1, y: 1}}>
+              <View style={[s.introFeatureIconWrapper, {backgroundColor: '#a8bde6'}]}>
+                <FontAwesome6 name="id-card" iconStyle="solid" size={22} color={theme.white} />
+              </View>
+              <View style={s.introFeatureContent}>
+                <Text style={s.introFeatureTitle}>모바일 학생증</Text>
+                <Text style={s.introFeatureDesc}>*선린인터넷고등학교 한정</Text>
+              </View>
+            </LinearGradient>
           </View>
         </View>
-        <TouchableOpacity style={s.nextButton} onPress={handlePress} onLongPress={handleLongPress} delayLongPress={LONG_PRESS_DELAY}>
-          <Text style={s.nextButtonText}>시작하기</Text>
-          <FontAwesome6 name="angle-right" iconStyle="solid" size={18} color={theme.primaryText} />
-        </TouchableOpacity>
+
+        <View style={s.introBottomContent}>
+          <View style={s.introTextSection}>
+            <Text style={s.introMainTitle}>NYL</Text>
+            <Text style={s.introSubText}>급식, 시간표, 학사일정을 한눈에</Text>
+          </View>
+
+          <TouchableOpacity style={s.introStartButton} onPress={handlePress} onLongPress={handleLongPress} delayLongPress={LONG_PRESS_DELAY} activeOpacity={0.8}>
+            <Text style={s.introStartButtonText}>시작하기</Text>
+            <FontAwesome6 name="arrow-right" iconStyle="solid" size={16} color={theme.white} />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -232,30 +296,45 @@ export const SchoolSearchScreen = ({route}: StackScreenProps<RootStackParamList,
   }, [isFirstOpen]);
 
   return (
-    <View style={s.inputContainer}>
-      <View style={s.inputContentTop}>
-        <View>
-          <Text style={s.title}>학교를 선택해주세요</Text>
-          <Text style={s.subtitle}>급식 정보를 받아오기 위해 필요해요</Text>
-          <Text style={s.subtitle}>컴시간알리미에 등록된 학교만 검색 가능해요</Text>
+    <View style={s.searchContainer}>
+      <View style={s.searchHeader}>
+        <FontAwesome6 name="school" iconStyle="solid" size={32} color={theme.highlight} />
+        <View style={s.searchHeaderText}>
+          <Text style={s.searchTitle}>학교를 검색해주세요</Text>
+          <Text style={s.searchSubtitle}>{'재학중인 학교를 선택하시면\n급식과 시간표 정보를 받아올 수 있어요'}</Text>
         </View>
-        <View style={s.inputContent}>
-          <View style={s.textInputContainer}>
-            <TextInput placeholder="학교명" value={inputText} onKeyPress={() => setIsLoading(true)} onChangeText={setInputText} maxLength={25} autoCorrect={false} autoCapitalize="none" placeholderTextColor={theme.secondaryText} style={s.textInput} />
-            <TouchableOpacity onPress={handleClearInput}>
-              <FontAwesome6 name="delete-left" iconStyle="solid" size={18} color={theme.primaryText} />
+      </View>
+
+      <View style={s.searchInputWrapper}>
+        <View style={s.searchInputContainer}>
+          <FontAwesome6 name="magnifying-glass" iconStyle="solid" size={16} color={theme.secondaryText} />
+          <TextInput placeholder="학교명을 입력하세요" value={inputText} onChangeText={setInputText} maxLength={25} autoCorrect={false} autoCapitalize="none" placeholderTextColor={theme.secondaryText} style={s.searchInput} />
+          {inputText.length > 0 && (
+            <TouchableOpacity onPress={handleClearInput} activeOpacity={0.7}>
+              <FontAwesome6 name="circle-xmark" iconStyle="solid" size={18} color={theme.secondaryText} />
             </TouchableOpacity>
-          </View>
-          <SearchEmptyState isLoading={isLoading} hasInput={inputText.length > 0} hasResults={schoolList.length > 0} styles={s} />
-          {schoolList.length > 0 && (
-            <FlatList
-              style={s.schoolFlatList}
-              data={schoolList}
-              keyExtractor={item => item.schoolCode.toString()}
-              renderItem={({item}) => <SchoolListItem item={item} onPress={handleSchoolPress} schoolNameStyle={s.schoolFlatListNameText} addressStyle={s.schoolFlatListAddrText} itemStyle={s.schoolFlatListItem} />}
-            />
           )}
         </View>
+      </View>
+
+      <View style={s.searchResultContainer}>
+        <SearchEmptyState isLoading={isLoading} hasInput={inputText.length > 0} hasResults={schoolList.length > 0} styles={s} />
+        {schoolList.length > 0 && (
+          <FlatList
+            style={s.searchResultList}
+            data={schoolList}
+            keyExtractor={item => item.schoolCode.toString()}
+            renderItem={({item}) => (
+              <TouchableOpacity style={s.searchResultItem} onPress={() => handleSchoolPress(item)} activeOpacity={0.7}>
+                <View style={s.searchResultContent}>
+                  <Text style={s.searchResultName}>{item.schoolName}</Text>
+                  <Text style={s.searchResultAddress}>{item.region}</Text>
+                </View>
+                <FontAwesome6 name="angle-right" iconStyle="solid" size={16} color={theme.secondaryText} />
+              </TouchableOpacity>
+            )}
+          />
+        )}
       </View>
     </View>
   );
@@ -399,45 +478,76 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
   };
 
   return (
-    <View style={s.inputContainer}>
-      <View style={s.inputContentTop}>
-        <View>
-          <Text style={s.title}>학년과 반을 선택해주세요</Text>
-          <Text style={s.subtitle}>시간표 정보를 받아오기 위해 필요해요</Text>
+    <View style={s.classSelectContainer}>
+      <View style={s.classSelectContent}>
+        <View style={s.classSelectHeader}>
+          <FontAwesome6 name="users" iconStyle="solid" size={32} color={theme.highlight} />
+          <View style={s.classSelectHeaderText}>
+            <Text style={s.classSelectTitle}>학급 정보를 선택해주세요</Text>
+            <Text style={s.classSelectSubtitle}>{school.schoolName}</Text>
+          </View>
         </View>
-        <View style={s.inputContent}>
+
+        <View style={s.classSelectPickerWrapper}>
           {isLoading ? (
             <View style={s.centerView}>
               <Loading />
             </View>
           ) : (
-            <View style={s.scrollPickerContainer}>
-              <ScrollPicker
-                dataSource={gradeList}
-                wrapperBackground={'transparent'}
-                itemHeight={50}
-                highlightColor={theme.secondaryText}
-                highlightBorderWidth={1}
-                onValueChange={handleGradeChange}
-                renderItem={(data, index, isSelected) => <Text style={{fontSize: 20, color: isSelected ? theme.primaryText : theme.secondaryText, fontWeight: '500'}}>{data}학년</Text>}
-              />
-              <ScrollPicker
-                dataSource={classList[gradeList.indexOf(selectedGrade)]}
-                wrapperBackground={'transparent'}
-                itemHeight={50}
-                highlightColor={theme.secondaryText}
-                highlightBorderWidth={1}
-                onValueChange={handleClassChange}
-                ref={classScrollPickerRef}
-                renderItem={(data, index, isSelected) => <Text style={{fontSize: 20, color: isSelected ? theme.primaryText : theme.secondaryText, fontWeight: '500'}}>{data}반</Text>}
-              />
-            </View>
+            <>
+              <View style={s.classSelectPickerContainer}>
+                <ScrollPicker
+                  dataSource={gradeList}
+                  wrapperBackground={'transparent'}
+                  itemHeight={50}
+                  highlightColor={theme.secondaryText}
+                  highlightBorderWidth={1}
+                  onValueChange={handleGradeChange}
+                  selectedIndex={gradeList.indexOf(selectedGrade)}
+                  renderItem={(data, _, isSelected) => (
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        color: isSelected ? theme.primaryText : theme.secondaryText,
+                        fontWeight: '500',
+                      }}>
+                      {data}학년
+                    </Text>
+                  )}
+                />
+                <ScrollPicker
+                  dataSource={classList[gradeList.indexOf(selectedGrade)] || []}
+                  wrapperBackground={'transparent'}
+                  itemHeight={50}
+                  highlightColor={theme.secondaryText}
+                  highlightBorderWidth={1}
+                  onValueChange={handleClassChange}
+                  selectedIndex={classList[gradeList.indexOf(selectedGrade)]?.indexOf(selectedClass) || 0}
+                  ref={classScrollPickerRef}
+                  renderItem={(data, _, isSelected) => (
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        color: isSelected ? theme.primaryText : theme.secondaryText,
+                        fontWeight: '500',
+                      }}>
+                      {data}반
+                    </Text>
+                  )}
+                />
+              </View>
+
+              <View style={s.classSelectInfo}>
+                <FontAwesome6 name="circle-info" iconStyle="solid" size={14} color={theme.secondaryText} />
+                <Text style={s.classSelectInfoText}>시간표와 학급 알림을 위해 필요한 정보예요</Text>
+              </View>
+            </>
           )}
         </View>
       </View>
-      <TouchableOpacity style={s.nextButton} onPress={handlePress} disabled={isButtonDisabled}>
-        <Text style={s.nextButtonText}>계속하기</Text>
-        <FontAwesome6 name="angle-right" iconStyle="solid" size={18} color={theme.primaryText} />
+
+      <TouchableOpacity style={[s.classSelectButton, isButtonDisabled && s.classSelectButtonDisabled]} onPress={handlePress} disabled={isButtonDisabled} activeOpacity={0.8}>
+        <Text style={s.classSelectButtonText}>시작하기</Text>
       </TouchableOpacity>
     </View>
   );

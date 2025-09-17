@@ -8,7 +8,7 @@ const Content = ({title, content, arrow, arrowText, onPress, disabled}: {title: 
   const {theme, typography} = useTheme();
 
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.7} disabled={disabled || !onPress} delayPressIn={0} delayPressOut={0} hitSlop={{top: 12, bottom: 12, left: 12, right: 12}} delayLongPress={500}>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.7} disabled={disabled || !onPress} delayPressIn={0} delayPressOut={0} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
       <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
         <Text style={[typography.body, {color: disabled ? theme.secondaryText : theme.primaryText}]}>{title}</Text>
         <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8}}>

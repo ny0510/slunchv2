@@ -95,25 +95,29 @@ const Schedules = () => {
     <Loading fullScreen />
   ) : (
     <Container scrollView bounce={!loading} scrollViewRef={scrollViewRef} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}>
-      <View style={{gap: 12, width: '100%'}}>
+      <View style={{gap: 24, width: '100%'}}>
+        <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
+
         {schedules?.length > 0 ? (
-          schedules.map((item, index) => {
-            const isToday = today.isSame(item.date.start, 'day');
+          <View style={{gap: 12}}>
+            {schedules.map((item, index) => {
+              const isToday = today.isSame(item.date.start, 'day');
 
-            // 광고 삽입 로직
-            const shouldShowAd = AD_FREQUENCY > 0 && index > 0 && index % AD_FREQUENCY === 0 && Math.floor(index / AD_FREQUENCY) <= MAX_ADS;
+              // 광고 삽입 로직
+              const shouldShowAd = AD_FREQUENCY > 0 && index > 0 && index % AD_FREQUENCY === 0 && Math.floor(index / AD_FREQUENCY) <= MAX_ADS;
 
-            return (
-              <Fragment key={index}>
-                {shouldShowAd && (
-                  <View style={{marginBottom: 16}}>
-                    <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
-                  </View>
-                )}
-                <TimelineItem item={item} isLast={index === schedules.length - 1} isToday={isToday} getScheduleType={getScheduleType} getScheduleColor={getScheduleColor} />
-              </Fragment>
-            );
-          })
+              return (
+                <Fragment key={index}>
+                  {shouldShowAd && (
+                    <View style={{marginBottom: 16}}>
+                      <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
+                    </View>
+                  )}
+                  <TimelineItem item={item} isLast={index === schedules.length - 1} isToday={isToday} getScheduleType={getScheduleType} getScheduleColor={getScheduleColor} />
+                </Fragment>
+              );
+            })}
+          </View>
         ) : (
           <View style={{alignItems: 'center', justifyContent: 'center', width: '100%', paddingVertical: 40}}>
             <FontAwesome6 name="calendar-xmark" size={48} color={theme.secondaryText} iconStyle="solid" />
