@@ -26,6 +26,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {NavigationProp, useFocusEffect, useNavigation} from '@react-navigation/native';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+
+dayjs.extend(isSameOrAfter);
 
 const Home = () => {
   const [timetable, setTimetable] = useState<Timetable[][]>([]);
@@ -146,7 +149,15 @@ const Home = () => {
 
       // 학사일정 처리
       if (scheduleResult.status === 'fulfilled') {
-        const scheduleResponse = scheduleResult.value?.length > 0 ? scheduleResult.value.filter(schedule => dayjs(schedule.date.start).isAfter(today)) : [];
+        const scheduleResponse =
+          scheduleResult.value?.length > 0
+            ? scheduleResult.value.filter(schedule => {
+                const startDate = dayjs(schedule.date.start);
+                const endDate = dayjs(schedule.date.end || schedule.date.start);
+                // 오늘이 일정 기간 내에 있거나 아직 시작하지 않은 일정만 표시
+                return startDate.isSameOrAfter(today, 'day') || (startDate.isBefore(today, 'day') && endDate.isSameOrAfter(today, 'day'));
+              })
+            : [];
         setSchedules(scheduleResponse);
       } else {
         console.error('Error fetching schedules:', scheduleResult.reason);
@@ -251,19 +262,23 @@ const Home = () => {
   const renderMealItem = (mealItem: string | MealItem, index: number) => {
     if (typeof mealItem === 'string') {
       return (
-        <Text key={index} style={[typography.body, {color: theme.primaryText, fontWeight: 300}]}>
-          - {mealItem}
-        </Text>
+        <View key={index} style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+          <View style={{width: 4, height: 4, borderRadius: 2, backgroundColor: theme.secondaryText}} />
+          <Text style={[typography.body, {color: theme.primaryText, fontWeight: 300, flex: 1}]}>{mealItem}</Text>
+        </View>
       );
     }
 
     const allergyInfo = showAllergy && mealItem.allergy && mealItem.allergy.length > 0 ? ` (${mealItem.allergy.map(allergy => allergy.code).join(', ')})` : '';
 
     return (
-      <Text key={index} style={[typography.body, {color: theme.primaryText, fontWeight: 300}]}>
-        - {mealItem.food}
-        <Text style={typography.small}>{allergyInfo}</Text>
-      </Text>
+      <View key={index} style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+        <View style={{width: 4, height: 4, borderRadius: 2, backgroundColor: theme.secondaryText}} />
+        <Text style={[typography.body, {color: theme.primaryText, fontWeight: 300, flex: 1}]}>
+          {mealItem.food}
+          <Text style={typography.small}>{allergyInfo}</Text>
+        </Text>
+      </View>
     );
   };
 
@@ -491,13 +506,16 @@ const ScheduleItem = ({item}: {item: Schedule}) => {
   const {theme, typography} = useTheme();
 
   return (
-    <View style={s.scheduleItemContainer}>
-      <Text style={[typography.baseTextStyle, {color: theme.primaryText, fontWeight: 500, fontSize: 16}]}>
-        {startDate.format('M/D')}
-        {!isSameDay && ` ~ ${endDate.format('M/D')}`}
-      </Text>
-      <Text style={[typography.baseTextStyle, {color: theme.primaryText, fontWeight: 300, fontSize: 16}]}>{item.schedule}</Text>
-      <Text style={[typography.caption, {color: theme.secondaryText}]}>{endDate.diff(startDate, 'day') > 0 && `(${endDate.diff(startDate, 'day') + 1}일)`}</Text>
+    <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+      <View style={{width: 4, height: 4, borderRadius: 2, backgroundColor: theme.secondaryText}} />
+      <View style={s.scheduleItemContainer}>
+        <Text style={[typography.baseTextStyle, {color: theme.secondaryText, fontWeight: 500, fontSize: 16}]}>
+          {startDate.format('M/D')}
+          {!isSameDay && ` ~ ${endDate.format('M/D')}`}
+        </Text>
+        <Text style={[typography.baseTextStyle, {color: theme.primaryText, fontWeight: 300, fontSize: 16}]}>{item.schedule}</Text>
+        <Text style={[typography.caption, {color: theme.secondaryText}]}>{endDate.diff(startDate, 'day') > 0 && `(${endDate.diff(startDate, 'day') + 1}일)`}</Text>
+      </View>
     </View>
   );
 };

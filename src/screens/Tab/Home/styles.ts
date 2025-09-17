@@ -16,7 +16,7 @@ export const styles = StyleSheet.create({
   },
   scheduleItemContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     gap: 4,
   },
   timetableRow: {

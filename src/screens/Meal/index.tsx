@@ -1,20 +1,15 @@
-import {ANDROID_HOME_BANNER_AD_UNIT_ID, ANDROID_MEAL_NATIVE_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID, IOS_MEAL_NATIVE_AD_UNIT_ID} from '@env';
+import {ANDROID_HOME_BANNER_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
 import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
-import {Platform, RefreshControl, ScrollView, Text, View} from 'react-native';
-import {FlatList} from 'react-native-gesture-handler';
+import {Platform, RefreshControl, ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import {trigger} from 'react-native-haptic-feedback';
 import Share from 'react-native-share';
-// import TouchableScale from '@/components/TouchableScale';
-import TouchableScale from 'react-native-touchable-scale';
 
 import Content from '../Tab/Settings/components/Content';
 import {getMeal} from '@/api';
 import BannerAdCard from '@/components/BannerAdCard';
-import Card from '@/components/Card';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
-import NativeAdCard from '@/components/NaviveAdCard';
 import {useTheme} from '@/contexts/ThemeContext';
 import {clearCache} from '@/lib/cache';
 import {showToast} from '@/lib/toast';
@@ -25,6 +20,7 @@ import BottomSheet, {BottomSheetBackdrop, BottomSheetView} from '@gorhom/bottom-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Clipboard from '@react-native-clipboard/clipboard';
 import analytics from '@react-native-firebase/analytics';
+import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 
 const Meal = () => {
@@ -42,6 +38,10 @@ const Meal = () => {
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  // 광고 빈도 설정 (N개마다 1개 광고 표시)
+  const AD_FREQUENCY = 4;
+  const MAX_ADS = 10;
 
   useEffect(() => {
     (async () => {
@@ -90,23 +90,14 @@ const Meal = () => {
     setRefreshing(false);
   }, [fetchData]);
 
-  const renderMealItem = (mealItem: string | MealItem, index: number) => {
-    if (typeof mealItem === 'string') {
-      return (
-        <Text key={index} style={[typography.body, {color: theme.primaryText, fontWeight: '300'}]}>
-          - {mealItem}
-        </Text>
-      );
-    }
+  // 급식 유형별 색상 지정
+  const getMealTypeColor = (mealType?: string) => {
+    if (!mealType) return theme.primaryText;
 
-    const allergyInfo = showAllergy && mealItem.allergy && mealItem.allergy.length > 0 ? ` ${mealItem.allergy.map(allergy => allergy.code).join(', ')}` : '';
-
-    return (
-      <Text key={index} style={[typography.body, {color: theme.primaryText, fontWeight: '300'}]}>
-        - {mealItem.food}
-        <Text style={[typography.small, {color: theme.secondaryText}]}>{allergyInfo}</Text>
-      </Text>
-    );
+    if (mealType.includes('조식')) return '#FF9500'; // 주황색
+    if (mealType.includes('중식')) return theme.highlight; // 파란색
+    if (mealType.includes('석식')) return theme.highlightSecondary; // 보라색
+    return theme.primaryText;
   };
 
   const openBottomSheet = (_meal: string, date: string) => {
@@ -121,43 +112,38 @@ const Meal = () => {
 
   const renderBackdrop = useCallback((props: any) => <BottomSheetBackdrop {...props} pressBehavior="close" disappearsOnIndex={-1} />, []);
 
+  const today = dayjs();
+
   return loading ? (
     <Loading fullScreen />
   ) : (
     <>
       <Container scrollView bounce={!loading} scrollViewRef={scrollViewRef} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}>
-        <View style={{gap: 12, width: '100%'}}>
+        <View style={{gap: 24, width: '100%'}}>
           {meal?.length > 0 ? (
-            (() => {
-              // mealCount에 비례하여 광고 개수 동적 계산 (5개마다 1개, 최소 1개, 최대 10개)
-              const mealCount = meal.length;
-              const MAX_ADS = 10;
-              const MIN_ADS = 1;
-              const adsToShow = Math.max(MIN_ADS, Math.min(MAX_ADS, Math.floor(mealCount / 5)));
-              const adIndexes = mealCount <= 1 ? [] : Array.from({length: adsToShow}, (_, idx) => Math.round(((idx + 1) * mealCount) / (adsToShow + 1)));
-
-              return meal.map((m, i) => {
-                const date = dayjs(m.date).format('M월 D일 ddd요일');
+            <View style={{gap: 12}}>
+              {meal.map((m, index) => {
+                const isToday = today.isSame(m.date, 'day');
+                const date = dayjs(m.date);
                 const mealData = m.meal.filter(mealItem => typeof mealItem === 'string' || (mealItem as MealItem).food !== '');
                 const mealText = mealData.map(mealItem => (typeof mealItem === 'string' ? mealItem : (mealItem as MealItem).food)).join('\n');
 
-                const shouldShowAd = adIndexes.includes(i);
+                // 광고 삽입 로직
+                const shouldShowAd = AD_FREQUENCY > 0 && index > 0 && index % AD_FREQUENCY === 0 && Math.floor(index / AD_FREQUENCY) <= MAX_ADS;
 
                 return (
-                  <Fragment key={i}>
+                  <Fragment key={index}>
                     {shouldShowAd && <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />}
-                    <TouchableScale onLongPress={() => openBottomSheet(mealText, date)} activeScale={0.98} tension={40} friction={3}>
-                      <Card title={date}>
-                        <FlatList data={m.meal} renderItem={({item, index}) => renderMealItem(item, index)} scrollEnabled={false} />
-                      </Card>
-                    </TouchableScale>
+                    <MealCard date={date} isToday={isToday} meal={m} mealType={m.type} showAllergy={showAllergy} onLongPress={() => openBottomSheet(mealText, date.format('M월 D일 ddd요일'))} />
                   </Fragment>
                 );
-              });
-            })()
+              })}
+            </View>
           ) : (
-            <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
-              <Text style={[typography.baseTextStyle, {color: theme.primaryText, fontWeight: '300', fontSize: 16}]}>급식 데이터가 없어요.</Text>
+            <View style={{alignItems: 'center', justifyContent: 'center', width: '100%', paddingVertical: 40}}>
+              <FontAwesome6 name="utensils" size={48} color={theme.secondaryText} iconStyle="solid" />
+              <Text style={[typography.body, {color: theme.secondaryText, marginTop: 12}]}>급식 데이터가 없어요.</Text>
+              <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 4}]}>학교에서 제공하지 않는 경우도 있어요.</Text>
             </View>
           )}
         </View>
@@ -174,48 +160,135 @@ const Meal = () => {
           handleIndicatorStyle={{backgroundColor: theme.secondaryText}}
           keyboardBehavior="interactive"
           keyboardBlurBehavior="restore">
-        <BottomSheetView style={{paddingHorizontal: 18, paddingBottom: 12, gap: 16, backgroundColor: theme.card, justifyContent: 'center'}}>
-          <Content
-            title="복사하기"
-            arrow
-            onPress={() => {
-              analytics().logEvent('meal_copy');
-              Clipboard.setString(`🍴${schoolName} ${selectedMealDate} 급식\n\n- ${selectedMeal.split('\n').join('\n- ')}`);
-              showToast('클립보드에 복사되었어요.');
-              bottomSheetRef.current?.close();
-              setIsBottomSheetOpen(false);
-            }}
-          />
-          <Content
-            title="텍스트로 공유하기"
-            arrow
-            onPress={() => {
-              analytics().logEvent('meal_share');
-              Share.open({
-                title: `${schoolName} ${selectedMealDate} 급식`,
-                message: `🍴${schoolName} ${selectedMealDate} 급식\n\n- ${selectedMeal.split('\n').join('\n- ')}`,
-                type: 'text/plain',
-              })
-                .then(res => console.log(res))
-                .catch(err => console.log(err));
-              bottomSheetRef.current?.close();
-              setIsBottomSheetOpen(false);
-            }}
-          />
-          <Content
-            title="이미지로 공유하기"
-            arrow
-            onPress={() => {
-              analytics().logEvent('meal_instagram_share');
-              navigation.navigate('Share', {data: {meal: selectedMeal, date: selectedMealDate, school: schoolName}});
-              bottomSheetRef.current?.close();
-              setIsBottomSheetOpen(false);
-            }}
-          />
-        </BottomSheetView>
+          <BottomSheetView style={{paddingHorizontal: 18, paddingBottom: 12, gap: 16, backgroundColor: theme.card, justifyContent: 'center'}}>
+            <Content
+              title="복사하기"
+              arrow
+              onPress={() => {
+                analytics().logEvent('meal_copy');
+                Clipboard.setString(`🍴${schoolName} ${selectedMealDate} 급식\n\n- ${selectedMeal.split('\n').join('\n- ')}`);
+                showToast('클립보드에 복사되었어요.');
+                bottomSheetRef.current?.close();
+                setIsBottomSheetOpen(false);
+              }}
+            />
+            <Content
+              title="텍스트로 공유하기"
+              arrow
+              onPress={() => {
+                analytics().logEvent('meal_share');
+                Share.open({
+                  title: `${schoolName} ${selectedMealDate} 급식`,
+                  message: `🍴${schoolName} ${selectedMealDate} 급식\n\n- ${selectedMeal.split('\n').join('\n- ')}`,
+                  type: 'text/plain',
+                })
+                  .then(res => console.log(res))
+                  .catch(err => console.log(err));
+                bottomSheetRef.current?.close();
+                setIsBottomSheetOpen(false);
+              }}
+            />
+            <Content
+              title="이미지로 공유하기"
+              arrow
+              onPress={() => {
+                analytics().logEvent('meal_instagram_share');
+                navigation.navigate('Share', {data: {meal: selectedMeal, date: selectedMealDate, school: schoolName}});
+                bottomSheetRef.current?.close();
+                setIsBottomSheetOpen(false);
+              }}
+            />
+          </BottomSheetView>
         </BottomSheet>
       )}
     </>
+  );
+};
+
+const MealCard = ({date, isToday, meal, mealType, showAllergy, onLongPress}: {date: dayjs.Dayjs; isToday: boolean; meal: MealType; mealType?: string; showAllergy: boolean; onLongPress: () => void}) => {
+  const {theme, typography} = useTheme();
+
+  const getMealTypeColor = (mealType?: string) => {
+    if (!mealType) return theme.primaryText;
+
+    if (mealType.includes('조식')) return '#FF9500'; // 주황색
+    if (mealType.includes('중식')) return theme.highlight; // 파란색
+    if (mealType.includes('석식')) return theme.highlightSecondary; // 보라색
+    return theme.primaryText;
+  };
+
+  const renderMealItem = (mealItem: string | MealItem, index: number) => {
+    if (typeof mealItem === 'string') {
+      return (
+        <View key={index} style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+          <View style={{width: 4, height: 4, borderRadius: 2, backgroundColor: theme.secondaryText}} />
+          <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', flex: 1}]}>{mealItem}</Text>
+        </View>
+      );
+    }
+
+    const allergyInfo = showAllergy && mealItem.allergy && mealItem.allergy.length > 0 ? ` (${mealItem.allergy.map(allergy => allergy.code).join(', ')})` : '';
+
+    return (
+      <View key={index} style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+        <View style={{width: 4, height: 4, borderRadius: 2, backgroundColor: theme.secondaryText}} />
+        <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', flex: 1}]}>
+          {mealItem.food}
+          <Text style={[typography.small, {color: theme.secondaryText}]}>{allergyInfo}</Text>
+        </Text>
+      </View>
+    );
+  };
+
+  return (
+    <TouchableOpacity onLongPress={onLongPress} activeOpacity={0.7} style={{marginBottom: 4}}>
+      <View
+        style={{
+          backgroundColor: isToday ? `${theme.highlight}10` : theme.card,
+          borderRadius: 12,
+          padding: 14,
+          borderWidth: isToday ? 1 : 0,
+          borderColor: isToday ? theme.highlight : 'transparent',
+        }}>
+        {/* 날짜 헤더 */}
+        <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10}}>
+          <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+            <Text
+              style={[
+                typography.subtitle,
+                {
+                  color: isToday ? theme.highlight : theme.primaryText,
+                  fontWeight: isToday ? '700' : '600',
+                },
+              ]}>
+              {date.format('M월 D일 (ddd)')}
+            </Text>
+            {isToday && (
+              <View
+                style={{
+                  backgroundColor: theme.highlight,
+                  paddingHorizontal: 6,
+                  paddingVertical: 2,
+                  borderRadius: 4,
+                }}>
+                <Text style={[typography.caption, {color: theme.white, fontWeight: '600'}]}>오늘</Text>
+              </View>
+            )}
+          </View>
+          {mealType && <Text style={[typography.caption, {color: getMealTypeColor(mealType), fontWeight: '600'}]}>{mealType}</Text>}
+        </View>
+
+        {/* 급식 내용 */}
+        <View style={{gap: 6}}>{meal.meal.map((item, idx) => renderMealItem(item, idx))}</View>
+
+        {/* 영양 정보가 있으면 표시 */}
+        {meal.nutrition && meal.nutrition.length > 0 && (
+          <View style={{marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: theme.border}}>
+            <Text style={[typography.caption, {color: theme.secondaryText}]}>{meal.nutrition.find(n => n.type === '열량')?.amount || '영양정보 없음'}</Text>
+          </View>
+        )}
+      </View>
+    </TouchableOpacity>
   );
 };
 
