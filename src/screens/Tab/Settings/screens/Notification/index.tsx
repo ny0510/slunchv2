@@ -9,7 +9,7 @@ import {addFcmToken, checkFcmToken, editFcmTime, removeFcmToken} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import {useTheme} from '@/contexts/ThemeContext';
-import {useUser} from '@/hooks/useUser';
+import {useUser} from '@/contexts/UserContext';
 import {showToast} from '@/lib/toast';
 import BottomSheet, {BottomSheetBackdrop, BottomSheetView} from '@gorhom/bottom-sheet';
 import notifee, {AuthorizationStatus} from '@notifee/react-native';

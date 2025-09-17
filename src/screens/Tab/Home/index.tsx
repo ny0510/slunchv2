@@ -34,7 +34,6 @@ const Home = () => {
   const [showAllergy, setShowAllergy] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
   const [todayIndex, setTodayIndex] = useState<number>(dayjs().day() - 1);
-  const [midnightTrigger, setMidnightTrigger] = useState<boolean>(false);
   const [mealDayOffset, setMealDayOffset] = useState<number>(0);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [selectedSubject, setSelectedSubject] = useState<Timetable | null>(null);
@@ -74,14 +73,12 @@ const Home = () => {
 
     try {
       const today = dayjs();
-      const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
-      const classData: {grade: number; class: number} = JSON.parse((await AsyncStorage.getItem('class')) || '{}');
 
       // Promise.allSettled를 사용하여 병렬 처리하고 실패한 API가 있어도 다른 API는 계속 실행
       const [timetableResult, mealResult, scheduleResult] = await Promise.allSettled([
-        getTimetable(school.comciganCode, classData.grade, classData.class),
-        getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), today.format('DD'), showAllergy, true, true),
-        getSchedules(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM')),
+        getTimetable(schoolInfo.comciganCode, Number(classInfo.grade), Number(classInfo.class)),
+        getMeal(schoolInfo.neisCode, schoolInfo.neisRegionCode, today.format('YYYY'), today.format('MM'), today.format('DD'), showAllergy, true, true),
+        getSchedules(schoolInfo.neisCode, schoolInfo.neisRegionCode, today.format('YYYY'), today.format('MM')),
       ]);
 
       // 시간표 처리
@@ -118,18 +115,20 @@ const Home = () => {
         setMealDayOffset(0);
 
         if (mealResponse.length === 0 || isPastNoon) {
-          // 순차적으로 다음날들을 확인
-          for (let i = 1; i <= 3; i++) {
-            try {
-              const nextDay = today.add(i, 'day');
-              mealResponse = await getMeal(school.neisCode, school.neisRegionCode, nextDay.format('YYYY'), nextDay.format('MM'), nextDay.format('DD'), showAllergy, true, true);
-              if (mealResponse.length > 0) {
-                setMealDayOffset(i);
-                break;
-              }
-            } catch (e) {
-              console.error(`Error fetching meal for day +${i}:`, e);
-            }
+          // 병렬로 다음 3일 확인
+          const nextDayPromises = [1, 2, 3].map(i => {
+            const nextDay = today.add(i, 'day');
+            return getMeal(schoolInfo.neisCode, schoolInfo.neisRegionCode, nextDay.format('YYYY'), nextDay.format('MM'), nextDay.format('DD'), showAllergy, true, true)
+              .then(data => ({ data, offset: i }))
+              .catch(() => ({ data: [], offset: i }));
+          });
+
+          const nextDayResults = await Promise.all(nextDayPromises);
+          const validResult = nextDayResults.find(result => result.data.length > 0);
+
+          if (validResult) {
+            mealResponse = validResult.data;
+            setMealDayOffset(validResult.offset);
           }
         }
         setMeal(mealResponse);
@@ -152,7 +151,7 @@ const Home = () => {
     } finally {
       setLoading(false);
     }
-  }, [showAllergy, getSettings, transpose]);
+  }, [showAllergy, getSettings, transpose, schoolInfo, classInfo]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -199,10 +198,7 @@ const Home = () => {
   // 다른 탭에 있다 홈으로 이동시 classChangedTrigger가 true라면 데이터 갱신
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
-      console.log('Home screen focused, checking for class changes...');
-      console.log(classChangedTrigger);
       if (classChangedTrigger) {
-        console.log('Class changed trigger is true, refreshing data...');
         setRefreshing(true);
         await clearCache('@cache/');
         await fetchData();
@@ -215,9 +211,12 @@ const Home = () => {
 
   // 매일 자정마다 데이터를 갱신
   useEffect(() => {
-    const listener = Midnight.addListener(() => setMidnightTrigger(prev => !prev));
+    const listener = Midnight.addListener(() => {
+      setTodayIndex(dayjs().day() - 1);
+      fetchData();
+    });
     return () => listener.remove();
-  }, []);
+  }, [fetchData]);
 
   // 앱이 백그라운드에서 포그라운드로 돌아올 때 데이터를 갱신
   useEffect(() => {
@@ -233,7 +232,7 @@ const Home = () => {
   useEffect(() => {
     setTodayIndex(dayjs().day() - 1);
     fetchData();
-  }, [fetchData, midnightTrigger]);
+  }, [fetchData]);
 
   useEffect(() => {
     if (timetable.length > 0) {
@@ -420,10 +419,8 @@ const Home = () => {
               if (!selectedSubjectIndices) {
                 return;
               }
-              const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
-              const classData = JSON.parse((await AsyncStorage.getItem('class')) || '{}');
               try {
-                const apiTimetable = await getTimetable(school.comciganCode, classData.grade, classData.class);
+                const apiTimetable = await getTimetable(schoolInfo.comciganCode, Number(classInfo.grade), Number(classInfo.class));
                 const raw = apiTimetable[selectedSubjectIndices.col]?.[selectedSubjectIndices.row] || {subject: '-', teacher: '-', changed: false};
                 const original = {
                   ...raw,
