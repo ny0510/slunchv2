@@ -1,17 +1,18 @@
-import {ANDROID_MEAL_NATIVE_AD_UNIT_ID, IOS_NOTI_NATIVE_AD_UNIT_ID} from '@env';
+import {ANDROID_MEAL_NATIVE_AD_UNIT_ID, ANDROID_NOTI_BANNER_AD_UNIT_ID, IOS_NOTI_BANNER_AD_UNIT_ID, IOS_NOTI_NATIVE_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
 import React, {useCallback, useEffect, useState} from 'react';
-import {Platform, RefreshControl, Text, View} from 'react-native';
-// import TouchableScale from '@/components/TouchableScale';
+import {Platform, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
 import TouchableScale from 'react-native-touchable-scale';
 
 import Ad from './components/Ad';
 import {getNotifications} from '@/api';
+import BannerAdCard from '@/components/BannerAdCard';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
 import {useTheme} from '@/contexts/ThemeContext';
 import {showToast} from '@/lib/toast';
+import {typography} from '@/theme';
 import {Notification} from '@/types/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
@@ -93,8 +94,9 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
       }>
       {/* <Ad adUnitId={Platform.OS === 'ios' ? IOS_NOTI_NATIVE_AD_UNIT_ID : ANDROID_MEAL_NATIVE_AD_UNIT_ID} /> */}
 
-      <View style={{gap: 16, width: '100%', paddingHorizontal: 16}}>
-        {/* <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_NOTI_BANNER_AD_UNIT_ID : ANDROID_NOTI_BANNER_AD_UNIT_ID} /> */}
+      <View style={{gap: 4, width: '100%', paddingHorizontal: 16}}>
+        <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_NOTI_BANNER_AD_UNIT_ID : ANDROID_NOTI_BANNER_AD_UNIT_ID} />
+        <View style={{height: 12}} />
 
         {noti?.length > 0 ? (
           noti.map((item, index) => {
@@ -103,26 +105,43 @@ const Notifications = ({onReadNotification}: {onReadNotification: () => void}) =
             const icon = <FontAwesome6 name="bullhorn" size={16} color={theme.primaryText} iconStyle="solid" />;
 
             return (
-              <TouchableScale key={index} onPress={() => handlePress(index, item.id)} activeScale={0.98} tension={40} friction={3}>
-                <Card title={item.title} titleIcon={icon} subtitle={date} arrow notificationDot={isNew}>
-                  {expandedIndices.includes(index) && (
-                    <Text
-                      style={{
-                        color: theme.primaryText,
-                        fontWeight: '400',
-                        fontSize: 16,
-                        lineHeight: 24,
-                      }}>
-                      {item.content}
-                    </Text>
-                  )}
-                </Card>
+              <TouchableScale key={index} onPress={() => handlePress(index, item.id)} activeScale={0.98} tension={10} friction={3}>
+                <View
+                  style={{
+                    marginBottom: index === noti.length - 1 ? 0 : 12,
+                  }}>
+                  <Card title={item.title} notificationDot={isNew} subtitle={date} arrow={!expandedIndices.includes(index)} style={{backgroundColor: theme.card}}>
+                    {expandedIndices.includes(index) && (
+                      <View style={{marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.border}}>
+                        <Text
+                          style={[
+                            typography.body,
+                            {
+                              color: theme.primaryText,
+                              fontWeight: '400',
+                              lineHeight: 22,
+                            },
+                          ]}>
+                          {item.content}
+                        </Text>
+                        {isNew && (
+                          <View style={{flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8}}>
+                            <FontAwesome6 name="check" size={12} color={theme.secondaryText} iconStyle="solid" />
+                            <Text style={[typography.caption, {color: theme.secondaryText}]}>읽음 처리됨</Text>
+                          </View>
+                        )}
+                      </View>
+                    )}
+                  </Card>
+                </View>
               </TouchableScale>
             );
           })
         ) : (
-          <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
-            <Text style={{color: theme.primaryText, fontWeight: '300', fontSize: 16}}>알림이 없습니다.</Text>
+          <View style={{justifyContent: 'center', alignItems: 'center', flex: 1, marginTop: 80}}>
+            <FontAwesome6 name="bell-slash" size={48} color={theme.secondaryText} iconStyle="regular" />
+            <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600', marginTop: 16}]}>표시할 알림이 없어요</Text>
+            <Text style={[typography.body, {color: theme.secondaryText, marginTop: 4}]}>새 알림이 오면 여기에 표시됩니다</Text>
           </View>
         )}
       </View>

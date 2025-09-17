@@ -95,7 +95,7 @@ const Schedules = () => {
     <Loading fullScreen />
   ) : (
     <Container scrollView bounce={!loading} scrollViewRef={scrollViewRef} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}>
-      <View style={{gap: 16, width: '100%'}}>
+      <View style={{gap: 12, width: '100%'}}>
         {schedules?.length > 0 ? (
           schedules.map((item, index) => {
             const isToday = today.isSame(item.date.start, 'day');
@@ -136,14 +136,14 @@ const TimelineItem = ({item, isLast, isToday, getScheduleType, getScheduleColor}
   const {theme, typography} = useTheme();
 
   return (
-    <View style={{marginBottom: isLast ? 0 : 16}}>
+    <View style={{marginBottom: isLast ? 0 : 4}}>
       <View
         style={{
           backgroundColor: isToday ? `${theme.highlight}10` : theme.card,
           borderRadius: 12,
           padding: 14,
           borderWidth: isToday ? 1 : 0,
-          borderColor: isToday ? theme.highlight : 'transparent',
+          borderColor: isToday ? `${theme.highlight}80` : 'transparent',
         }}>
         {!isSameDay && (
           <View style={{flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8}}>

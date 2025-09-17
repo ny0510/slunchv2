@@ -235,10 +235,10 @@ const MealCard = ({date, isToday, meal, mealType, showAllergy, onLongPress}: {da
       <View
         style={{
           backgroundColor: isToday ? `${theme.highlight}10` : theme.card,
-          borderRadius: 12,
-          padding: 14,
+          borderRadius: 16,
+          padding: 20,
           borderWidth: isToday ? 1 : 0,
-          borderColor: isToday ? theme.highlight : 'transparent',
+          borderColor: isToday ? `${theme.highlight}80` : 'transparent',
         }}>
         {/* 날짜 헤더 */}
         <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10}}>

@@ -1,7 +1,6 @@
 import {API_BASE_URL} from '@env';
 import React from 'react';
 import {Image, Text, View} from 'react-native';
-// import TouchableScale from '@/components/TouchableScale';
 import TouchableScale from 'react-native-touchable-scale';
 
 import Loading from '@/components/Loading';
@@ -18,16 +17,25 @@ const ProfileSection = () => {
   }
 
   return (
-    <View style={{alignItems: 'center', justifyContent: 'center', gap: 12}}>
-      <Image src={user && user.photoURL ? user.photoURL : `${API_BASE_URL}/public/default_profile.png`} style={{width: 150, height: 150, backgroundColor: theme.border, borderRadius: 75}} borderRadius={75} />
-      <View style={{alignItems: 'center', justifyContent: 'center'}}>
-        <Text style={[typography.baseTextStyle, {color: theme.primaryText, fontWeight: '700', fontSize: 24}]}>{user ? user.displayName : '게스트'}</Text>
-        <Text style={[typography.baseTextStyle, {color: theme.secondaryText, fontWeight: '500', fontSize: 16}]}>{user ? user.email : '로그인해 주세요'}</Text>
-      </View>
-
-      <View style={{width: '100%'}}>
+    <View style={{width: '100%'}}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: theme.card,
+          borderRadius: 12,
+          paddingVertical: 12,
+          paddingHorizontal: 16,
+          borderColor: theme.border,
+          borderWidth: 1,
+          gap: 12,
+        }}>
+        <Image src={user && user.photoURL ? user.photoURL : `${API_BASE_URL}/public/default_profile.png`} style={{width: 48, height: 48, backgroundColor: theme.border, borderRadius: 24}} borderRadius={24} />
+        <View style={{flex: 1}}>
+          <Text style={[typography.body, {color: theme.primaryText, fontWeight: '600'}]}>{user ? user.displayName : '게스트'}</Text>
+          <Text style={[typography.caption, {color: theme.secondaryText}]}>{user ? user.email : '로그인해 주세요'}</Text>
+        </View>
         <TouchableScale
-          style={{flex: 1}}
           activeScale={0.98}
           tension={40}
           friction={3}
@@ -42,22 +50,15 @@ const ProfileSection = () => {
                 .catch(error => showToast(`로그인에 실패했어요:\n${error.message}`));
             }
           }}>
-          {/* <TouchableOpacity style={{flex: 1}}> */}
           <View
             style={{
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: theme.card,
-              borderRadius: 12,
-              width: '100%',
-              paddingVertical: 12,
-              borderColor: theme.border,
-              borderWidth: 1,
-              gap: 8,
+              paddingVertical: 6,
+              paddingHorizontal: 12,
+              backgroundColor: theme.background,
+              borderRadius: 8,
             }}>
-            <Text style={[typography.baseTextStyle, {color: theme.primaryText, fontWeight: '700', fontSize: typography.body.fontSize}]}>{user ? '로그아웃' : '로그인'}</Text>
+            <Text style={[typography.caption, {color: theme.primaryText, fontWeight: '600'}]}>{user ? '로그아웃' : '로그인'}</Text>
           </View>
-          {/* </TouchableOpacity> */}
         </TouchableScale>
       </View>
     </View>

@@ -9,6 +9,7 @@ import TouchableScale from 'react-native-touchable-scale';
 import {styles as s} from './styles';
 import {getMeal, getSchedules, getTimetable} from '@/api';
 import Logo from '@/assets/images/logo.svg';
+import SunrinLogo from '@/assets/images/sunrin.svg';
 import BannerAdCard from '@/components/BannerAdCard';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
@@ -262,9 +263,9 @@ const Home = () => {
   const renderMealItem = (mealItem: string | MealItem, index: number) => {
     if (typeof mealItem === 'string') {
       return (
-        <View key={index} style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+        <View key={index} style={{flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 3}}>
           <View style={{width: 4, height: 4, borderRadius: 2, backgroundColor: theme.secondaryText}} />
-          <Text style={[typography.body, {color: theme.primaryText, fontWeight: 300, flex: 1}]}>{mealItem}</Text>
+          <Text style={{fontSize: 15, fontWeight: '400', color: theme.primaryText, flex: 1}}>{mealItem}</Text>
         </View>
       );
     }
@@ -272,11 +273,11 @@ const Home = () => {
     const allergyInfo = showAllergy && mealItem.allergy && mealItem.allergy.length > 0 ? ` (${mealItem.allergy.map(allergy => allergy.code).join(', ')})` : '';
 
     return (
-      <View key={index} style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
-        <View style={{width: 4, height: 4, borderRadius: 2, backgroundColor: theme.secondaryText}} />
-        <Text style={[typography.body, {color: theme.primaryText, fontWeight: 300, flex: 1}]}>
+      <View key={index} style={{flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 3}}>
+        <View style={{width: 5, height: 5, borderRadius: 2.5, backgroundColor: theme.highlight}} />
+        <Text style={{fontSize: 15, fontWeight: '400', color: theme.primaryText, flex: 1}}>
           {mealItem.food}
-          <Text style={typography.small}>{allergyInfo}</Text>
+          <Text style={{fontSize: 12, color: theme.secondaryText}}>{allergyInfo}</Text>
         </Text>
       </View>
     );
@@ -337,9 +338,9 @@ const Home = () => {
     <Fragment>
       <Container bounce scrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}>
         <View style={s.container}>
-          <View style={s.header}>
-            <Logo width={24} height={24} />
-            <Text style={[typography.subtitle, {color: theme.primaryText}]}>{schoolInfo.schoolName || '학교 정보 없음'}</Text>
+          <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8}}>
+            {schoolInfo.schoolName === '선린인터넷고' ? <SunrinLogo width={22} height={22} /> : <Logo width={22} height={22} />}
+            <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600'}]}>{schoolInfo.schoolName || '학교 정보 없음'}</Text>
           </View>
 
           <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
@@ -401,7 +402,7 @@ const Home = () => {
                   fontSize: 16,
                   fontWeight: '500',
                   padding: 12,
-                  borderRadius: 8,
+                  borderRadius: 12,
                   borderWidth: 1,
                   borderColor: theme.border,
                 }}
@@ -429,7 +430,7 @@ const Home = () => {
                   fontSize: 16,
                   fontWeight: '500',
                   padding: 12,
-                  borderRadius: 8,
+                  borderRadius: 12,
                   borderWidth: 1,
                   borderColor: theme.border,
                 }}
@@ -453,7 +454,7 @@ const Home = () => {
               activeOpacity={0.7}
               delayPressIn={0}
               hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
-              style={{backgroundColor: theme.background, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 16, borderWidth: 1, borderColor: theme.border, width: '100%'}}
+              style={{backgroundColor: theme.background, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 16, borderWidth: 1, borderColor: theme.border, width: '100%'}}
               onPress={async () => {
                 if (!selectedSubjectIndices) {
                   return;
@@ -482,15 +483,25 @@ const Home = () => {
   );
 };
 
-const HomeCard = ({title, titleIcon, arrow, onPress, notificationDot, children, ...rest}: {title?: string; titleIcon?: ReactNode; arrow?: boolean; onPress?: () => void; notificationDot?: boolean; children?: ReactNode} & {[key: string]: any}) => (
-  <TouchableScale onPress={onPress} activeScale={0.98} tension={60} friction={3} {...rest}>
-    {/* <TouchableOpacity activeOpacity={0.7} onPress={onPress}> */}
-    <Card title={title} titleIcon={titleIcon} arrow={arrow} notificationDot={notificationDot}>
-      {children}
-    </Card>
-    {/* </TouchableOpacity> */}
-  </TouchableScale>
-);
+const HomeCard = ({title, titleIcon, arrow, onPress, notificationDot, children, ...rest}: {title?: string; titleIcon?: ReactNode; arrow?: boolean; onPress?: () => void; notificationDot?: boolean; children?: ReactNode} & {[key: string]: any}) => {
+  const {theme} = useTheme();
+  return (
+    <TouchableScale onPress={onPress} activeScale={0.98} tension={100} friction={10} {...rest}>
+      <View style={{backgroundColor: theme.card, borderRadius: 16, padding: 20, gap: 16}}>
+        {title && (
+          <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+            <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+              {titleIcon}
+              <Text style={{fontSize: 18, fontWeight: '600', color: theme.primaryText}}>{title}</Text>
+            </View>
+            {arrow && <FontAwesome6 name="chevron-right" iconStyle="solid" size={14} color={theme.secondaryText} />}
+          </View>
+        )}
+        {children}
+      </View>
+    </TouchableScale>
+  );
+};
 
 const LoadingView = ({height}: {height: number}) => (
   <View style={[s.loadingView, {height}]}>
@@ -506,15 +517,17 @@ const ScheduleItem = ({item}: {item: Schedule}) => {
   const {theme, typography} = useTheme();
 
   return (
-    <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
-      <View style={{width: 4, height: 4, borderRadius: 2, backgroundColor: theme.secondaryText}} />
-      <View style={s.scheduleItemContainer}>
-        <Text style={[typography.baseTextStyle, {color: theme.secondaryText, fontWeight: 500, fontSize: 16}]}>
-          {startDate.format('M/D')}
-          {!isSameDay && ` ~ ${endDate.format('M/D')}`}
-        </Text>
-        <Text style={[typography.baseTextStyle, {color: theme.primaryText, fontWeight: 300, fontSize: 16}]}>{item.schedule}</Text>
-        <Text style={[typography.caption, {color: theme.secondaryText}]}>{endDate.diff(startDate, 'day') > 0 && `(${endDate.diff(startDate, 'day') + 1}일)`}</Text>
+    <View style={{paddingVertical: 3}}>
+      <View style={{flexDirection: 'row', alignItems: 'flex-start', gap: 12}}>
+        <View style={{width: 4, height: 4, borderRadius: 2, backgroundColor: theme.secondaryText, marginTop: 8}} />
+        <View style={{flex: 1, gap: 2}}>
+          <Text style={{fontSize: 16, fontWeight: '500', color: theme.primaryText}}>{item.schedule}</Text>
+          <Text style={{fontSize: 14, fontWeight: '400', color: theme.secondaryText}}>
+            {startDate.format('M월 D일')}
+            {!isSameDay && ` ~ ${endDate.format('M월 D일')}`}
+            {endDate.diff(startDate, 'day') > 0 && ` (${endDate.diff(startDate, 'day') + 1}일간)`}
+          </Text>
+        </View>
       </View>
     </View>
   );
