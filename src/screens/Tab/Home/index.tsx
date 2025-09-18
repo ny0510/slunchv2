@@ -338,7 +338,7 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
   const renderMealItem = (mealItem: string | MealItem, index: number) => {
     if (typeof mealItem === 'string') {
       return (
-        <View key={index} style={{flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 3}}>
+        <View key={index} style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
           <View style={{width: 4, height: 4, borderRadius: 2, backgroundColor: theme.secondaryText}} />
           <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', flex: 1}]}>{mealItem}</Text>
         </View>
@@ -348,7 +348,7 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
     const allergyInfo = showAllergy && mealItem.allergy && mealItem.allergy.length > 0 ? ` ${mealItem.allergy.map(allergy => allergy.code).join(', ')}` : '';
 
     return (
-      <View key={index} style={{flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 3}}>
+      <View key={index} style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
         <View style={{width: 4, height: 4, borderRadius: 2, backgroundColor: theme.secondaryText}} />
         <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', flex: 1}]}>
           {mealItem.food}
@@ -393,24 +393,21 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
   };
 
   // Render placeholder for dragged item
-  const renderPlaceholder = useCallback(
-    () => {
-      return (
-        <View
-          style={{
-            backgroundColor: theme.border,
-            borderRadius: 16,
-            height: 100,
-            opacity: 0.3,
-            borderWidth: 2,
-            borderColor: theme.primaryText,
-            borderStyle: 'dashed',
-          }}
-        />
-      );
-    },
-    [theme],
-  );
+  const renderPlaceholder = useCallback(() => {
+    return (
+      <View
+        style={{
+          backgroundColor: theme.border,
+          borderRadius: 16,
+          height: 100,
+          opacity: 0.3,
+          borderWidth: 2,
+          borderColor: theme.primaryText,
+          borderStyle: 'dashed',
+        }}
+      />
+    );
+  }, [theme]);
 
   // Render draggable card item
   const renderDraggableItem = useCallback(
@@ -500,7 +497,7 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
                   backgroundColor: '#5865F2',
                   borderRadius: 20,
                   shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
+                  shadowOffset: {width: 0, height: 2},
                   shadowOpacity: 0.15,
                   shadowRadius: 3,
                   elevation: 3,
@@ -574,7 +571,21 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
               const renderContent = () => {
                 switch (card.id) {
                   case 'schedule':
-                    return loading ? <LoadingView height={100} /> : schedules.length === 0 ? <Text style={[typography.body, {color: theme.secondaryText}]}>학사일정이 없어요.</Text> : <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />;
+                    return loading ? (
+                      <LoadingView height={100} />
+                    ) : schedules.length === 0 ? (
+                      <Text style={[typography.body, {color: theme.secondaryText}]}>학사일정이 없어요.</Text>
+                    ) : (
+                      <FlatList
+                        data={schedules}
+                        renderItem={({item}) => (
+                          <View style={{gap: 2}}>
+                            <ScheduleItem item={item} />
+                          </View>
+                        )}
+                        scrollEnabled={false}
+                      />
+                    );
                   case 'meal':
                     return loading ? (
                       <LoadingView height={100} />
@@ -582,7 +593,7 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
                       <Text style={[typography.body, {color: theme.secondaryText}]}>급식 정보가 없어요.</Text>
                     ) : (
                       <View style={{gap: 4}}>
-                        <FlatList data={meal} renderItem={({item}) => <View>{item.meal.map(renderMealItem)}</View>} scrollEnabled={false} />
+                        <FlatList data={meal} renderItem={({item}) => <View style={{gap: 2}}>{item.meal.map(renderMealItem)}</View>} scrollEnabled={false} />
                         {mealDayOffset > 0 && (
                           <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 4}]}>
                             {mealDayOffset}일 뒤, {dayjs().add(mealDayOffset, 'day').format('dddd')} 급식이에요.
@@ -748,17 +759,15 @@ const ScheduleItem = ({item}: {item: Schedule}) => {
   const {theme, typography} = useTheme();
 
   return (
-    <View style={{paddingVertical: 3}}>
-      <View style={{flexDirection: 'row', alignItems: 'flex-start', gap: 12}}>
-        <View style={{width: 4, height: 4, borderRadius: 2, backgroundColor: theme.secondaryText, marginTop: 8}} />
-        <View style={{flex: 1, gap: 2}}>
-          <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', flex: 1}]}>{item.schedule}</Text>
-          <Text style={{fontSize: 14, fontWeight: '400', color: theme.secondaryText}}>
-            {startDate.format('M월 D일')}
-            {!isSameDay && ` ~ ${endDate.format('M월 D일')}`}
-            {endDate.diff(startDate, 'day') > 0 && ` (${endDate.diff(startDate, 'day') + 1}일간)`}
-          </Text>
-        </View>
+    <View style={{flexDirection: 'row', alignItems: 'flex-start', gap: 12}}>
+      <View style={{width: 4, height: 4, borderRadius: 2, backgroundColor: theme.secondaryText, marginTop: 8}} />
+      <View style={{flex: 1, gap: 2}}>
+        <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', flex: 1}]}>{item.schedule}</Text>
+        <Text style={{fontSize: 14, fontWeight: '400', color: theme.secondaryText}}>
+          {startDate.format('M월 D일')}
+          {!isSameDay && ` ~ ${endDate.format('M월 D일')}`}
+          {endDate.diff(startDate, 'day') > 0 && ` (${endDate.diff(startDate, 'day') + 1}일간)`}
+        </Text>
       </View>
     </View>
   );

@@ -50,6 +50,10 @@
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string/>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>이미지를 갤러리에 저장하기 위해 권한이 필요합니다.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>이미지를 갤러리에 저장하기 위해 권한이 필요합니다.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>FontAwesome6_Brands.ttf</string>

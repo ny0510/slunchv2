@@ -4,6 +4,7 @@ import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
 import {Platform, RefreshControl, ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import {trigger} from 'react-native-haptic-feedback';
 import Share from 'react-native-share';
+import TouchableScale from 'react-native-touchable-scale';
 
 import Content from '../Tab/Settings/components/Content';
 import {getMeal} from '@/api';
@@ -199,6 +200,7 @@ const Meal = () => {
 
 const MealCard = ({date, isToday, meal, mealType, showAllergy, onLongPress}: {date: dayjs.Dayjs; isToday: boolean; meal: MealType; mealType?: string; showAllergy: boolean; onLongPress: () => void}) => {
   const {theme, typography} = useTheme();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const getMealTypeColor = (mealType?: string) => {
     if (!mealType) return theme.primaryText;
@@ -232,8 +234,24 @@ const MealCard = ({date, isToday, meal, mealType, showAllergy, onLongPress}: {da
     );
   };
 
+  const mealData = meal.meal.filter(mealItem => typeof mealItem === 'string' || (mealItem as MealItem).food !== '');
+  const mealText = mealData.map(mealItem => (typeof mealItem === 'string' ? mealItem : (mealItem as MealItem).food)).join('\n');
+  const schoolName = useRef<string>('알 수 없음');
+
+  useEffect(() => {
+    (async () => {
+      const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
+      schoolName.current = school.schoolName;
+    })();
+  }, []);
+
+  const handleShare = () => {
+    trigger('impactLight');
+    navigation.navigate('Share', {data: {meal: mealText, date: date.format('M월 D일 ddd요일'), school: schoolName.current}});
+  };
+
   return (
-    <TouchableOpacity onLongPress={onLongPress} activeOpacity={0.7} style={{marginBottom: 4}}>
+    <TouchableScale onLongPress={onLongPress} activeScale={0.98} tension={100} friction={10} style={{marginBottom: 4}}>
       <View
         style={{
           backgroundColor: isToday ? `${theme.highlight}10` : theme.card,
@@ -244,7 +262,7 @@ const MealCard = ({date, isToday, meal, mealType, showAllergy, onLongPress}: {da
         }}>
         {/* 날짜 헤더 */}
         <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10}}>
-          <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+          <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1}}>
             <Text
               style={[
                 typography.subtitle,
@@ -255,32 +273,22 @@ const MealCard = ({date, isToday, meal, mealType, showAllergy, onLongPress}: {da
               ]}>
               {date.format('M월 D일 (ddd)')}
             </Text>
-            {/* {isToday && (
-              <View
-                style={{
-                  backgroundColor: theme.highlight,
-                  paddingHorizontal: 6,
-                  paddingVertical: 2,
-                  borderRadius: 4,
-                }}>
-                <Text style={[typography.caption, {color: theme.white, fontWeight: '600'}]}>오늘</Text>
-              </View>
-            )} */}
           </View>
-          {mealType && <Text style={[typography.caption, {color: getMealTypeColor(mealType), fontWeight: '600'}]}>{mealType}</Text>}
+          <View style={{flexDirection: 'row', alignItems: 'center', gap: 12}}>{mealType && <Text style={[typography.caption, {color: getMealTypeColor(mealType), fontWeight: '600'}]}>{mealType}</Text>}</View>
         </View>
 
         {/* 급식 내용 */}
-        <View style={{gap: 6}}>{meal.meal.map((item, idx) => renderMealItem(item, idx))}</View>
+        <View style={{gap: 2}}>{meal.meal.map((item, idx) => renderMealItem(item, idx))}</View>
 
-        {/* 열량 정보가 있으면 표시 */}
-        {meal.calorie && (
-          <View style={{marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: theme.border}}>
-            <Text style={[typography.caption, {color: theme.secondaryText}]}>{meal.calorie} kcal</Text>
-          </View>
-        )}
+        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: theme.border}}>
+          {/* 열량 정보가 있으면 표시 */}
+          {meal.calorie && <Text style={[typography.caption, {color: theme.secondaryText}]}>{meal.calorie} kcal</Text>}
+          <TouchableOpacity onPress={handleShare} style={{padding: 4}} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+            <FontAwesome6 name="share-from-square" size={14} color={theme.secondaryText} iconStyle="solid" />
+          </TouchableOpacity>
+        </View>
       </View>
-    </TouchableOpacity>
+    </TouchableScale>
   );
 };
 
