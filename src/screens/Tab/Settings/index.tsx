@@ -7,7 +7,7 @@ import DeveloperSettingCard from './components/DeveloperSettingCard';
 import MyInfoCard from './components/MyInfoCard';
 import ProfileSection from './components/ProfileSection';
 import SettingCard from './components/SettingCard';
-import {getClassList, neisSchoolSearch, removeFcmToken} from '@/api';
+import {getClassList, removeMealNotification, removeTimetableNotification} from '@/api';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
 import {useTheme} from '@/contexts/ThemeContext';
@@ -15,11 +15,10 @@ import {useUser} from '@/contexts/UserContext';
 import {useScrollToTop} from '@/hooks/useScrollToTop';
 import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
-import {ClassData, SchoolData} from '@/types/onboarding';
+import {ClassData} from '@/types/onboarding';
 import BottomSheet, {BottomSheetBackdrop, BottomSheetView} from '@gorhom/bottom-sheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
-import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 
 const Settings = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
@@ -190,13 +189,43 @@ const Settings = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
 
       // Handle FCM token removal if needed
       try {
-        const [storedToken, isNotiEnabled] = await Promise.all([AsyncStorage.getItem('fcmToken'), AsyncStorage.getItem('isNotiEnabled')]);
+        const [storedToken, settings] = await Promise.all([AsyncStorage.getItem('fcmToken'), AsyncStorage.getItem('settings')]);
 
-        const isNotiEnabledParsed = isNotiEnabled ? JSON.parse(isNotiEnabled) : false;
+        const settingsParsed = settings ? JSON.parse(settings) : {};
+        const isMealEnabled = settingsParsed.mealNotification?.enabled || false;
+        const isTimetableEnabled = settingsParsed.timetableNotification?.enabled || false;
 
-        if (isNotiEnabledParsed && storedToken) {
-          await Promise.all([removeFcmToken(storedToken), AsyncStorage.setItem('isNotiEnabled', JSON.stringify(false))]);
-          showToast('학급 정보가 변경되어 알림이 해제되었어요.');
+        const promises = [];
+        let notificationsRemoved = false;
+
+        // 급식 알림 해제
+        if (isMealEnabled && storedToken) {
+          promises.push(removeMealNotification(storedToken));
+          settingsParsed.mealNotification = {
+            ...settingsParsed.mealNotification,
+            enabled: false,
+          };
+          notificationsRemoved = true;
+        }
+
+        // 시간표 알림 해제
+        if (isTimetableEnabled && storedToken) {
+          promises.push(removeTimetableNotification(storedToken));
+          settingsParsed.timetableNotification = {
+            ...settingsParsed.timetableNotification,
+            enabled: false,
+          };
+          notificationsRemoved = true;
+        }
+
+        if (promises.length > 0) {
+          // settings 업데이트
+          promises.push(AsyncStorage.setItem('settings', JSON.stringify(settingsParsed)));
+          await Promise.all(promises);
+
+          if (notificationsRemoved) {
+            showToast('학급 정보가 변경되어 알림이 해제되었어요.');
+          }
         }
       } catch (e) {
         console.error('Error removing FCM token:', e);

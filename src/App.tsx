@@ -79,7 +79,10 @@ const App = () => {
   useEffect(() => {
     const unsubscribe = messaging().onMessage(async remoteMessage => {
       const {title, body} = remoteMessage.notification ?? {};
-      await sendNotification(title, body);
+      const notificationType = remoteMessage.data?.type as 'meal' | 'timetable' | undefined;
+
+      // FCM 메시지 타입에 따라 알림 채널 구분
+      await sendNotification(title, body, notificationType || 'meal');
     });
 
     return () => unsubscribe();

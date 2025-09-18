@@ -87,22 +87,55 @@ export const getNotifications = async (): Promise<Notification[]> => {
   return response.data;
 };
 
-export const addFcmToken = async (fcmToken: string, time: string, schoolCode: number | string, regionCode: string): Promise<void> => {
-  const response = await httpClient.post('/fcm', {token: fcmToken, time, schoolCode, regionCode});
+export const addMealNotification = async (fcmToken: string, time: string, schoolCode: number | string, regionCode: string): Promise<void> => {
+  const response = await httpClient.post('/fcm/meal', {token: fcmToken, time, schoolCode, regionCode});
   return response.data;
 };
 
-export const removeFcmToken = async (fcmToken: string): Promise<void> => {
-  const response = await httpClient.delete('/fcm', {data: {token: fcmToken}});
+export const removeMealNotification = async (fcmToken: string): Promise<void> => {
+  const response = await httpClient.delete('/fcm/meal', {data: {token: fcmToken}});
   return response.data;
 };
 
-export const checkFcmToken = async (fcmToken: string): Promise<boolean> => {
-  const response = await httpClient.get('/fcm', {params: {token: fcmToken}});
+export const checkMealNotification = async (fcmToken: string): Promise<boolean> => {
+  const response = await httpClient.get('/fcm/meal', {params: {token: fcmToken}});
   return response.status === 200;
 };
 
-export const editFcmTime = async (fcmToken: string, time: string, schoolCode: number | string, regionCode: string): Promise<void> => {
-  const response = await httpClient.put('/fcm', {token: fcmToken, time, schoolCode, regionCode});
+export const editMealNotification = async (fcmToken: string, time: string, schoolCode: number | string, regionCode: string): Promise<void> => {
+  const response = await httpClient.put('/fcm/meal', {token: fcmToken, time, schoolCode, regionCode});
   return response.data;
+};
+
+// 시간표 알림 API
+export const addTimetableNotification = async (fcmToken: string, time: string, schoolCode: number, grade: number | string, classNum: number | string): Promise<void> => {
+  const response = await httpClient.post('/fcm/timetable', {
+    token: fcmToken,
+    time,
+    schoolCode,
+    grade,
+    class: classNum,
+  });
+  return response.data;
+};
+
+export const removeTimetableNotification = async (fcmToken: string): Promise<void> => {
+  const response = await httpClient.delete('/fcm/timetable', {data: {token: fcmToken}});
+  return response.data;
+};
+
+export const editTimetableTime = async (fcmToken: string, time: string, schoolCode: number, grade: number | string, classNum: number | string): Promise<void> => {
+  const response = await httpClient.put('/fcm/timetable', {
+    token: fcmToken,
+    time,
+    schoolCode,
+    grade,
+    class: classNum,
+  });
+  return response.data;
+};
+
+export const checkTimetableNotification = async (fcmToken: string): Promise<boolean> => {
+  const response = await httpClient.get('/fcm/timetable', {params: {token: fcmToken}});
+  return response.status === 200;
 };

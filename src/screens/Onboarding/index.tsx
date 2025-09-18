@@ -6,7 +6,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import ScrollPicker from 'react-native-wheel-scrollview-picker';
 
 import {createStyles} from './styles';
-import {comciganSchoolSearch, getClassList, neisSchoolSearch, removeFcmToken} from '@/api';
+import {comciganSchoolSearch, getClassList, neisSchoolSearch, removeMealNotification, removeTimetableNotification} from '@/api';
 import Loading from '@/components/Loading';
 import SlotMachine from '@/components/SlotMachine';
 import {useTheme} from '@/contexts/ThemeContext';
@@ -446,13 +446,46 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
 
       // Handle FCM token removal if needed
       try {
-        const [storedToken, isNotiEnabled] = await Promise.all([AsyncStorage.getItem('fcmToken'), AsyncStorage.getItem('isNotiEnabled')]);
+        const [storedToken, settings] = await Promise.all([
+          AsyncStorage.getItem('fcmToken'),
+          AsyncStorage.getItem('settings')
+        ]);
 
-        const isNotiEnabledParsed = isNotiEnabled ? JSON.parse(isNotiEnabled) : false;
+        const settingsParsed = settings ? JSON.parse(settings) : {};
+        const isMealEnabled = settingsParsed.mealNotification?.enabled || false;
+        const isTimetableEnabled = settingsParsed.timetableNotification?.enabled || false;
 
-        if (isNotiEnabledParsed && storedToken) {
-          await Promise.all([removeFcmToken(storedToken), AsyncStorage.setItem('isNotiEnabled', JSON.stringify(false))]);
-          showToast('학교 정보가 변경되어 알림이 해제되었어요.');
+        const promises = [];
+        let notificationsRemoved = false;
+
+        // 급식 알림 해제
+        if (isMealEnabled && storedToken) {
+          promises.push(removeMealNotification(storedToken));
+          settingsParsed.mealNotification = {
+            ...settingsParsed.mealNotification,
+            enabled: false,
+          };
+          notificationsRemoved = true;
+        }
+
+        // 시간표 알림 해제
+        if (isTimetableEnabled && storedToken) {
+          promises.push(removeTimetableNotification(storedToken));
+          settingsParsed.timetableNotification = {
+            ...settingsParsed.timetableNotification,
+            enabled: false,
+          };
+          notificationsRemoved = true;
+        }
+
+        if (promises.length > 0) {
+          // settings 업데이트
+          promises.push(AsyncStorage.setItem('settings', JSON.stringify(settingsParsed)));
+          await Promise.all(promises);
+
+          if (notificationsRemoved) {
+            showToast('학교 정보가 변경되어 알림이 해제되었어요.');
+          }
         }
       } catch (e) {
         console.error('Error removing FCM token:', e);
