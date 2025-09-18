@@ -387,10 +387,17 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
     setSelectedSubject(timetable[row]?.[col] || null);
     setSelectedSubjectIndices({row, col});
     setIsBottomSheetOpen(true);
-    setTimeout(() => {
-      bottomSheetRef.current?.snapToIndex(0);
-    }, 100);
   };
+
+  // Open bottom sheet after it mounts
+  useEffect(() => {
+    if (isBottomSheetOpen && bottomSheetRef.current) {
+      const timer = setTimeout(() => {
+        bottomSheetRef.current?.snapToIndex(0);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isBottomSheetOpen]);
 
   // Render placeholder for dragged item
   const renderPlaceholder = useCallback(() => {

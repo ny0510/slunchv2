@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Alert, Text, View} from 'react-native';
 import DatePicker from 'react-native-date-picker';
 
@@ -274,17 +274,30 @@ const Notification = () => {
 
   const openBottomSheet = () => {
     setIsBottomSheetOpen(true);
-    setTimeout(() => {
-      bottomSheetRef.current?.snapToIndex(0);
-    }, 100);
   };
 
   const openTimetableBottomSheet = () => {
     setIsTimetableBottomSheetOpen(true);
-    setTimeout(() => {
-      timetableBottomSheetRef.current?.snapToIndex(0);
-    }, 100);
   };
+
+  // Open bottom sheets after they mount
+  useEffect(() => {
+    if (isBottomSheetOpen && bottomSheetRef.current) {
+      const timer = setTimeout(() => {
+        bottomSheetRef.current?.snapToIndex(0);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isBottomSheetOpen]);
+
+  useEffect(() => {
+    if (isTimetableBottomSheetOpen && timetableBottomSheetRef.current) {
+      const timer = setTimeout(() => {
+        timetableBottomSheetRef.current?.snapToIndex(0);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isTimetableBottomSheetOpen]);
 
   const renderBackdrop = useCallback((props: any) => <BottomSheetBackdrop {...props} pressBehavior="close" disappearsOnIndex={-1} />, []);
 

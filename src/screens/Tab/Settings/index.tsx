@@ -84,32 +84,41 @@ const Settings = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
     setSelectedClass(currentClass);
 
     setIsBottomSheetOpen(true);
+  }, [classInfo.grade, classInfo.class, gradeList, classList, isLoading, isButtonDisabled]);
 
-    // BottomSheet가 완전히 열린 후 ScrollPicker 초기화
-    setTimeout(() => {
-      bottomSheetRef.current?.expand();
+  // Open bottom sheet and initialize ScrollPickers after it mounts
+  useEffect(() => {
+    if (isBottomSheetOpen && bottomSheetRef.current) {
+      const timer = setTimeout(() => {
+        bottomSheetRef.current?.expand();
 
-      // BottomSheet expand 애니메이션 완료 후 ScrollPicker 설정
-      setTimeout(() => {
-        if (gradeList.length > 0) {
-          const gradeIndex = gradeList.indexOf(currentGrade);
-          if (gradeIndex !== -1 && gradeScrollPickerRef.current) {
-            gradeScrollPickerRef.current?.scrollToTargetIndex(gradeIndex);
-          }
-        }
+        // Initialize ScrollPickers after expand animation
+        setTimeout(() => {
+          const currentGrade = classInfo.grade ? parseInt(classInfo.grade) : 1;
+          const currentClass = classInfo.class ? parseInt(classInfo.class) : 1;
 
-        if (classList.length > 0) {
-          const gradeIndex = gradeList.indexOf(currentGrade);
-          if (gradeIndex !== -1 && classList[gradeIndex]) {
-            const classIndex = classList[gradeIndex].indexOf(currentClass);
-            if (classIndex !== -1 && classScrollPickerRef.current) {
-              classScrollPickerRef.current?.scrollToTargetIndex(classIndex);
+          if (gradeList.length > 0) {
+            const gradeIndex = gradeList.indexOf(currentGrade);
+            if (gradeIndex !== -1 && gradeScrollPickerRef.current) {
+              gradeScrollPickerRef.current?.scrollToTargetIndex(gradeIndex);
             }
           }
-        }
-      }, 500); // BottomSheet expand 애니메이션 시간 증가
-    }, 100);
-  }, [classInfo.grade, classInfo.class, gradeList, classList, isLoading, isButtonDisabled]);
+
+          if (classList.length > 0) {
+            const gradeIndex = gradeList.indexOf(currentGrade);
+            if (gradeIndex !== -1 && classList[gradeIndex]) {
+              const classIndex = classList[gradeIndex].indexOf(currentClass);
+              if (classIndex !== -1 && classScrollPickerRef.current) {
+                classScrollPickerRef.current?.scrollToTargetIndex(classIndex);
+              }
+            }
+          }
+        }, 500);
+      }, 50);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isBottomSheetOpen, classInfo.grade, classInfo.class, gradeList, classList]);
 
   const loadClassData = useCallback(async () => {
     setIsLoading(true);

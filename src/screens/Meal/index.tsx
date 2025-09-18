@@ -96,10 +96,18 @@ const Meal = () => {
     setSelectedMeal(_meal);
     setSelectedMealDate(date);
     setIsBottomSheetOpen(true);
-    setTimeout(() => {
-      bottomSheetRef.current?.snapToIndex(0);
-    }, 100);
   };
+
+  // Open bottom sheet after it mounts
+  useEffect(() => {
+    if (isBottomSheetOpen && bottomSheetRef.current) {
+      // Small delay to ensure the bottom sheet is fully mounted
+      const timer = setTimeout(() => {
+        bottomSheetRef.current?.snapToIndex(0);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isBottomSheetOpen]);
 
   const renderBackdrop = useCallback((props: any) => <BottomSheetBackdrop {...props} pressBehavior="close" disappearsOnIndex={-1} />, []);
 
