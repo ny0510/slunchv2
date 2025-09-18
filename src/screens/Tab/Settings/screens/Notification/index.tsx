@@ -116,7 +116,16 @@ const Notification = () => {
     setIsMealProcessing(true);
     try {
       const fcmToken = await getFcmToken();
-      await editMealNotification(fcmToken, dayjs(mealTime).format('HH:mm'), schoolInfo.neisCode, schoolInfo.neisRegionCode);
+
+      // 매일 알림이 활성화되어 있으면 매일 알림 시간 업데이트
+      if (isMealEnabled) {
+        await editMealNotification(fcmToken, dayjs(mealTime).format('HH:mm'), schoolInfo.neisCode, schoolInfo.neisRegionCode);
+      }
+
+      // 키워드 알림이 활성화되어 있으면 키워드 알림 시간도 업데이트
+      if (isKeywordEnabled && keywords.length > 0) {
+        await editKeywordNotification(fcmToken, keywords, dayjs(mealTime).format('HH:mm'), schoolInfo.neisCode, schoolInfo.neisRegionCode);
+      }
 
       // settings 객체에 저장
       const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
@@ -125,15 +134,22 @@ const Notification = () => {
         enabled: isMealEnabled,
         time: mealTime,
       };
+      // 키워드 알림 설정에도 시간 저장
+      if (settings.keywordNotification) {
+        settings.keywordNotification = {
+          ...settings.keywordNotification,
+          time: mealTime,
+        };
+      }
       await AsyncStorage.setItem('settings', JSON.stringify(settings));
 
-      showToast(`매일 ${dayjs(mealTime).format('A hh:mm')}에 알림을 받아요.`);
+      showToast(`${dayjs(mealTime).format('A hh:mm')}에 알림을 받아요.`);
     } catch (e) {
       const error = e as Error;
       showToast(`알림 시간 변경에 실패했어요:\n${error.message}`);
     }
     setIsMealProcessing(false);
-  }, [mealTime, isMealEnabled, schoolInfo.neisCode, schoolInfo.neisRegionCode]);
+  }, [mealTime, isMealEnabled, isKeywordEnabled, keywords, schoolInfo.neisCode, schoolInfo.neisRegionCode]);
 
   // 알림 권한 체크 공통 함수
   const checkNotificationPermissions = async () => {
@@ -314,7 +330,7 @@ const Notification = () => {
       if (isKeywordEnabled) {
         try {
           const fcmToken = await getFcmToken();
-          await editKeywordNotification(fcmToken, updatedKeywords, schoolInfo.neisCode, schoolInfo.neisRegionCode);
+          await editKeywordNotification(fcmToken, updatedKeywords, dayjs(mealTime).format('HH:mm'), schoolInfo.neisCode, schoolInfo.neisRegionCode);
         } catch (error) {
           console.error('Error updating keywords on server:', error);
         }
@@ -339,7 +355,7 @@ const Notification = () => {
           await saveKeywordSettings(updatedKeywords, false);
           showToast('마지막 키워드가 삭제되어 알림이 비활성화되었어요.');
         } else {
-          await editKeywordNotification(fcmToken, updatedKeywords, schoolInfo.neisCode, schoolInfo.neisRegionCode);
+          await editKeywordNotification(fcmToken, updatedKeywords, dayjs(mealTime).format('HH:mm'), schoolInfo.neisCode, schoolInfo.neisRegionCode);
         }
       } catch (error) {
         console.error('Error updating keywords on server:', error);
@@ -354,6 +370,7 @@ const Notification = () => {
       settings.keywordNotification = {
         enabled,
         keywords: keywordsList,
+        time: mealTime, // 시간 정보 추가
       };
       await AsyncStorage.setItem('settings', JSON.stringify(settings));
     } catch (error) {
@@ -391,7 +408,7 @@ const Notification = () => {
         const hasPermission = await checkNotificationPermissions();
         if (!hasPermission) return false;
 
-        await addKeywordNotification(fcmToken, keywords, schoolInfo.neisCode, schoolInfo.neisRegionCode);
+        await addKeywordNotification(fcmToken, keywords, dayjs(mealTime).format('HH:mm'), schoolInfo.neisCode, schoolInfo.neisRegionCode);
         showToast(`키워드 알림이 활성화되었어요.`);
       } else {
         await removeKeywordNotification(fcmToken);

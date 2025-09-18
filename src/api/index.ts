@@ -108,8 +108,8 @@ export const editMealNotification = async (fcmToken: string, time: string, schoo
 };
 
 // 키워드 알림 관련 API
-export const addKeywordNotification = async (fcmToken: string, keywords: string[], schoolCode: number | string, regionCode: string): Promise<void> => {
-  const response = await httpClient.post('/fcm/keyword', {token: fcmToken, keywords, schoolCode, regionCode});
+export const addKeywordNotification = async (fcmToken: string, keywords: string[], time: string, schoolCode: number | string, regionCode: string): Promise<void> => {
+  const response = await httpClient.post('/fcm/keyword', {token: fcmToken, keywords, time, schoolCode, regionCode});
   return response.data;
 };
 
@@ -118,8 +118,8 @@ export const removeKeywordNotification = async (fcmToken: string): Promise<void>
   return response.data;
 };
 
-export const editKeywordNotification = async (fcmToken: string, keywords: string[], schoolCode: number | string, regionCode: string): Promise<void> => {
-  const response = await httpClient.put('/fcm/keyword', {token: fcmToken, keywords, schoolCode, regionCode});
+export const editKeywordNotification = async (fcmToken: string, keywords: string[], time: string, schoolCode: number | string, regionCode: string): Promise<void> => {
+  const response = await httpClient.put('/fcm/keyword', {token: fcmToken, keywords, time, schoolCode, regionCode});
   return response.data;
 };
 
