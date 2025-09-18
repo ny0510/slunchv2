@@ -1,17 +1,17 @@
 import dayjs from 'dayjs';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Alert, ScrollView, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {Alert, Keyboard, ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import DatePicker from 'react-native-date-picker';
 
 import Content from '../../components/Content';
-import {addKeywordNotification, addMealNotification, addTimetableNotification, checkKeywordNotification, checkMealNotification, editKeywordNotification, editMealNotification, editTimetableTime, removeKeywordNotification, removeMealNotification, removeTimetableNotification} from '@/api';
+import {addKeywordNotification, addMealNotification, addTimetableNotification, checkMealNotification, editKeywordNotification, editMealNotification, editTimetableTime, removeKeywordNotification, removeMealNotification, removeTimetableNotification} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import ToggleSwitch from '@/components/ToggleSwitch';
 import {useTheme} from '@/contexts/ThemeContext';
 import {useUser} from '@/contexts/UserContext';
 import {showToast} from '@/lib/toast';
-import BottomSheet, {BottomSheetBackdrop, BottomSheetView} from '@gorhom/bottom-sheet';
+import BottomSheet, {BottomSheetBackdrop, BottomSheetTextInput, BottomSheetView} from '@gorhom/bottom-sheet';
 import notifee, {AuthorizationStatus} from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
@@ -20,9 +20,9 @@ import {useFocusEffect} from '@react-navigation/native';
 
 const Notification = () => {
   // 급식 알림 상태
-  const [isEnabled, setIsEnabled] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [time, setTime] = useState<Date>(dayjs().set('hour', 7).set('minute', 30).toDate());
+  const [isMealEnabled, setIsMealEnabled] = useState(false);
+  const [isMealProcessing, setIsMealProcessing] = useState(false);
+  const [mealTime, setMealTime] = useState<Date>(dayjs().set('hour', 7).set('minute', 30).toDate());
 
   // 키워드 알림 상태
   const [isKeywordEnabled, setIsKeywordEnabled] = useState(false);
@@ -37,10 +37,12 @@ const Notification = () => {
   const [isTimetableProcessing, setIsTimetableProcessing] = useState(false);
   const [timetableTime, setTimetableTime] = useState<Date>(dayjs().set('hour', 7).set('minute', 0).toDate());
 
-  // Bottom Sheet 상태
-  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+  // 급식 알림 Bottom Sheet 상태
+  const [isMealBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+  const mealBottomSheetRef = useRef<BottomSheet>(null);
+
+  // 시간표 Bottom Sheet 상태
   const [isTimetableBottomSheetOpen, setIsTimetableBottomSheetOpen] = useState(false);
-  const bottomSheetRef = useRef<BottomSheet>(null);
   const timetableBottomSheetRef = useRef<BottomSheet>(null);
 
   const {theme, typography} = useTheme();
@@ -97,8 +99,8 @@ const Notification = () => {
       (async () => {
         try {
           const {isEnabledState, notificationTime, isKeywordEnabledState, keywordsList, isTimetableEnabledState, timetableNotificationTime} = await initializeNotificationSettings();
-          setIsEnabled(isEnabledState);
-          setTime(notificationTime);
+          setIsMealEnabled(isEnabledState);
+          setMealTime(notificationTime);
           setIsKeywordEnabled(isKeywordEnabledState);
           setKeywords(keywordsList);
           setIsTimetableEnabled(isTimetableEnabledState);
@@ -111,27 +113,27 @@ const Notification = () => {
   );
 
   const updateMealTime = useCallback(async () => {
-    setIsProcessing(true);
+    setIsMealProcessing(true);
     try {
       const fcmToken = await getFcmToken();
-      await editMealNotification(fcmToken, dayjs(time).format('HH:mm'), schoolInfo.neisCode, schoolInfo.neisRegionCode);
+      await editMealNotification(fcmToken, dayjs(mealTime).format('HH:mm'), schoolInfo.neisCode, schoolInfo.neisRegionCode);
 
       // settings 객체에 저장
       const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
       settings.mealNotification = {
         ...settings.mealNotification,
-        enabled: isEnabled,
-        time: time,
+        enabled: isMealEnabled,
+        time: mealTime,
       };
       await AsyncStorage.setItem('settings', JSON.stringify(settings));
 
-      showToast(`매일 ${dayjs(time).format('A hh:mm')}에 알림을 받아요.`);
+      showToast(`매일 ${dayjs(mealTime).format('A hh:mm')}에 알림을 받아요.`);
     } catch (e) {
       const error = e as Error;
       showToast(`알림 시간 변경에 실패했어요:\n${error.message}`);
     }
-    setIsProcessing(false);
-  }, [time, isEnabled, schoolInfo.neisCode, schoolInfo.neisRegionCode]);
+    setIsMealProcessing(false);
+  }, [mealTime, isMealEnabled, schoolInfo.neisCode, schoolInfo.neisRegionCode]);
 
   // 알림 권한 체크 공통 함수
   const checkNotificationPermissions = async () => {
@@ -179,8 +181,8 @@ const Notification = () => {
         const hasPermission = await checkNotificationPermissions();
         if (!hasPermission) return false;
 
-        await addMealNotification(fcmToken, dayjs(time).format('HH:mm'), schoolInfo.neisCode, schoolInfo.neisRegionCode);
-        showToast(`매일 ${dayjs(time).format('A hh:mm')}에 급식 알림을 받아요.`);
+        await addMealNotification(fcmToken, dayjs(mealTime).format('HH:mm'), schoolInfo.neisCode, schoolInfo.neisRegionCode);
+        showToast(`매일 ${dayjs(mealTime).format('A hh:mm')}에 급식 알림을 받아요.`);
       } else {
         await removeMealNotification(fcmToken);
         showToast('급식 알림이 해제되었어요.');
@@ -190,7 +192,7 @@ const Notification = () => {
       const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
       settings.mealNotification = {
         enabled: subscribe,
-        time: time,
+        time: mealTime,
       };
       await AsyncStorage.setItem('settings', JSON.stringify(settings));
 
@@ -239,14 +241,14 @@ const Notification = () => {
   };
 
   const toggleMealSwitch = async () => {
-    const newState = !isEnabled;
-    setIsEnabled(newState);
-    setIsProcessing(true);
+    const newState = !isMealEnabled;
+    setIsMealEnabled(newState);
+    setIsMealProcessing(true);
     const success = await handleMealSubscription(newState);
     if (!success) {
-      setIsEnabled(!newState);
+      setIsMealEnabled(!newState);
     }
-    setIsProcessing(false);
+    setIsMealProcessing(false);
   };
 
   // 시간표 알림 토글 핸들러
@@ -405,27 +407,16 @@ const Notification = () => {
     }
   };
 
-  // 키워드 변경 시 API 업데이트
-  const updateKeywordsOnServer = async () => {
-    if (isKeywordEnabled && keywords.length > 0) {
-      try {
-        const fcmToken = await getFcmToken();
-        await editKeywordNotification(fcmToken, keywords, schoolInfo.neisCode, schoolInfo.neisRegionCode);
-      } catch (error) {
-        console.error('Error updating keywords on server:', error);
-      }
-    }
-  };
 
   // Open bottom sheets after they mount
   useEffect(() => {
-    if (isBottomSheetOpen && bottomSheetRef.current) {
+    if (isMealBottomSheetOpen && mealBottomSheetRef.current) {
       const timer = setTimeout(() => {
-        bottomSheetRef.current?.snapToIndex(0);
+        mealBottomSheetRef.current?.snapToIndex(0);
       }, 50);
       return () => clearTimeout(timer);
     }
-  }, [isBottomSheetOpen]);
+  }, [isMealBottomSheetOpen]);
 
   useEffect(() => {
     if (isTimetableBottomSheetOpen && timetableBottomSheetRef.current) {
@@ -465,23 +456,54 @@ const Notification = () => {
     [updateTimetableTime],
   );
 
+  // 키보드가 닫힐 때 BottomSheet 위치 재설정
+  useEffect(() => {
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      if (isKeywordBottomSheetOpen && keywordBottomSheetRef.current) {
+        keywordBottomSheetRef.current.snapToIndex(0);
+      }
+    });
+
+    return () => {
+      keyboardDidHideListener.remove();
+    };
+  }, [isKeywordBottomSheetOpen]);
+
   return (
     <>
       <Container scrollView bounce style={{gap: 8}}>
         <Card title="급식 알림" titleStyle={{fontSize: typography.body.fontSize}}>
           <View style={{gap: 8, marginTop: 8}}>
-            <Text style={[typography.caption, {color: theme.secondaryText, marginBottom: 4}]}>매일 알림</Text>
-            <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-              <Text style={[typography.body, {color: theme.primaryText}]}>알림 받기</Text>
-              <ToggleSwitch value={isEnabled} onValueChange={toggleMealSwitch} disabled={isProcessing || isKeywordEnabled} />
-            </View>
-            <Content title="알림 시간 변경" arrow onPress={openBottomSheet} disabled={!isEnabled || isKeywordEnabled} arrowText={dayjs(time).format('A hh:mm')} />
+            {/* 알림 시간 설정 (공통) */}
+            <Content
+              title="알림 시간"
+              arrow
+              onPress={openBottomSheet}
+              disabled={!isMealEnabled && !isKeywordEnabled}
+              arrowText={dayjs(mealTime).format('A hh:mm')}
+            />
 
+            {/* 매일 알림 */}
+            <View style={{marginTop: 8, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.border}}>
+              <Text style={[typography.caption, {color: theme.secondaryText, marginBottom: 8}]}>매일 알림</Text>
+              <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+                <View style={{flex: 1}}>
+                  <Text style={[typography.body, {color: theme.primaryText}]}>매일 급식 알림 받기</Text>
+                  <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 2}]}>매일 설정한 시간에 급식 정보를 받아요</Text>
+                </View>
+                <ToggleSwitch value={isMealEnabled} onValueChange={toggleMealSwitch} disabled={isMealProcessing || isKeywordEnabled} />
+              </View>
+            </View>
+
+            {/* 키워드 알림 */}
             <View style={{marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.border}}>
               <Text style={[typography.caption, {color: theme.secondaryText, marginBottom: 8}]}>키워드 알림</Text>
-              <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-                <Text style={[typography.body, {color: theme.primaryText}]}>키워드 알림 받기</Text>
-                <ToggleSwitch value={isKeywordEnabled} onValueChange={toggleKeywordSwitch} disabled={isKeywordProcessing || isEnabled} />
+              <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8}}>
+                <View style={{flex: 1}}>
+                  <Text style={[typography.body, {color: theme.primaryText}]}>키워드 알림 받기</Text>
+                  <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 2}]}>원하는 메뉴가 나올 때만 알림을 받아요</Text>
+                </View>
+                <ToggleSwitch value={isKeywordEnabled} onValueChange={toggleKeywordSwitch} disabled={isKeywordProcessing || isMealEnabled} />
               </View>
               <Content title="키워드 관리" arrow onPress={openKeywordBottomSheet} disabled={false} arrowText={keywords.length > 0 ? `${keywords.length}개` : '추가'} />
               {isKeywordEnabled && keywords.length > 0 && (
@@ -508,10 +530,10 @@ const Notification = () => {
         </Card>
       </Container>
 
-      {isBottomSheetOpen && (
+      {isMealBottomSheetOpen && (
         <BottomSheet
           backdropComponent={renderBackdrop}
-          ref={bottomSheetRef}
+          ref={mealBottomSheetRef}
           index={-1}
           enablePanDownToClose
           onChange={handleMealSheetChanges}
@@ -522,10 +544,10 @@ const Notification = () => {
           keyboardBlurBehavior="restore">
           <BottomSheetView style={{paddingHorizontal: 18, paddingBottom: 12, backgroundColor: theme.card, justifyContent: 'center', alignItems: 'center'}}>
             <View style={{gap: 4, width: '100%'}}>
-              <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600', alignSelf: 'flex-start'}]}>알림 시간 변경</Text>
-              <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', alignSelf: 'flex-start'}]}>원하는 시간으로 설정해보세요.</Text>
+              <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600', alignSelf: 'flex-start'}]}>급식 알림 시간</Text>
+              <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', alignSelf: 'flex-start'}]}>급식 알림을 받을 시간을 설정해보세요.</Text>
             </View>
-            <DatePicker mode="time" date={time} theme="dark" dividerColor={theme.secondaryText} onDateChange={setTime} />
+            <DatePicker mode="time" date={mealTime} theme="dark" dividerColor={theme.secondaryText} onDateChange={setMealTime} />
           </BottomSheetView>
         </BottomSheet>
       )}
@@ -545,7 +567,7 @@ const Notification = () => {
           <BottomSheetView style={{paddingHorizontal: 18, paddingBottom: 12, backgroundColor: theme.card, justifyContent: 'center', alignItems: 'center'}}>
             <View style={{gap: 4, width: '100%'}}>
               <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600', alignSelf: 'flex-start'}]}>시간표 알림 시간</Text>
-              <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', alignSelf: 'flex-start'}]}>매일 아침 시간표를 받고 싶은 시간을 설정해보세요.</Text>
+              <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', alignSelf: 'flex-start'}]}>원하는 시간으로 설정해보세요.</Text>
             </View>
             <DatePicker mode="time" date={timetableTime} theme="dark" dividerColor={theme.secondaryText} onDateChange={setTimetableTime} />
           </BottomSheetView>
@@ -554,16 +576,15 @@ const Notification = () => {
 
       {isKeywordBottomSheetOpen && (
         <BottomSheet
+          keyboardBehavior="interactive"
+          keyboardBlurBehavior="restore"
+          android_keyboardInputMode="adjustPan"
           backdropComponent={renderBackdrop}
           ref={keywordBottomSheetRef}
-          index={-1}
-          snapPoints={['50%']}
           enablePanDownToClose
           onClose={() => setIsKeywordBottomSheetOpen(false)}
           backgroundStyle={{backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}}
-          handleIndicatorStyle={{backgroundColor: theme.secondaryText}}
-          keyboardBehavior="interactive"
-          keyboardBlurBehavior="restore">
+          handleIndicatorStyle={{backgroundColor: theme.secondaryText}}>
           <BottomSheetView style={{paddingHorizontal: 18, paddingBottom: 12, flex: 1}}>
             <View style={{gap: 4, marginBottom: 16}}>
               <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600'}]}>키워드 관리</Text>
@@ -572,7 +593,7 @@ const Notification = () => {
 
             {/* 키워드 입력 */}
             <View style={{flexDirection: 'row', gap: 8, marginBottom: 16}}>
-              <TextInput
+              <BottomSheetTextInput
                 placeholder="키워드를 입력하세요 (예: 피자, 치킨)"
                 value={keywordInput}
                 onChangeText={setKeywordInput}
@@ -610,7 +631,7 @@ const Notification = () => {
             <ScrollView style={{flex: 1}} showsVerticalScrollIndicator={false}>
               {keywords.length === 0 ? (
                 <View style={{alignItems: 'center', paddingVertical: 32}}>
-                  <FontAwesome6 name="bell-slash" size={32} color={theme.secondaryText} solid />
+                  <FontAwesome6 name="bell-slash" size={32} color={theme.secondaryText} iconStyle="solid" />
                   <Text style={[typography.body, {color: theme.secondaryText, marginTop: 12}]}>아직 키워드가 없어요.</Text>
                   <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 4}]}>알림 받고 싶은 메뉴를 추가해보세요.</Text>
                 </View>
@@ -631,7 +652,7 @@ const Notification = () => {
                       }}>
                       <Text style={[typography.body, {color: theme.primaryText}]}>{keyword}</Text>
                       <TouchableOpacity onPress={() => removeKeyword(keyword)} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}} activeOpacity={0.7}>
-                        <FontAwesome6 name="xmark" size={16} color={theme.secondaryText} solid />
+                        <FontAwesome6 name="xmark" size={16} color={theme.secondaryText} iconStyle="solid" />
                       </TouchableOpacity>
                     </View>
                   ))}
