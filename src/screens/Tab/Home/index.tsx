@@ -392,14 +392,34 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
     }, 100);
   };
 
+  // Render placeholder for dragged item
+  const renderPlaceholder = useCallback(
+    () => {
+      return (
+        <View
+          style={{
+            backgroundColor: theme.border,
+            borderRadius: 16,
+            height: 100,
+            opacity: 0.3,
+            borderWidth: 2,
+            borderColor: theme.primaryText,
+            borderStyle: 'dashed',
+          }}
+        />
+      );
+    },
+    [theme],
+  );
+
   // Render draggable card item
   const renderDraggableItem = useCallback(
-    ({item, drag}: RenderItemParams<CardData>) => {
+    ({item, drag, isActive}: RenderItemParams<CardData>) => {
       // In edit mode, all cards are draggable with long press
       if (item.id === 'timetable') {
         return (
           <ScaleDecorator activeScale={0.95}>
-            <OpacityDecorator activeOpacity={0.8}>
+            <OpacityDecorator activeOpacity={isActive ? 0.95 : 1}>
               <TouchableOpacity onLongPress={drag} disabled={false} activeOpacity={1}>
                 <Card
                   title={item.title}
@@ -422,7 +442,7 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
       // For other cards (schedule, meal)
       return (
         <ScaleDecorator activeScale={0.95}>
-          <OpacityDecorator activeOpacity={0.8}>
+          <OpacityDecorator activeOpacity={isActive ? 0.95 : 1}>
             <TouchableOpacity onLongPress={drag} disabled={false} activeOpacity={1}>
               <Card
                 title={item.title}
@@ -472,15 +492,53 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
                 {schoolInfo.schoolName === '선린인터넷고' ? <SunrinLogo width={22} height={22} /> : <Logo width={22} height={22} />}
                 <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600'}]}>{schoolInfo.schoolName || '학교 정보 없음'}</Text>
               </View>
-              <TouchableOpacity onPress={toggleEditMode} style={{paddingHorizontal: 12, paddingVertical: 6, backgroundColor: theme.primaryText, borderRadius: 8}}>
-                <Text style={[typography.body, {color: theme.background, fontWeight: '600'}]}>완료</Text>
+              <TouchableOpacity
+                onPress={toggleEditMode}
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  backgroundColor: '#5865F2',
+                  borderRadius: 20,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 3,
+                  elevation: 3,
+                }}>
+                <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
+                  <FontAwesome6 name="check" size={14} color="#fff" iconStyle="solid" />
+                  <Text style={[typography.body, {color: '#fff', fontWeight: '700'}]}>완료</Text>
+                </View>
               </TouchableOpacity>
             </View>
 
             <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
 
             {/* Draggable cards */}
-            <DraggableFlatList data={cardOrder} keyExtractor={item => item.id} onDragEnd={({data}) => handleCardOrderChange(data)} renderItem={renderDraggableItem} contentContainerStyle={{gap: 8}} scrollEnabled={true} activationDistance={10} />
+            <DraggableFlatList
+              data={cardOrder}
+              keyExtractor={item => item.id}
+              onDragEnd={({data}) => handleCardOrderChange(data)}
+              renderItem={renderDraggableItem}
+              renderPlaceholder={renderPlaceholder}
+              contentContainerStyle={{gap: 8, height: '100%'}}
+              scrollEnabled={true}
+              activationDistance={20}
+              autoscrollThreshold={100}
+              autoscrollSpeed={200}
+              animationConfig={{
+                damping: 20,
+                stiffness: 200,
+              }}
+              onDragBegin={() => {
+                trigger('impactMedium');
+              }}
+              onRelease={() => {
+                trigger('impactLight');
+              }}
+              dragItemOverflow={true}
+              dragHitSlop={{top: -10, left: -10, bottom: -10, right: -10}}
+            />
           </View>
         </Container>
       ) : (

@@ -249,13 +249,13 @@ const MealCard = ({date, isToday, meal, mealType, showAllergy, onLongPress}: {da
               style={[
                 typography.subtitle,
                 {
-                  color: isToday ? theme.highlight : theme.primaryText,
-                  fontWeight: isToday ? '700' : '600',
+                  color: theme.primaryText,
+                  fontWeight: '600',
                 },
               ]}>
               {date.format('M월 D일 (ddd)')}
             </Text>
-            {isToday && (
+            {/* {isToday && (
               <View
                 style={{
                   backgroundColor: theme.highlight,
@@ -265,7 +265,7 @@ const MealCard = ({date, isToday, meal, mealType, showAllergy, onLongPress}: {da
                 }}>
                 <Text style={[typography.caption, {color: theme.white, fontWeight: '600'}]}>오늘</Text>
               </View>
-            )}
+            )} */}
           </View>
           {mealType && <Text style={[typography.caption, {color: getMealTypeColor(mealType), fontWeight: '600'}]}>{mealType}</Text>}
         </View>
