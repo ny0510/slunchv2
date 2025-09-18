@@ -168,6 +168,7 @@ export const IntroScreen = () => {
       <LinearGradient colors={['transparent', theme.background, theme.background]} style={s.introGradientBottom} />
 
       <View style={s.introContentWrapper}>
+        <View />
         <View style={s.introTopContent}>
           <SlotMachine list={INTRO_MESSAGES} style={s.introSlotMachine} delay={SLOT_MACHINE_DELAY} duration={SLOT_MACHINE_DURATION} />
 
@@ -205,7 +206,7 @@ export const IntroScreen = () => {
               </View>
               <View style={s.introFeatureContent}>
                 <Text style={s.introFeatureTitle}>모바일 학생증</Text>
-                <Text style={s.introFeatureDesc}>*선린인터넷고등학교 한정</Text>
+                <Text style={s.introFeatureDesc}>*일부 고등학교 한정</Text>
               </View>
             </LinearGradient>
           </View>
@@ -446,10 +447,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
 
       // Handle FCM token removal if needed
       try {
-        const [storedToken, settings] = await Promise.all([
-          AsyncStorage.getItem('fcmToken'),
-          AsyncStorage.getItem('settings')
-        ]);
+        const [storedToken, settings] = await Promise.all([AsyncStorage.getItem('fcmToken'), AsyncStorage.getItem('settings')]);
 
         const settingsParsed = settings ? JSON.parse(settings) : {};
         const isMealEnabled = settingsParsed.mealNotification?.enabled || false;
