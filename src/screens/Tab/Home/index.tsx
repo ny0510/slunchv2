@@ -2,6 +2,7 @@ import {ANDROID_HOME_BANNER_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
 import React, {Fragment, ReactNode, useCallback, useEffect, useRef, useState} from 'react';
 import {AppState, BackHandler, FlatList, Keyboard, Platform, RefreshControl, Text, ToastAndroid, TouchableOpacity, View} from 'react-native';
+import DraggableFlatList, {OpacityDecorator, RenderItemParams, ScaleDecorator} from 'react-native-draggable-flatlist';
 import {trigger} from 'react-native-haptic-feedback';
 import Midnight from 'react-native-midnight';
 import TouchableScale from 'react-native-touchable-scale';
@@ -32,6 +33,12 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 
 dayjs.extend(isSameOrAfter);
 
+interface CardData {
+  id: 'schedule' | 'meal' | 'timetable';
+  title: string;
+  iconName: string;
+}
+
 const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
   const [timetable, setTimetable] = useState<Timetable[][]>([]);
   const [meal, setMeal] = useState<Meal[]>([]);
@@ -44,6 +51,12 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
   const [selectedSubject, setSelectedSubject] = useState<Timetable | null>(null);
   const [selectedSubjectIndices, setSelectedSubjectIndices] = useState<{row: number; col: number} | null>(null);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [cardOrder, setCardOrder] = useState<CardData[]>([
+    {id: 'schedule', title: '학사일정', iconName: 'calendar'},
+    {id: 'meal', title: '급식', iconName: 'utensils'},
+    {id: 'timetable', title: '시간표', iconName: 'table'},
+  ]);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const backPressedOnceRef = useRef(false);
   const scrollViewRef = useRef<any>(null);
@@ -54,6 +67,39 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
 
   // Use the scroll-to-top hook
   useScrollToTop(scrollViewRef, setScrollRef);
+
+  // Load saved card order
+  useEffect(() => {
+    AsyncStorage.getItem('homeCardOrder').then(savedOrder => {
+      if (savedOrder) {
+        try {
+          const parsedOrder = JSON.parse(savedOrder);
+          setCardOrder(parsedOrder);
+        } catch (error) {
+          console.error('Failed to parse saved card order:', error);
+        }
+      }
+    });
+  }, []);
+
+  // Save card order when it changes
+  const handleCardOrderChange = useCallback((newOrder: CardData[]) => {
+    setCardOrder(newOrder);
+    AsyncStorage.setItem('homeCardOrder', JSON.stringify(newOrder));
+  }, []);
+
+  // Toggle edit mode
+  const toggleEditMode = useCallback(() => {
+    trigger('impactLight');
+    setIsEditMode(prev => !prev);
+  }, []);
+
+  // Handle card long press
+  const handleCardLongPress = useCallback(() => {
+    if (!isEditMode) {
+      toggleEditMode();
+    }
+  }, [isEditMode, toggleEditMode]);
 
   const getSettings = useCallback(async () => {
     const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
@@ -203,6 +249,12 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
             return true;
           }
 
+          // Edit mode가 활성화되어 있으면 비활성화
+          if (isEditMode) {
+            setIsEditMode(false);
+            return true;
+          }
+
           // 앱 종료 로직
           if (backPressedOnceRef.current) {
             BackHandler.exitApp();
@@ -217,7 +269,7 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
         const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
         return () => subscription.remove();
       }
-    }, [isBottomSheetOpen]),
+    }, [isBottomSheetOpen, isEditMode]),
   );
 
   // 탭 이동 시 BottomSheet 자동 닫힘
@@ -340,6 +392,58 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
     }, 100);
   };
 
+  // Render draggable card item
+  const renderDraggableItem = useCallback(
+    ({item, drag}: RenderItemParams<CardData>) => {
+      // In edit mode, all cards are draggable with long press
+      if (item.id === 'timetable') {
+        return (
+          <ScaleDecorator activeScale={0.95}>
+            <OpacityDecorator activeOpacity={0.8}>
+              <TouchableOpacity onLongPress={drag} disabled={false} activeOpacity={1}>
+                <Card
+                  title={item.title}
+                  titleIcon={
+                    <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+                      <FontAwesome6 name="grip-vertical" iconStyle="solid" size={14} color={theme.secondaryText} />
+                    </View>
+                  }>
+                  {/* In edit mode, show only title without content */}
+                  <View style={{height: 40, justifyContent: 'center', alignItems: 'center'}}>
+                    <Text style={[typography.caption, {color: theme.secondaryText}]}>길게 눌러 순서 변경</Text>
+                  </View>
+                </Card>
+              </TouchableOpacity>
+            </OpacityDecorator>
+          </ScaleDecorator>
+        );
+      }
+
+      // For other cards (schedule, meal)
+      return (
+        <ScaleDecorator activeScale={0.95}>
+          <OpacityDecorator activeOpacity={0.8}>
+            <TouchableOpacity onLongPress={drag} disabled={false} activeOpacity={1}>
+              <Card
+                title={item.title}
+                titleIcon={
+                  <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+                    <FontAwesome6 name="grip-vertical" iconStyle="solid" size={14} color={theme.secondaryText} />
+                  </View>
+                }>
+                {/* In edit mode, show only title without content */}
+                <View style={{height: 40, justifyContent: 'center', alignItems: 'center'}}>
+                  <Text style={[typography.caption, {color: theme.secondaryText}]}>길게 눌러 순서 변경</Text>
+                </View>
+              </Card>
+            </TouchableOpacity>
+          </OpacityDecorator>
+        </ScaleDecorator>
+      );
+    },
+    [theme, typography],
+  );
+
   const renderBackdrop = useCallback(
     (props: any) => (
       <BottomSheetBackdrop
@@ -359,45 +463,91 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
 
   return (
     <Fragment>
-      <Container bounce scrollView scrollViewRef={scrollViewRef} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}>
-        <View style={s.container}>
-          <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8}}>
-            {schoolInfo.schoolName === '선린인터넷고' ? <SunrinLogo width={22} height={22} /> : <Logo width={22} height={22} />}
-            <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600'}]}>{schoolInfo.schoolName || '학교 정보 없음'}</Text>
-          </View>
-
-          <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
-
-          <HomeCard title="학사일정" titleIcon={<FontAwesome6 name="calendar" size={16} color={theme.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Schedules')}>
-            {loading ? <LoadingView height={100} /> : schedules.length === 0 ? <Text style={[typography.body, {color: theme.secondaryText}]}>학사일정이 없어요.</Text> : <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />}
-          </HomeCard>
-          <HomeCard title="급식" titleIcon={<FontAwesome6 name="utensils" size={16} color={theme.primaryText} iconStyle="solid" />} arrow onPress={() => navigation.navigate('Meal')}>
-            {loading ? (
-              <LoadingView height={100} />
-            ) : meal.length === 0 ? (
-              <Text style={[typography.body, {color: theme.secondaryText}]}>급식 정보가 없어요.</Text>
-            ) : (
-              <View style={{gap: 4}}>
-                <FlatList data={meal} renderItem={({item}) => <View>{item.meal.map(renderMealItem)}</View>} scrollEnabled={false} />
-                {mealDayOffset > 0 && (
-                  <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 4}]}>
-                    {mealDayOffset}일 뒤, {dayjs().add(mealDayOffset, 'day').format('dddd')} 급식이에요.
-                  </Text>
-                )}
+      {isEditMode ? (
+        <Container bounce={false} scrollView={false}>
+          <View style={s.container}>
+            {/* Edit mode header */}
+            <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8}}>
+              <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+                {schoolInfo.schoolName === '선린인터넷고' ? <SunrinLogo width={22} height={22} /> : <Logo width={22} height={22} />}
+                <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600'}]}>{schoolInfo.schoolName || '학교 정보 없음'}</Text>
               </View>
-            )}
-          </HomeCard>
-          <Card title="시간표" subtitle="길게 눌러 편집" titleIcon={<FontAwesome6 name="table" size={16} color={theme.primaryText} iconStyle="solid" />}>
-            {loading ? (
-              <LoadingView height={250} />
-            ) : timetable.length === 0 ? (
-              <Text style={[typography.caption, {color: theme.secondaryText}]}>이번주 시간표가 없어요.</Text>
-            ) : (
-              <FlatList data={timetable} contentContainerStyle={{gap: 3}} renderItem={({item, index}) => <TimetableRow item={item} index={index} todayIndex={todayIndex} openBottomSheet={openBottomSheet} />} scrollEnabled={false} />
-            )}
-          </Card>
-        </View>
-      </Container>
+              <TouchableOpacity onPress={toggleEditMode} style={{paddingHorizontal: 12, paddingVertical: 6, backgroundColor: theme.primaryText, borderRadius: 8}}>
+                <Text style={[typography.body, {color: theme.background, fontWeight: '600'}]}>완료</Text>
+              </TouchableOpacity>
+            </View>
+
+            <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
+
+            {/* Draggable cards */}
+            <DraggableFlatList data={cardOrder} keyExtractor={item => item.id} onDragEnd={({data}) => handleCardOrderChange(data)} renderItem={renderDraggableItem} contentContainerStyle={{gap: 8}} scrollEnabled={true} activationDistance={10} />
+          </View>
+        </Container>
+      ) : (
+        <Container bounce scrollView scrollViewRef={scrollViewRef} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}>
+          <View style={s.container}>
+            <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8}}>
+              {schoolInfo.schoolName === '선린인터넷고' ? <SunrinLogo width={22} height={22} /> : <Logo width={22} height={22} />}
+              <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600'}]}>{schoolInfo.schoolName || '학교 정보 없음'}</Text>
+            </View>
+
+            <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
+
+            {/* Render cards based on saved order */}
+            {cardOrder.map(card => {
+              if (card.id === 'timetable') {
+                return (
+                  <TouchableOpacity key={card.id} onLongPress={handleCardLongPress} activeOpacity={1}>
+                    <Card title={card.title} subtitle="길게 눌러 편집" titleIcon={<FontAwesome6 name={card.iconName as any} size={16} color={theme.primaryText} iconStyle="solid" />}>
+                      {loading ? (
+                        <LoadingView height={250} />
+                      ) : timetable.length === 0 ? (
+                        <Text style={[typography.caption, {color: theme.secondaryText}]}>이번주 시간표가 없어요.</Text>
+                      ) : (
+                        <FlatList data={timetable} contentContainerStyle={{gap: 3}} renderItem={({item, index}) => <TimetableRow item={item} index={index} todayIndex={todayIndex} openBottomSheet={openBottomSheet} />} scrollEnabled={false} />
+                      )}
+                    </Card>
+                  </TouchableOpacity>
+                );
+              }
+
+              const cardProps = card.id === 'schedule' ? {onPress: () => navigation.navigate('Schedules'), arrow: true} : card.id === 'meal' ? {onPress: () => navigation.navigate('Meal'), arrow: true} : {};
+
+              const renderContent = () => {
+                switch (card.id) {
+                  case 'schedule':
+                    return loading ? <LoadingView height={100} /> : schedules.length === 0 ? <Text style={[typography.body, {color: theme.secondaryText}]}>학사일정이 없어요.</Text> : <FlatList data={schedules} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />;
+                  case 'meal':
+                    return loading ? (
+                      <LoadingView height={100} />
+                    ) : meal.length === 0 ? (
+                      <Text style={[typography.body, {color: theme.secondaryText}]}>급식 정보가 없어요.</Text>
+                    ) : (
+                      <View style={{gap: 4}}>
+                        <FlatList data={meal} renderItem={({item}) => <View>{item.meal.map(renderMealItem)}</View>} scrollEnabled={false} />
+                        {mealDayOffset > 0 && (
+                          <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 4}]}>
+                            {mealDayOffset}일 뒤, {dayjs().add(mealDayOffset, 'day').format('dddd')} 급식이에요.
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  default:
+                    return null;
+                }
+              };
+
+              return (
+                <TouchableOpacity key={card.id} activeOpacity={1}>
+                  <HomeCard onLongPress={handleCardLongPress} title={card.title} titleIcon={<FontAwesome6 name={card.iconName as any} size={16} color={theme.primaryText} iconStyle="solid" />} {...cardProps}>
+                    {renderContent()}
+                  </HomeCard>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </Container>
+      )}
 
       {isBottomSheetOpen && (
         <BottomSheet
@@ -506,10 +656,10 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
   );
 };
 
-const HomeCard = ({title, titleIcon, arrow, onPress, notificationDot, children, ...rest}: {title?: string; titleIcon?: ReactNode; arrow?: boolean; onPress?: () => void; notificationDot?: boolean; children?: ReactNode} & {[key: string]: any}) => {
+const HomeCard = ({title, titleIcon, arrow, onPress, onLongPress, notificationDot, children, ...rest}: {title?: string; titleIcon?: ReactNode; arrow?: boolean; onPress?: () => void; notificationDot?: boolean; children?: ReactNode} & {[key: string]: any}) => {
   const {theme} = useTheme();
   return (
-    <TouchableScale onPress={onPress} activeScale={0.98} tension={100} friction={10} {...rest}>
+    <TouchableScale onLongPress={onLongPress} onPress={onPress} activeScale={0.98} tension={100} friction={10} {...rest}>
       <View style={{backgroundColor: theme.card, borderRadius: 16, padding: 20, gap: 16}}>
         {title && (
           <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
