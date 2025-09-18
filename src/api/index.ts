@@ -107,6 +107,27 @@ export const editMealNotification = async (fcmToken: string, time: string, schoo
   return response.data;
 };
 
+// 키워드 알림 관련 API
+export const addKeywordNotification = async (fcmToken: string, keywords: string[], schoolCode: number | string, regionCode: string): Promise<void> => {
+  const response = await httpClient.post('/fcm/keyword', {token: fcmToken, keywords, schoolCode, regionCode});
+  return response.data;
+};
+
+export const removeKeywordNotification = async (fcmToken: string): Promise<void> => {
+  const response = await httpClient.delete('/fcm/keyword', {data: {token: fcmToken}});
+  return response.data;
+};
+
+export const editKeywordNotification = async (fcmToken: string, keywords: string[], schoolCode: number | string, regionCode: string): Promise<void> => {
+  const response = await httpClient.put('/fcm/keyword', {token: fcmToken, keywords, schoolCode, regionCode});
+  return response.data;
+};
+
+export const checkKeywordNotification = async (fcmToken: string): Promise<boolean> => {
+  const response = await httpClient.get('/fcm/keyword', {params: {token: fcmToken}});
+  return response.status === 200;
+};
+
 // 시간표 알림 API
 export const addTimetableNotification = async (fcmToken: string, time: string, schoolCode: number, grade: number | string, classNum: number | string): Promise<void> => {
   const response = await httpClient.post('/fcm/timetable', {

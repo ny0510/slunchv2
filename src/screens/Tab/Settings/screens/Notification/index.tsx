@@ -1,10 +1,10 @@
 import dayjs from 'dayjs';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Alert, Text, View} from 'react-native';
+import {Alert, ScrollView, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import DatePicker from 'react-native-date-picker';
 
 import Content from '../../components/Content';
-import {addMealNotification, addTimetableNotification, checkMealNotification, editMealNotification, editTimetableTime, removeMealNotification, removeTimetableNotification} from '@/api';
+import {addKeywordNotification, addMealNotification, addTimetableNotification, checkKeywordNotification, checkMealNotification, editKeywordNotification, editMealNotification, editTimetableTime, removeKeywordNotification, removeMealNotification, removeTimetableNotification} from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import ToggleSwitch from '@/components/ToggleSwitch';
@@ -15,6 +15,7 @@ import BottomSheet, {BottomSheetBackdrop, BottomSheetView} from '@gorhom/bottom-
 import notifee, {AuthorizationStatus} from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
+import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {useFocusEffect} from '@react-navigation/native';
 
 const Notification = () => {
@@ -22,6 +23,14 @@ const Notification = () => {
   const [isEnabled, setIsEnabled] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [time, setTime] = useState<Date>(dayjs().set('hour', 7).set('minute', 30).toDate());
+
+  // 키워드 알림 상태
+  const [isKeywordEnabled, setIsKeywordEnabled] = useState(false);
+  const [isKeywordProcessing, setIsKeywordProcessing] = useState(false);
+  const [keywords, setKeywords] = useState<string[]>([]);
+  const [keywordInput, setKeywordInput] = useState('');
+  const [isKeywordBottomSheetOpen, setIsKeywordBottomSheetOpen] = useState(false);
+  const keywordBottomSheetRef = useRef<BottomSheet>(null);
 
   // 시간표 알림 상태
   const [isTimetableEnabled, setIsTimetableEnabled] = useState(false);
@@ -44,6 +53,10 @@ const Notification = () => {
     let isEnabledState = settings.mealNotification?.enabled || false;
     let notificationTime = settings.mealNotification?.time ? new Date(settings.mealNotification.time) : dayjs().set('hour', 7).set('minute', 30).toDate();
 
+    // 키워드 알림 설정
+    let isKeywordEnabledState = settings.keywordNotification?.enabled || false;
+    let keywordsList = settings.keywordNotification?.keywords || [];
+
     // 시간표 알림 설정
     let isTimetableEnabledState = settings.timetableNotification?.enabled || false;
     let timetableNotificationTime = settings.timetableNotification?.time ? new Date(settings.timetableNotification.time) : dayjs().set('hour', 7).set('minute', 0).toDate();
@@ -64,7 +77,7 @@ const Notification = () => {
       await AsyncStorage.setItem('settings', JSON.stringify(newSettings));
     }
 
-    return {isEnabledState, notificationTime, isTimetableEnabledState, timetableNotificationTime};
+    return {isEnabledState, notificationTime, isKeywordEnabledState, keywordsList, isTimetableEnabledState, timetableNotificationTime};
   }, []);
 
   const getFcmToken = async () => {
@@ -83,9 +96,11 @@ const Notification = () => {
     useCallback(() => {
       (async () => {
         try {
-          const {isEnabledState, notificationTime, isTimetableEnabledState, timetableNotificationTime} = await initializeNotificationSettings();
+          const {isEnabledState, notificationTime, isKeywordEnabledState, keywordsList, isTimetableEnabledState, timetableNotificationTime} = await initializeNotificationSettings();
           setIsEnabled(isEnabledState);
           setTime(notificationTime);
+          setIsKeywordEnabled(isKeywordEnabledState);
+          setKeywords(keywordsList);
           setIsTimetableEnabled(isTimetableEnabledState);
           setTimetableTime(timetableNotificationTime);
         } catch (error) {
@@ -280,6 +295,128 @@ const Notification = () => {
     setIsTimetableBottomSheetOpen(true);
   };
 
+  const openKeywordBottomSheet = () => {
+    setIsKeywordBottomSheetOpen(true);
+  };
+
+  // 키워드 추가 함수
+  const addKeyword = async () => {
+    const trimmedKeyword = keywordInput.trim();
+    if (trimmedKeyword && !keywords.includes(trimmedKeyword)) {
+      const updatedKeywords = [...keywords, trimmedKeyword];
+      setKeywords(updatedKeywords);
+      setKeywordInput('');
+      await saveKeywordSettings(updatedKeywords, isKeywordEnabled);
+
+      // 서버 업데이트
+      if (isKeywordEnabled) {
+        try {
+          const fcmToken = await getFcmToken();
+          await editKeywordNotification(fcmToken, updatedKeywords, schoolInfo.neisCode, schoolInfo.neisRegionCode);
+        } catch (error) {
+          console.error('Error updating keywords on server:', error);
+        }
+      }
+    }
+  };
+
+  // 키워드 삭제 함수
+  const removeKeyword = async (keyword: string) => {
+    const updatedKeywords = keywords.filter(k => k !== keyword);
+    setKeywords(updatedKeywords);
+    await saveKeywordSettings(updatedKeywords, isKeywordEnabled);
+
+    // 서버 업데이트
+    if (isKeywordEnabled) {
+      try {
+        const fcmToken = await getFcmToken();
+        if (updatedKeywords.length === 0) {
+          // 키워드가 모두 삭제되면 알림 비활성화
+          await removeKeywordNotification(fcmToken);
+          setIsKeywordEnabled(false);
+          await saveKeywordSettings(updatedKeywords, false);
+          showToast('마지막 키워드가 삭제되어 알림이 비활성화되었어요.');
+        } else {
+          await editKeywordNotification(fcmToken, updatedKeywords, schoolInfo.neisCode, schoolInfo.neisRegionCode);
+        }
+      } catch (error) {
+        console.error('Error updating keywords on server:', error);
+      }
+    }
+  };
+
+  // 키워드 설정 저장
+  const saveKeywordSettings = async (keywordsList: string[], enabled: boolean) => {
+    try {
+      const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
+      settings.keywordNotification = {
+        enabled,
+        keywords: keywordsList,
+      };
+      await AsyncStorage.setItem('settings', JSON.stringify(settings));
+    } catch (error) {
+      console.error('Failed to save keyword settings:', error);
+    }
+  };
+
+  // 키워드 알림 토글 핸들러
+  const toggleKeywordSwitch = async () => {
+    const newState = !isKeywordEnabled;
+
+    // 키워드가 없으면 경고
+    if (newState && keywords.length === 0) {
+      showToast('키워드를 먼저 추가해주세요.');
+      return;
+    }
+
+    setIsKeywordEnabled(newState);
+    setIsKeywordProcessing(true);
+
+    const success = await handleKeywordSubscription(newState);
+    if (!success) {
+      setIsKeywordEnabled(!newState);
+    }
+
+    setIsKeywordProcessing(false);
+  };
+
+  // 키워드 알림 구독 처리
+  const handleKeywordSubscription = async (subscribe: boolean) => {
+    try {
+      const fcmToken = await getFcmToken();
+
+      if (subscribe) {
+        const hasPermission = await checkNotificationPermissions();
+        if (!hasPermission) return false;
+
+        await addKeywordNotification(fcmToken, keywords, schoolInfo.neisCode, schoolInfo.neisRegionCode);
+        showToast(`키워드 알림이 활성화되었어요.`);
+      } else {
+        await removeKeywordNotification(fcmToken);
+        showToast('키워드 알림이 해제되었어요.');
+      }
+
+      await saveKeywordSettings(keywords, subscribe);
+      return true;
+    } catch (error) {
+      console.error('Error handling keyword subscription:', error);
+      showToast('키워드 알림 설정에 실패했어요.');
+      return false;
+    }
+  };
+
+  // 키워드 변경 시 API 업데이트
+  const updateKeywordsOnServer = async () => {
+    if (isKeywordEnabled && keywords.length > 0) {
+      try {
+        const fcmToken = await getFcmToken();
+        await editKeywordNotification(fcmToken, keywords, schoolInfo.neisCode, schoolInfo.neisRegionCode);
+      } catch (error) {
+        console.error('Error updating keywords on server:', error);
+      }
+    }
+  };
+
   // Open bottom sheets after they mount
   useEffect(() => {
     if (isBottomSheetOpen && bottomSheetRef.current) {
@@ -298,6 +435,15 @@ const Notification = () => {
       return () => clearTimeout(timer);
     }
   }, [isTimetableBottomSheetOpen]);
+
+  useEffect(() => {
+    if (isKeywordBottomSheetOpen && keywordBottomSheetRef.current) {
+      const timer = setTimeout(() => {
+        keywordBottomSheetRef.current?.snapToIndex(0);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isKeywordBottomSheetOpen]);
 
   const renderBackdrop = useCallback((props: any) => <BottomSheetBackdrop {...props} pressBehavior="close" disappearsOnIndex={-1} />, []);
 
@@ -324,11 +470,30 @@ const Notification = () => {
       <Container scrollView bounce style={{gap: 8}}>
         <Card title="급식 알림" titleStyle={{fontSize: typography.body.fontSize}}>
           <View style={{gap: 8, marginTop: 8}}>
+            <Text style={[typography.caption, {color: theme.secondaryText, marginBottom: 4}]}>매일 알림</Text>
             <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
               <Text style={[typography.body, {color: theme.primaryText}]}>알림 받기</Text>
-              <ToggleSwitch value={isEnabled} onValueChange={toggleMealSwitch} disabled={isProcessing} />
+              <ToggleSwitch value={isEnabled} onValueChange={toggleMealSwitch} disabled={isProcessing || isKeywordEnabled} />
             </View>
-            <Content title="알림 시간 변경" arrow onPress={openBottomSheet} disabled={!isEnabled} arrowText={dayjs(time).format('A hh:mm')} />
+            <Content title="알림 시간 변경" arrow onPress={openBottomSheet} disabled={!isEnabled || isKeywordEnabled} arrowText={dayjs(time).format('A hh:mm')} />
+
+            <View style={{marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.border}}>
+              <Text style={[typography.caption, {color: theme.secondaryText, marginBottom: 8}]}>키워드 알림</Text>
+              <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+                <Text style={[typography.body, {color: theme.primaryText}]}>키워드 알림 받기</Text>
+                <ToggleSwitch value={isKeywordEnabled} onValueChange={toggleKeywordSwitch} disabled={isKeywordProcessing || isEnabled} />
+              </View>
+              <Content title="키워드 관리" arrow onPress={openKeywordBottomSheet} disabled={false} arrowText={keywords.length > 0 ? `${keywords.length}개` : '추가'} />
+              {isKeywordEnabled && keywords.length > 0 && (
+                <View style={{marginTop: 8, flexDirection: 'row', flexWrap: 'wrap', gap: 6}}>
+                  {keywords.map((keyword, index) => (
+                    <View key={index} style={{backgroundColor: `${theme.highlight}20`, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12}}>
+                      <Text style={[typography.small, {color: theme.highlight}]}>{keyword}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
           </View>
         </Card>
 
@@ -383,6 +548,102 @@ const Notification = () => {
               <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', alignSelf: 'flex-start'}]}>매일 아침 시간표를 받고 싶은 시간을 설정해보세요.</Text>
             </View>
             <DatePicker mode="time" date={timetableTime} theme="dark" dividerColor={theme.secondaryText} onDateChange={setTimetableTime} />
+          </BottomSheetView>
+        </BottomSheet>
+      )}
+
+      {isKeywordBottomSheetOpen && (
+        <BottomSheet
+          backdropComponent={renderBackdrop}
+          ref={keywordBottomSheetRef}
+          index={-1}
+          snapPoints={['50%']}
+          enablePanDownToClose
+          onClose={() => setIsKeywordBottomSheetOpen(false)}
+          backgroundStyle={{backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}}
+          handleIndicatorStyle={{backgroundColor: theme.secondaryText}}
+          keyboardBehavior="interactive"
+          keyboardBlurBehavior="restore">
+          <BottomSheetView style={{paddingHorizontal: 18, paddingBottom: 12, flex: 1}}>
+            <View style={{gap: 4, marginBottom: 16}}>
+              <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600'}]}>키워드 관리</Text>
+              <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300'}]}>특정 메뉴가 나오는 날만 알림을 받아보세요.</Text>
+            </View>
+
+            {/* 키워드 입력 */}
+            <View style={{flexDirection: 'row', gap: 8, marginBottom: 16}}>
+              <TextInput
+                placeholder="키워드를 입력하세요 (예: 피자, 치킨)"
+                value={keywordInput}
+                onChangeText={setKeywordInput}
+                onSubmitEditing={addKeyword}
+                placeholderTextColor={theme.secondaryText}
+                style={[
+                  typography.body,
+                  {
+                    flex: 1,
+                    backgroundColor: theme.background,
+                    borderRadius: 8,
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                    color: theme.primaryText,
+                    borderWidth: 1,
+                    borderColor: theme.border,
+                  },
+                ]}
+              />
+              <TouchableOpacity
+                onPress={addKeyword}
+                style={{
+                  backgroundColor: theme.highlight,
+                  borderRadius: 8,
+                  paddingHorizontal: 16,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                activeOpacity={0.8}>
+                <Text style={[typography.body, {color: theme.white, fontWeight: '600'}]}>추가</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* 키워드 리스트 */}
+            <ScrollView style={{flex: 1}} showsVerticalScrollIndicator={false}>
+              {keywords.length === 0 ? (
+                <View style={{alignItems: 'center', paddingVertical: 32}}>
+                  <FontAwesome6 name="bell-slash" size={32} color={theme.secondaryText} solid />
+                  <Text style={[typography.body, {color: theme.secondaryText, marginTop: 12}]}>아직 키워드가 없어요.</Text>
+                  <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 4}]}>알림 받고 싶은 메뉴를 추가해보세요.</Text>
+                </View>
+              ) : (
+                <View style={{gap: 8}}>
+                  {keywords.map((keyword, index) => (
+                    <View
+                      key={index}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        backgroundColor: theme.background,
+                        padding: 12,
+                        borderRadius: 8,
+                        borderWidth: 1,
+                        borderColor: theme.border,
+                      }}>
+                      <Text style={[typography.body, {color: theme.primaryText}]}>{keyword}</Text>
+                      <TouchableOpacity onPress={() => removeKeyword(keyword)} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}} activeOpacity={0.7}>
+                        <FontAwesome6 name="xmark" size={16} color={theme.secondaryText} solid />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </ScrollView>
+
+            {keywords.length > 0 && (
+              <View style={{marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.border}}>
+                <Text style={[typography.caption, {color: theme.secondaryText, textAlign: 'center'}]}>{keywords.length}개의 키워드가 등록되어 있어요.</Text>
+              </View>
+            )}
           </BottomSheetView>
         </BottomSheet>
       )}
