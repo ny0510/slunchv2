@@ -424,7 +424,6 @@ const Notification = () => {
     }
   };
 
-
   // Open bottom sheets after they mount
   useEffect(() => {
     if (isMealBottomSheetOpen && mealBottomSheetRef.current) {
@@ -492,13 +491,7 @@ const Notification = () => {
         <Card title="급식 알림" titleStyle={{fontSize: typography.body.fontSize}}>
           <View style={{gap: 8, marginTop: 8}}>
             {/* 알림 시간 설정 (공통) */}
-            <Content
-              title="알림 시간"
-              arrow
-              onPress={openBottomSheet}
-              disabled={!isMealEnabled && !isKeywordEnabled}
-              arrowText={dayjs(mealTime).format('A hh:mm')}
-            />
+            <Content title="알림 시간" arrow onPress={openBottomSheet} disabled={!isMealEnabled && !isKeywordEnabled} arrowText={dayjs(mealTime).format('A hh:mm')} />
 
             {/* 매일 알림 */}
             <View style={{marginTop: 8, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.border}}>
@@ -611,11 +604,12 @@ const Notification = () => {
             {/* 키워드 입력 */}
             <View style={{flexDirection: 'row', gap: 8, marginBottom: 16}}>
               <BottomSheetTextInput
-                placeholder="키워드를 입력하세요 (예: 피자, 치킨)"
+                placeholder="키워드를 입력하세요 (예: 타코야끼, 찜닭)"
                 value={keywordInput}
                 onChangeText={setKeywordInput}
                 onSubmitEditing={addKeyword}
                 placeholderTextColor={theme.secondaryText}
+                maxLength={20}
                 style={[
                   typography.body,
                   {
