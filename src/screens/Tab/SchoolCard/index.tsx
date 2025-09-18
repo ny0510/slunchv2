@@ -12,7 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {useIsFocused} from '@react-navigation/native';
-import KeepAwake from '@sayem314/react-native-keep-awake';
+import {activateKeepAwake, deactivateKeepAwake} from '@sayem314/react-native-keep-awake';
 
 const SchoolCard = () => {
   const {user, login, logout, loading} = useAuth();
@@ -37,14 +37,14 @@ const SchoolCard = () => {
   // 화면이 포커스될 때만 화면 자동 꺼짐 방지
   useEffect(() => {
     if (isFocused) {
-      KeepAwake.activate();
+      activateKeepAwake();
     } else {
-      KeepAwake.deactivate();
+      deactivateKeepAwake();
     }
 
     // 컴포넌트 언마운트 시 정리
     return () => {
-      KeepAwake.deactivate();
+      deactivateKeepAwake();
     };
   }, [isFocused]);
 
