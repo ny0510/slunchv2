@@ -22,6 +22,7 @@ target 'slunchv2' do
   
   use_frameworks! :linkage => :static
   $RNGoogleMobileAdsAsStaticFramework = true
+  $RNFirebaseAnalyticsWithoutAdIdSupport=true
   
   use_react_native!(
     :path => config[:reactNativePath],
