@@ -38,7 +38,7 @@ export const neisSchoolSearch = async (schoolName: string): Promise<School[]> =>
 };
 
 export const getMeal = async (schoolCode: number | string, regionCode: string, year: string, month: string, day?: string, showAllergy: boolean = false, showOrigin: boolean = false, showNutrition: boolean = false): Promise<Meal[]> => {
-  const cacheKey = `meal_${schoolCode}_${regionCode}_${year}_${month}_${day}`;
+  const cacheKey = `meal_${schoolCode}_${regionCode}_${year}_${month}_${day}_${showAllergy}_${showOrigin}_${showNutrition}`;
   const cachedData = await getCachedData(cacheKey);
   if (cachedData) {
     return cachedData;
