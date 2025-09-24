@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useScrollToTop} from '@/hooks/useScrollToTop';
 import {Platform, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
+import {useFocusEffect} from '@react-navigation/native';
 import TouchableScale from 'react-native-touchable-scale';
 
 import Ad from './components/Ad';
@@ -31,6 +32,16 @@ const Notifications = ({onReadNotification, setScrollRef}: {onReadNotification: 
 
   // Use the scroll-to-top hook
   useScrollToTop(scrollViewRef, setScrollRef);
+
+  // Close expanded notifications when returning to this tab
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        // This cleanup function runs when the screen loses focus
+        setExpandedIndices([]);
+      };
+    }, [])
+  );
 
   const fetchReadNotifications = async () => {
     try {
