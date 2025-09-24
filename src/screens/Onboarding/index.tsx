@@ -7,6 +7,7 @@ import ScrollPicker from 'react-native-wheel-scrollview-picker';
 
 import {createStyles} from './styles';
 import {comciganSchoolSearch, getClassList, neisSchoolSearch, removeMealNotification, removeTimetableNotification} from '@/api';
+import LogoIcon from '@/assets/images/logo.svg';
 import Loading from '@/components/Loading';
 import SlotMachine from '@/components/SlotMachine';
 import {useTheme} from '@/contexts/ThemeContext';
@@ -168,11 +169,21 @@ export const IntroScreen = () => {
       <LinearGradient colors={['transparent', theme.background, theme.background]} style={s.introGradientBottom} />
 
       <View style={s.introContentWrapper}>
-        <View />
+        {/* <View /> */}
         <View style={s.introTopContent}>
-          <SlotMachine list={INTRO_MESSAGES} style={s.introSlotMachine} delay={SLOT_MACHINE_DELAY} duration={SLOT_MACHINE_DURATION} />
+          {/* <View style={s.introWelcomeSection}>
+            <View style={s.introWelcomeIconContainer}>
+              <LinearGradient colors={[theme.highlight, theme.highlightLight]} style={s.introWelcomeIcon} start={{x: 0, y: 0}} end={{x: 1, y: 1}}>
+                <FontAwesome6 name="graduation-cap" iconStyle="solid" size={32} color={theme.white} />
+              </LinearGradient>
+            </View>
+            <Text style={s.introWelcomeTitle}>학교생활이 더 쉬워져요</Text>
+            <Text style={s.introWelcomeSubtitle}>급식, 시간표, 학사일정을{'\n'}한 번에 확인하세요</Text>
+          </View> */}
 
-          <View style={s.introFeatureGrid}>
+          {/* <SlotMachine list={INTRO_MESSAGES} style={s.introSlotMachine} delay={SLOT_MACHINE_DELAY} duration={SLOT_MACHINE_DURATION} /> */}
+
+          {/* <View style={s.introFeatureGrid}>
             <LinearGradient colors={[`${theme.highlight}15`, `${theme.highlight}05`]} style={s.introFeatureCard} start={{x: 0, y: 0}} end={{x: 1, y: 1}}>
               <View style={[s.introFeatureIconWrapper, {backgroundColor: '#FF6B6B'}]}>
                 <FontAwesome6 name="utensils" iconStyle="solid" size={22} color={theme.white} />
@@ -209,7 +220,7 @@ export const IntroScreen = () => {
                 <Text style={s.introFeatureDesc}>*일부 고등학교 한정</Text>
               </View>
             </LinearGradient>
-          </View>
+          </View> */}
         </View>
 
         <View style={s.introBottomContent}>

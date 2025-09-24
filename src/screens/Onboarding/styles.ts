@@ -53,6 +53,40 @@ export const createStyles = (theme: Palette, typography: TextStyles) =>
     introTopContent: {
       gap: 30,
     },
+    introWelcomeSection: {
+      alignItems: 'center',
+      gap: 20,
+      paddingVertical: 40,
+    },
+    introWelcomeIconContainer: {
+      alignItems: 'center',
+    },
+    introWelcomeIcon: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: theme.highlight,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 8,
+    },
+    introWelcomeTitle: {
+      fontSize: 28,
+      fontWeight: '800',
+      color: theme.primaryText,
+      textAlign: 'center',
+      letterSpacing: -0.5,
+    },
+    introWelcomeSubtitle: {
+      fontSize: 16,
+      color: theme.secondaryText,
+      textAlign: 'center',
+      lineHeight: 24,
+      opacity: 0.9,
+    },
     introSlotMachine: {
       fontSize: 32,
       fontWeight: '800',
@@ -77,6 +111,7 @@ export const createStyles = (theme: Palette, typography: TextStyles) =>
       borderWidth: 1,
       borderColor: `${theme.highlight}10`,
       backgroundColor: theme.card,
+      minHeight: 88,
     },
     introFeatureIconWrapper: {
       width: 44,
@@ -99,6 +134,9 @@ export const createStyles = (theme: Palette, typography: TextStyles) =>
       color: theme.primaryText,
       fontWeight: '700',
       fontSize: 15,
+      textShadowColor: 'rgba(0, 0, 0, 0.8)',
+      textShadowOffset: {width: 0, height: 1},
+      textShadowRadius: 3,
     },
     introFeatureDesc: {
       ...typography.caption,
