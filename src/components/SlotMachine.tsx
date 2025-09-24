@@ -31,7 +31,8 @@ const SlotMachine = ({list, height = 45, delay = 1500, duration = 500, style}: P
     setTimeout(() => {
       if (animationRef.current) {
         setCurrentIndex(prev => (prev - 1 + list.length) % list.length);
-        translateY.value = -height;
+        // Reset position smoothly for next animation cycle
+        translateY.value = withTiming(-height, {duration: 0});
         timeoutRef.current = setTimeout(animateStep, delay);
       }
     }, duration);
