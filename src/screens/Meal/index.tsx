@@ -22,11 +22,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Clipboard from '@react-native-clipboard/clipboard';
 import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
-import {NavigationProp, useNavigation} from '@react-navigation/native';
+import {NavigationProp, useFocusEffect, useNavigation} from '@react-navigation/native';
 
 const Meal = () => {
   const [meal, setMeal] = useState<MealType[]>([]);
   const [showAllergy, setShowAllergy] = useState<boolean>(false);
+  const [prevShowAllergy, setPrevShowAllergy] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [schoolName, setSchoolName] = useState<string>('알 수 없음');
@@ -54,12 +55,14 @@ const Meal = () => {
   const fetchData = useCallback(async () => {
     const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
     const today = dayjs();
-    setShowAllergy(settings.showAllergy);
+    const currentShowAllergy = settings.showAllergy || false;
+    setPrevShowAllergy(showAllergy);
+    setShowAllergy(currentShowAllergy);
 
     try {
       const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
 
-      const mealResponse = await getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), undefined, showAllergy, true, true);
+      const mealResponse = await getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), undefined, currentShowAllergy, true, true);
       const afterToday = mealResponse.filter(m => dayjs(m.date).isSame(today, 'day') || dayjs(m.date).isAfter(today, 'day'));
       if (afterToday.length === 0) {
         showToast('급식이 없습니다.');
@@ -83,6 +86,26 @@ const Meal = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Handle allergy setting changes when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      const checkAllergySettingChange = async () => {
+        const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
+        const currentShowAllergy = settings.showAllergy || false;
+        const allergySettingChanged = prevShowAllergy !== currentShowAllergy;
+
+        if (allergySettingChanged) {
+          setRefreshing(true);
+          await clearCache('@cache/meal_');
+          await fetchData();
+          setRefreshing(false);
+        }
+      };
+
+      checkAllergySettingChange();
+    }, [prevShowAllergy, fetchData]),
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
