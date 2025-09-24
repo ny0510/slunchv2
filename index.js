@@ -14,13 +14,18 @@ import {ThemeProvider} from '@/contexts/ThemeContext';
 import notifee from '@notifee/react-native';
 import analytics from '@react-native-firebase/analytics';
 import 'dayjs/locale/ko';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import relativeTime from 'dayjs/plugin/relativeTime';
 
 global.RNFB_SILENCE_MODULAR_DEPRECATION_WARNINGS = true;
 
 const Root = ({isHeadless}) => {
   showSplash();
   enableScreens();
+
   dayjs.locale('ko');
+  dayjs.extend(isSameOrAfter);
+  dayjs.extend(relativeTime);
 
   if (Platform.OS === 'android') {
     changeNavigationBarColor('transparent', true);
