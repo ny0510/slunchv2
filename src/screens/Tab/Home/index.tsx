@@ -29,9 +29,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import {NavigationProp, useFocusEffect, useNavigation} from '@react-navigation/native';
-import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
-
-dayjs.extend(isSameOrAfter);
+import 'dayjs/locale/ko';
 
 interface CardData {
   id: 'schedule' | 'meal' | 'timetable';
@@ -44,6 +42,7 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
   const [meal, setMeal] = useState<Meal[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [showAllergy, setShowAllergy] = useState<boolean>(true);
+  const [prevShowAllergy, setPrevShowAllergy] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
   const [todayIndex, setTodayIndex] = useState<number>(dayjs().day() - 1);
   const [mealDayOffset, setMealDayOffset] = useState<number>(0);
@@ -103,8 +102,11 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
 
   const getSettings = useCallback(async () => {
     const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
-    setShowAllergy(settings.showAllergy || false);
-  }, []);
+    const newShowAllergy = settings.showAllergy || false;
+    setPrevShowAllergy(showAllergy);
+    setShowAllergy(newShowAllergy);
+    return newShowAllergy;
+  }, [showAllergy]);
 
   const transpose = useCallback((array: Timetable[][]) => {
     const maxColLength = Math.max(...array.map(row => row.length));
@@ -287,22 +289,27 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
       // Always reload allergy settings when screen is focused
-      await getSettings();
+      const newShowAllergy = await getSettings();
+      const allergySettingChanged = prevShowAllergy !== newShowAllergy;
 
       // If allergy setting changed or classChangedTrigger is true, refresh data
-      if (classChangedTrigger) {
+      if (classChangedTrigger || allergySettingChanged) {
         setRefreshing(true);
-        await clearCache('@cache/');
+        // Clear cache if allergy setting changed
+        if (allergySettingChanged) {
+          await clearCache('@cache/meal_');
+        } else {
+          await clearCache('@cache/');
+        }
         await fetchData();
         setRefreshing(false);
-        setClassChangedTrigger(false);
-      } else {
-        // Just refetch meal data if allergy setting changed
-        await fetchData();
+        if (classChangedTrigger) {
+          setClassChangedTrigger(false);
+        }
       }
     });
     return unsubscribe;
-  }, [navigation, classChangedTrigger, setClassChangedTrigger, fetchData, getSettings]);
+  }, [navigation, classChangedTrigger, setClassChangedTrigger, fetchData, getSettings, prevShowAllergy]);
 
   // 매일 자정마다 데이터를 갱신
   useEffect(() => {
@@ -613,9 +620,11 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
                 }
               };
 
+              const titleIcon = <FontAwesome6 name={card.iconName as any} size={16} color={theme.primaryText} iconStyle="solid" />;
+
               return (
                 <TouchableOpacity key={card.id} activeOpacity={1}>
-                  <HomeCard onLongPress={handleCardLongPress} title={card.title} titleIcon={<FontAwesome6 name={card.iconName as any} size={16} color={theme.primaryText} iconStyle="solid" />} {...cardProps}>
+                  <HomeCard onLongPress={handleCardLongPress} title={card.title} titleIcon={titleIcon} {...cardProps}>
                     {renderContent()}
                   </HomeCard>
                 </TouchableOpacity>
