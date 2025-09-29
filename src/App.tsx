@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
-import React, {useEffect, useRef} from 'react';
-import {Alert, AppState, Linking, Platform, StatusBar} from 'react-native';
+import React, {useEffect} from 'react';
+import {Alert, AppState, Linking, StatusBar} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {hideSplash} from 'react-native-splash-view';
@@ -11,6 +11,7 @@ import {typography} from './theme';
 import {AuthProvider} from '@/contexts/AuthContext';
 import {useTheme} from '@/contexts/ThemeContext';
 import {UserProvider} from '@/contexts/UserContext';
+import {useWidget} from '@/hooks/useWidget';
 import {sendNotification} from '@/lib/notification';
 import {getToastConfig} from '@/lib/toast';
 import Stack from '@/navigation/RootStacks';
@@ -40,6 +41,8 @@ const showMaintenanceAlert = () => {
 
 const App = () => {
   const {theme, isDark} = useTheme();
+
+  useWidget();
 
   useEffect(() => {
     setTimeout(hideSplash, 250);

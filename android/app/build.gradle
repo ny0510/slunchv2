@@ -129,6 +129,10 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-messaging")
 
+    // HTTP client for widget
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("org.json:json:20231013")
+
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {
