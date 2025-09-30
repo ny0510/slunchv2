@@ -32,10 +32,21 @@ class MealWidgetProvider : AppWidgetProvider() {
         when (intent.action) {
             ACTION_WIDGET_UPDATE -> {
                 val appWidgetManager = AppWidgetManager.getInstance(context)
-                val appWidgetIds = appWidgetManager.getAppWidgetIds(
-                    ComponentName(context, MealWidgetProvider::class.java)
+                val widgetId = intent.getIntExtra(
+                    AppWidgetManager.EXTRA_APPWIDGET_ID,
+                    AppWidgetManager.INVALID_APPWIDGET_ID
                 )
-                onUpdate(context, appWidgetManager, appWidgetIds)
+
+                if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                    // 특정 위젯만 업데이트
+                    updateAppWidget(context, appWidgetManager, widgetId)
+                } else {
+                    // 모든 위젯 업데이트
+                    val appWidgetIds = appWidgetManager.getAppWidgetIds(
+                        ComponentName(context, MealWidgetProvider::class.java)
+                    )
+                    onUpdate(context, appWidgetManager, appWidgetIds)
+                }
             }
             ACTION_MEAL_DATA_UPDATE -> {
                 val mealData = intent.getStringExtra(EXTRA_MEAL_DATA) ?: "급식 정보 없음"
@@ -59,20 +70,30 @@ class MealWidgetProvider : AppWidgetProvider() {
         val currentDate = dateFormat.format(Date())
         views.setTextViewText(R.id.widget_date, currentDate)
 
-        // 클릭 시 위젯 새로고침
-        val refreshIntent = Intent(context, MealWidgetProvider::class.java)
-        refreshIntent.action = ACTION_WIDGET_UPDATE
+        // 클릭 시 위젯 새로고침 - 고유한 request code와 명시적 패키지 설정
+        val refreshIntent = Intent(context, MealWidgetProvider::class.java).apply {
+            action = ACTION_WIDGET_UPDATE
+            setPackage(context.packageName)
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+        }
         val refreshPendingIntent = PendingIntent.getBroadcast(
-            context, 0, refreshIntent,
+            context,
+            appWidgetId * 1000, // 고유한 request code 사용
+            refreshIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+
+        // 전체 위젯 영역에 클릭 리스너 설정
+        views.setOnClickPendingIntent(R.id.widget_root, refreshPendingIntent)
         views.setOnClickPendingIntent(R.id.widget_meal_content, refreshPendingIntent)
+        views.setOnClickPendingIntent(R.id.widget_date, refreshPendingIntent)
 
         // 제목 클릭 시 앱 열기
         val appIntent = Intent(context, MainActivity::class.java)
-        appIntent.putExtra("openMealScreen", true)
         val appPendingIntent = PendingIntent.getActivity(
-            context, 1, appIntent,
+            context,
+            appWidgetId * 1000 + 1, // 고유한 request code
+            appIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         views.setOnClickPendingIntent(R.id.widget_title, appPendingIntent)
@@ -119,6 +140,34 @@ class MealWidgetProvider : AppWidgetProvider() {
             val currentDate = dateFormat.format(Date())
             views.setTextViewText(R.id.widget_date, currentDate)
 
+            // 클릭 리스너 재설정 (데이터 업데이트 시에도 클릭 이벤트 유지)
+            val refreshIntent = Intent(context, MealWidgetProvider::class.java).apply {
+                action = ACTION_WIDGET_UPDATE
+                setPackage(context.packageName)
+                putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+            }
+            val refreshPendingIntent = PendingIntent.getBroadcast(
+                context,
+                appWidgetId * 1000,
+                refreshIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            // 전체 위젯 영역에 클릭 리스너 설정
+            views.setOnClickPendingIntent(R.id.widget_root, refreshPendingIntent)
+            views.setOnClickPendingIntent(R.id.widget_meal_content, refreshPendingIntent)
+            views.setOnClickPendingIntent(R.id.widget_date, refreshPendingIntent)
+
+            // 제목 클릭 시 앱 열기
+            val appIntent = Intent(context, MainActivity::class.java)
+            val appPendingIntent = PendingIntent.getActivity(
+                context,
+                appWidgetId * 1000 + 1,
+                appIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            views.setOnClickPendingIntent(R.id.widget_title, appPendingIntent)
+
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
     }
@@ -146,12 +195,6 @@ class MealWidgetProvider : AppWidgetProvider() {
                 minWidth >= 210 -> 14f // 3칸 이상
                 minWidth >= 140 -> 13f // 2칸
                 else -> 12f // 1칸
-            }
-
-            val updateTimeSize = when {
-                minWidth >= 210 -> 11f // 3칸 이상
-                minWidth >= 140 -> 10f // 2칸
-                else -> 9f // 1칸
             }
 
             // 텍스트 크기 적용
