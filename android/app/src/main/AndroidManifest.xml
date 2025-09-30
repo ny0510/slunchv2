@@ -60,6 +60,19 @@
                 android:resource="@xml/meal_widget_info" />
         </receiver>
 
+        <!-- 시간표 위젯 -->
+        <receiver android:name=".widget.TimetableWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="kr.ny64.slunchv2.TIMETABLE_WIDGET_UPDATE" />
+                <action android:name="kr.ny64.slunchv2.TIMETABLE_DATA_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/timetable_widget_info" />
+        </receiver>
+
     </application>
 
     <queries>
