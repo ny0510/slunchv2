@@ -199,49 +199,19 @@ class TimetableWidgetProvider : AppWidgetProvider() {
     private fun buildTimetableDisplay(timetableData: ArrayList<String>, currentPeriod: Int, isDarkMode: Boolean = false): CharSequence {
         val builder = StringBuilder()
 
-        // 다크모드에 따른 색상 설정
-        val highlightColor = if (isDarkMode) "#BAA6FF" else "#7956FC"
-
         for (i in timetableData.indices) {
             val periodNum = i + 1
             val subject = timetableData[i]
 
-            // 과목명과 선생님 이름 분리
-            val mainSubject: String
-            val teacher: String
-
-            if (subject.contains("(") && subject.contains(")")) {
-                mainSubject = subject.substringBefore("(").trim()
-                teacher = subject.substringAfter("(").substringBefore(")").trim()
+            // 과목명만 추출 (선생님 이름 제거)
+            val mainSubject = if (subject.contains("(") && subject.contains(")")) {
+                subject.substringBefore("(").trim()
             } else {
-                mainSubject = subject
-                teacher = ""
+                subject
             }
 
-            // 현재 진행 중인 수업은 색상으로 하이라이트
-            val displayText = when {
-                periodNum == currentPeriod -> {
-                    if (teacher.isNotEmpty()) {
-                        "<font color='$highlightColor'><b>${periodNum}교시</b> <b>$mainSubject</b> <b>($teacher)</b></font>"
-                    } else {
-                        "<font color='$highlightColor'><b>${periodNum}교시</b> <b>$mainSubject</b></font>"
-                    }
-                }
-                periodNum < currentPeriod -> {
-                    if (teacher.isNotEmpty()) {
-                        "<font color='#999999'><b>${periodNum}교시</b> $mainSubject ($teacher)</font>"
-                    } else {
-                        "<font color='#999999'><b>${periodNum}교시</b> $mainSubject</font>"
-                    }
-                }
-                else -> {
-                    if (teacher.isNotEmpty()) {
-                        "<b>${periodNum}교시</b> $mainSubject <font color='#999999'>($teacher)</font>"
-                    } else {
-                        "<b>${periodNum}교시</b> $mainSubject"
-                    }
-                }
-            }
+            // 모든 교시를 동일한 스타일로 표시 (현재 교시 하이라이팅 제거)
+            val displayText = "<b>${periodNum}교시</b> $mainSubject"
 
             builder.append(displayText)
 
