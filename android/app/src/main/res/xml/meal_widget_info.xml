@@ -12,4 +12,4 @@
     android:description="@string/meal_widget_description"
     android:resizeMode="horizontal"
     android:widgetCategory="home_screen"
-    android:previewImage="@mipmap/ic_launcher" />
+    android:previewImage="@drawable/widget_preview_meal" />
