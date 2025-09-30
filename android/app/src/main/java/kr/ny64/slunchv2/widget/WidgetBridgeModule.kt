@@ -48,6 +48,26 @@ class WidgetBridgeModule(reactContext: ReactApplicationContext) : ReactContextBa
     }
 
     @ReactMethod
+    fun saveTimetableInfo(comciganSchoolCode: String, grade: Int, classNum: Int, promise: Promise) {
+        try {
+            val prefs = reactApplicationContext.getSharedPreferences("user_prefs", ReactApplicationContext.MODE_PRIVATE)
+            prefs.edit()
+                .putString("comciganSchoolCode", comciganSchoolCode)
+                .putInt("grade", grade)
+                .putInt("class", classNum)
+                .apply()
+
+            // 시간표 위젯 강제 업데이트
+            val intent = Intent(TimetableWidgetProvider.ACTION_WIDGET_UPDATE)
+            reactApplicationContext.sendBroadcast(intent)
+
+            promise.resolve(true)
+        } catch (e: Exception) {
+            promise.reject("SAVE_TIMETABLE_INFO_ERROR", e.message, e)
+        }
+    }
+
+    @ReactMethod
     fun getSchoolInfo(promise: Promise) {
         try {
             val prefs = reactApplicationContext.getSharedPreferences("user_prefs", ReactApplicationContext.MODE_PRIVATE)
