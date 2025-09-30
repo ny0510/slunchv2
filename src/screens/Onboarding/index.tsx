@@ -13,6 +13,7 @@ import SlotMachine from '@/components/SlotMachine';
 import {useTheme} from '@/contexts/ThemeContext';
 import {useUser} from '@/contexts/UserContext';
 import {useFirstOpen} from '@/hooks/useFirstOpen';
+import {useWidget} from '@/hooks/useWidget';
 import {showToast} from '@/lib/toast';
 import {RootStackParamList} from '@/navigation/RootStacks';
 import {School} from '@/types/api';
@@ -124,6 +125,7 @@ const SchoolListItem = React.memo<{
 export const IntroScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const {refreshUserData} = useUser();
+  const {syncSchoolInfoToNative} = useWidget();
 
   const {theme, typography, isDark} = useTheme();
   const s = createStyles(theme, typography);
@@ -145,6 +147,7 @@ export const IntroScreen = () => {
               school: JSON.stringify(DEMO_SCHOOL_DATA),
               class: JSON.stringify({grade: 1, class: 1}),
             });
+            await syncSchoolInfoToNative();
             refreshUserData();
             navigation.navigate('Tab');
           } catch (error) {
@@ -356,6 +359,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const {school, isFirstOpen = true} = route.params;
   const {refreshUserData} = useUser();
+  const {syncSchoolInfoToNative} = useWidget();
 
   const [gradeList, setGradeList] = useState<number[]>([]);
   const [classList, setClassList] = useState<number[][]>([]);
@@ -455,6 +459,9 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
         AsyncStorage.removeItem('customTimetable'),
         ...(isFirstOpen ? [AsyncStorage.setItem('isFirstOpen', 'false'), AsyncStorage.setItem('firstOpenDate', dayjs().format('YYYY-MM-DD'))] : []),
       ]);
+
+      // Sync school info to native for widget update
+      await syncSchoolInfoToNative();
 
       // Handle FCM token removal if needed
       try {
