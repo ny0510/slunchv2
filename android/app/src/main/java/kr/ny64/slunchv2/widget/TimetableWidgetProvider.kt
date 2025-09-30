@@ -51,7 +51,7 @@ class TimetableWidgetProvider : AppWidgetProvider() {
             ACTION_TIMETABLE_DATA_UPDATE -> {
                 val timetableData = intent.getStringArrayListExtra(EXTRA_TIMETABLE_DATA) ?: arrayListOf()
                 val currentPeriod = intent.getIntExtra(EXTRA_CURRENT_PERIOD, -1)
-                updateWidgetWithTimetableData(context, timetableData, currentPeriod)
+                updateWidgetWithTimetableData(context, timetableData)
             }
         }
     }
@@ -112,15 +112,15 @@ class TimetableWidgetProvider : AppWidgetProvider() {
 
     private fun fetchTimetableDataNatively(context: Context) {
         val apiClient = TimetableApiClient(context)
-        apiClient.fetchTodayTimetable { timetableData, currentPeriod ->
+        apiClient.fetchTodayTimetable { timetableData ->
             // UI 스레드에서 위젯 업데이트
             android.os.Handler(android.os.Looper.getMainLooper()).post {
-                updateWidgetWithTimetableData(context, timetableData, currentPeriod)
+                updateWidgetWithTimetableData(context, timetableData)
             }
         }
     }
 
-    private fun updateWidgetWithTimetableData(context: Context, timetableData: ArrayList<String>, currentPeriod: Int) {
+    private fun updateWidgetWithTimetableData(context: Context, timetableData: ArrayList<String>) {
         val appWidgetManager = AppWidgetManager.getInstance(context)
         val appWidgetIds = appWidgetManager.getAppWidgetIds(
             ComponentName(context, TimetableWidgetProvider::class.java)
@@ -150,9 +150,9 @@ class TimetableWidgetProvider : AppWidgetProvider() {
             } else {
                 // 위젯 크기에 따라 다른 레이아웃 사용
                 val displayText = if (minWidth >= 280) { // 4칸 이상
-                    buildWideDisplay(timetableData, currentPeriod, isDarkMode)
+                    buildWideDisplay(timetableData, isDarkMode)
                 } else {
-                    buildTimetableDisplay(timetableData, currentPeriod, isDarkMode)
+                    buildTimetableDisplay(timetableData, isDarkMode)
                 }
                 views.setTextViewText(R.id.widget_timetable_content, displayText)
             }
@@ -196,7 +196,7 @@ class TimetableWidgetProvider : AppWidgetProvider() {
         }
     }
 
-    private fun buildTimetableDisplay(timetableData: ArrayList<String>, currentPeriod: Int, isDarkMode: Boolean = false): CharSequence {
+    private fun buildTimetableDisplay(timetableData: ArrayList<String>, isDarkMode: Boolean = false): CharSequence {
         val builder = StringBuilder()
 
         for (i in timetableData.indices) {
@@ -224,8 +224,8 @@ class TimetableWidgetProvider : AppWidgetProvider() {
     }
 
     // 4칸 이상 넓은 위젯용 레이아웃 - 일반 레이아웃과 동일
-    private fun buildWideDisplay(timetableData: ArrayList<String>, currentPeriod: Int, isDarkMode: Boolean = false): CharSequence {
-        return buildTimetableDisplay(timetableData, currentPeriod, isDarkMode)
+    private fun buildWideDisplay(timetableData: ArrayList<String>, isDarkMode: Boolean = false): CharSequence {
+        return buildTimetableDisplay(timetableData, isDarkMode)
     }
 
     private fun adjustTextSizeForWidget(views: RemoteViews, appWidgetManager: AppWidgetManager, appWidgetId: Int) {

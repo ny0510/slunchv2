@@ -12,14 +12,14 @@ class TimetableApiClient(private val context: Context) {
     private val client = OkHttpClient()
     private val prefs: SharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
 
-    fun fetchTodayTimetable(callback: (ArrayList<String>, Int) -> Unit) {
+    fun fetchTodayTimetable(callback: (ArrayList<String>) -> Unit) {
         // SharedPreferences에서 학교 정보 가져오기
         val schoolCode = prefs.getString("comciganSchoolCode", null)
         val grade = prefs.getInt("grade", 0)
         val classNum = prefs.getInt("class", 0)
 
         if (schoolCode == null || grade == 0 || classNum == 0) {
-            callback(arrayListOf("학교 정보가 없습니다.\n앱에서 학교를 설정해주세요."), -1)
+            callback(arrayListOf("학교 정보가 없습니다.\n앱에서 학교를 설정해주세요."))
             return
         }
 
@@ -28,7 +28,7 @@ class TimetableApiClient(private val context: Context) {
 
         // 주말인 경우
         if (dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY) {
-            callback(arrayListOf(), -1)
+            callback(arrayListOf())
             return
         }
 
@@ -42,37 +42,37 @@ class TimetableApiClient(private val context: Context) {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                callback(arrayListOf("시간표를 불러올 수 없습니다.\n네트워크를 확인해주세요."), -1)
+                callback(arrayListOf("시간표를 불러올 수 없습니다.\n네트워크를 확인해주세요."))
             }
 
             override fun onResponse(call: Call, response: Response) {
                 response.use {
                     if (!response.isSuccessful) {
-                        callback(arrayListOf("시간표를 불러올 수 없습니다.\n서버 오류 (${response.code})"), -1)
+                        callback(arrayListOf("시간표를 불러올 수 없습니다.\n서버 오류 (${response.code})"))
                         return
                     }
 
                     try {
                         val body = response.body?.string()
                         if (body != null) {
-                            val (timetableData, currentPeriod) = parseTimetableData(body, dayOfWeek)
-                            callback(timetableData, currentPeriod)
+                            val timetableData = parseTimetableData(body, dayOfWeek)
+                            callback(timetableData)
                         } else {
-                            callback(arrayListOf("시간표 정보가 없습니다."), -1)
+                            callback(arrayListOf("시간표 정보가 없습니다."))
                         }
                     } catch (e: Exception) {
-                        callback(arrayListOf("시간표 처리 중 오류가 발생했습니다."), -1)
+                        callback(arrayListOf("시간표 처리 중 오류가 발생했습니다."))
                     }
                 }
             }
         })
     }
 
-    private fun parseTimetableData(jsonString: String, dayOfWeek: Int): Pair<ArrayList<String>, Int> {
+    private fun parseTimetableData(jsonString: String, dayOfWeek: Int): ArrayList<String> {
         try {
             val jsonArray = JSONArray(jsonString)
             if (jsonArray.length() == 0) {
-                return Pair(arrayListOf(), -1)
+                return arrayListOf()
             }
 
             // dayOfWeek: 1=일, 2=월, 3=화, 4=수, 5=목, 6=금, 7=토
@@ -83,11 +83,11 @@ class TimetableApiClient(private val context: Context) {
                 Calendar.WEDNESDAY -> 2
                 Calendar.THURSDAY -> 3
                 Calendar.FRIDAY -> 4
-                else -> return Pair(arrayListOf(), -1)
+                else -> return arrayListOf()
             }
 
             if (dayIndex >= jsonArray.length()) {
-                return Pair(arrayListOf(), -1)
+                return arrayListOf()
             }
 
             val dayData = jsonArray.getJSONArray(dayIndex)
@@ -110,61 +110,11 @@ class TimetableApiClient(private val context: Context) {
                 }
             }
 
-            // 현재 교시 계산
-            val currentPeriod = calculateCurrentPeriod()
-
-            return Pair(timetableList, currentPeriod)
+            return timetableList
 
         } catch (e: Exception) {
-            return Pair(arrayListOf("시간표 분석 중 오류가 발생했습니다."), -1)
+            return arrayListOf("시간표 분석 중 오류가 발생했습니다.")
         }
     }
 
-    private fun calculateCurrentPeriod(): Int {
-        val calendar = Calendar.getInstance()
-        val hour = calendar.get(Calendar.HOUR_OF_DAY)
-        val minute = calendar.get(Calendar.MINUTE)
-        val currentTimeMinutes = hour * 60 + minute
-
-        // 시간을 분 단위로 변환하는 헬퍼 함수
-        fun timeToMinutes(hour: Int, minute: Int) = hour * 60 + minute
-
-        // 고등학교 시간표 (50분 수업 + 10분 쉬는시간)
-        data class Period(val startTime: Int, val endTime: Int)
-
-        // 8:30 시작, 각 교시는 50분 수업 + 10분 휴식
-        val firstPeriodStart = timeToMinutes(8, 30)
-        val classDuration = 50  // 수업 시간 (분)
-        val breakDuration = 10  // 쉬는 시간 (분)
-        val lunchBreakStart = 4 // 4교시 후 점심시간
-        val lunchDuration = 60  // 점심시간 (분)
-
-        val periods = mutableListOf<Period>()
-        var currentStart = firstPeriodStart
-
-        for (i in 1..7) {
-            // 점심시간 고려
-            if (i == lunchBreakStart + 1) {
-                currentStart += lunchDuration
-            }
-
-            val endTime = currentStart + classDuration - 1
-            periods.add(Period(currentStart, endTime))
-            currentStart = endTime + 1 + breakDuration
-        }
-
-        // 현재 시간이 몇 교시인지 확인
-        for (i in periods.indices) {
-            val period = periods[i]
-            if (currentTimeMinutes in period.startTime..period.endTime) {
-                return i + 1 // 교시는 1부터 시작
-            }
-        }
-
-        // 수업 시간이 아닌 경우
-        return when {
-            currentTimeMinutes < periods.first().startTime -> 0  // 수업 시작 전
-            else -> -1  // 모든 수업 종료
-        }
-    }
 }
