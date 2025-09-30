@@ -1,17 +1,16 @@
 import {useEffect} from 'react';
-import {NativeModules} from 'react-native';
+import {NativeModules, Platform} from 'react-native';
 
 import type {WidgetBridge} from '@/types/WidgetBridge';
 import type {UserSchoolInfo} from '@/types/user';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const {WidgetBridge} = NativeModules as {WidgetBridge: WidgetBridge};
+const {WidgetBridge} = Platform.OS === 'android' ? NativeModules as {WidgetBridge: WidgetBridge} : {WidgetBridge: null};
 
 export const useWidget = () => {
   useEffect(() => {
-    // 위젯 브릿지가 사용 가능한지 확인
-    if (!WidgetBridge) {
-      console.warn('WidgetBridge not available');
+    // Android가 아니거나 위젯 브릿지가 없으면 실행하지 않음
+    if (Platform.OS !== 'android' || !WidgetBridge) {
       return;
     }
 
@@ -23,14 +22,41 @@ export const useWidget = () => {
 
   const syncSchoolInfoToNative = async () => {
     try {
+      // WidgetBridge가 없으면 실행하지 않음
+      if (!WidgetBridge) {
+        return;
+      }
+
       const schoolData = await AsyncStorage.getItem('school');
+      const classData = await AsyncStorage.getItem('class');
+
       if (schoolData) {
         const schoolInfo: UserSchoolInfo = JSON.parse(schoolData);
-        await WidgetBridge.saveSchoolInfo(schoolInfo.neisCode.toString(), schoolInfo.neisRegionCode);
-        console.log('School info synced to native:', {
-          schoolCode: schoolInfo.neisCode,
-          regionCode: schoolInfo.neisRegionCode,
-        });
+
+        // neisCode와 neisRegionCode가 있는지 확인
+        if (schoolInfo.neisCode && schoolInfo.neisRegionCode) {
+          await WidgetBridge.saveSchoolInfo(schoolInfo.neisCode.toString(), schoolInfo.neisRegionCode);
+          console.log('School info synced to native:', {
+            schoolCode: schoolInfo.neisCode,
+            regionCode: schoolInfo.neisRegionCode,
+          });
+        }
+
+        // 컴시간 학교 코드와 학급 정보도 저장
+        if (schoolInfo.comciganCode && classData) {
+          const classInfo = JSON.parse(classData);
+          const grade = parseInt(classInfo.grade, 10);
+          const classNum = parseInt(classInfo.class, 10);
+
+          if (!isNaN(grade) && !isNaN(classNum) && grade > 0 && classNum > 0) {
+            await WidgetBridge.saveTimetableInfo(schoolInfo.comciganCode.toString(), grade, classNum);
+            console.log('Timetable info synced to native:', {
+              comciganSchoolCode: schoolInfo.comciganCode,
+              grade,
+              class: classNum,
+            });
+          }
+        }
       }
     } catch (error) {
       console.error('Failed to sync school info to native:', error);

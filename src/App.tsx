@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import React, {useEffect} from 'react';
-import {Alert, AppState, Linking, StatusBar} from 'react-native';
+import {Alert, AppState, Linking, Platform, StatusBar} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {hideSplash} from 'react-native-splash-view';
@@ -42,6 +42,7 @@ const showMaintenanceAlert = () => {
 const App = () => {
   const {theme, isDark} = useTheme();
 
+  // 위젯 브릿지 사용 (훅 내부에서 플랫폼 체크)
   useWidget();
 
   useEffect(() => {
