@@ -108,11 +108,7 @@ const Schedules = () => {
 
               return (
                 <Fragment key={index}>
-                  {shouldShowAd && (
-                    <View style={{marginBottom: 16}}>
-                      <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
-                    </View>
-                  )}
+                  {shouldShowAd && <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />}
                   <TimelineItem item={item} isLast={index === schedules.length - 1} isToday={isToday} getScheduleType={getScheduleType} getScheduleColor={getScheduleColor} />
                 </Fragment>
               );

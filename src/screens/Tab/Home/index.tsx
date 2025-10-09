@@ -590,15 +590,7 @@ const Home = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
                     ) : schedules.length === 0 ? (
                       <Text style={[typography.body, {color: theme.secondaryText}]}>학사일정이 없어요.</Text>
                     ) : (
-                      <FlatList
-                        data={schedules}
-                        renderItem={({item}) => (
-                          <View style={{gap: 2}}>
-                            <ScheduleItem item={item} />
-                          </View>
-                        )}
-                        scrollEnabled={false}
-                      />
+                      <FlatList contentContainerStyle={{gap: 8}} data={schedules.slice(0, 4)} renderItem={({item}) => <ScheduleItem item={item} />} scrollEnabled={false} />
                     );
                   case 'meal':
                     return loading ? (
@@ -775,8 +767,8 @@ const ScheduleItem = ({item}: {item: Schedule}) => {
   const {theme, typography} = useTheme();
 
   return (
-    <View style={{flexDirection: 'row', alignItems: 'flex-start', gap: 12}}>
-      <View style={{width: 4, height: 4, borderRadius: 2, backgroundColor: theme.secondaryText, marginTop: 8}} />
+    <View style={{flexDirection: 'row', alignItems: 'flex-start', gap: 8}}>
+      <View style={{width: 4, height: 4, borderRadius: 2, backgroundColor: theme.secondaryText, marginTop: 7}} />
       <View style={{flex: 1, gap: 2}}>
         <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', flex: 1}]}>{item.schedule}</Text>
         <Text style={{fontSize: 14, fontWeight: '400', color: theme.secondaryText}}>
