@@ -6,13 +6,18 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.TypedValue
+import android.view.View
 import android.widget.RemoteViews
 import kr.ny64.slunchv2.MainActivity
 import kr.ny64.slunchv2.R
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 class MealWidgetProvider : AppWidgetProvider() {
 
@@ -21,9 +26,7 @@ class MealWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
-        for (appWidgetId in appWidgetIds) {
-            updateAppWidget(context, appWidgetManager, appWidgetId)
-        }
+        appWidgetIds.forEach { updateAppWidget(context, appWidgetManager, it) }
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -38,21 +41,35 @@ class MealWidgetProvider : AppWidgetProvider() {
                 )
 
                 if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                    // 특정 위젯만 업데이트
                     updateAppWidget(context, appWidgetManager, widgetId)
                 } else {
-                    // 모든 위젯 업데이트
                     val appWidgetIds = appWidgetManager.getAppWidgetIds(
                         ComponentName(context, MealWidgetProvider::class.java)
                     )
                     onUpdate(context, appWidgetManager, appWidgetIds)
                 }
             }
+
             ACTION_MEAL_DATA_UPDATE -> {
                 val mealData = intent.getStringExtra(EXTRA_MEAL_DATA) ?: "급식 정보 없음"
                 updateWidgetWithMealData(context, mealData)
             }
         }
+    }
+
+    override fun onDeleted(context: Context, appWidgetIds: IntArray) {
+        super.onDeleted(context, appWidgetIds)
+        clearStoredData(context, appWidgetIds)
+    }
+
+    override fun onAppWidgetOptionsChanged(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+        newOptions: Bundle
+    ) {
+        super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
+        updateAppWidget(context, appWidgetManager, appWidgetId)
     }
 
     private fun updateAppWidget(
@@ -62,56 +79,29 @@ class MealWidgetProvider : AppWidgetProvider() {
     ) {
         val views = RemoteViews(context.packageName, R.layout.widget_meal_layout)
 
-        // 위젯 크기에 따른 텍스트 크기 조정
-        adjustTextSizeForWidget(views, appWidgetManager, appWidgetId)
+        applyTextSizes(context, appWidgetManager, appWidgetId, views)
 
-        // 현재 날짜 설정
-        val dateFormat = SimpleDateFormat("M/d", Locale.KOREA)
-        val currentDate = dateFormat.format(Date())
+        val currentDate = SimpleDateFormat("M/d", Locale.KOREA).format(Date())
         views.setTextViewText(R.id.widget_date, currentDate)
+        views.setTextViewText(R.id.widget_meal_empty, "급식 정보 없음")
 
-        // 클릭 시 위젯 새로고침 - 고유한 request code와 명시적 패키지 설정
-        val refreshIntent = Intent(context, MealWidgetProvider::class.java).apply {
-            action = ACTION_WIDGET_UPDATE
-            setPackage(context.packageName)
-            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-        }
-        val refreshPendingIntent = PendingIntent.getBroadcast(
-            context,
-            appWidgetId * 1000, // 고유한 request code 사용
-            refreshIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val refreshPendingIntent = createRefreshPendingIntent(context, appWidgetId)
+        configureMealListView(context, views, appWidgetId, refreshPendingIntent)
+        setClickHandlers(context, views, appWidgetId, refreshPendingIntent)
 
-        // 전체 위젯 영역에 클릭 리스너 설정
-        views.setOnClickPendingIntent(R.id.widget_root, refreshPendingIntent)
-        views.setOnClickPendingIntent(R.id.widget_meal_content, refreshPendingIntent)
-        views.setOnClickPendingIntent(R.id.widget_date, refreshPendingIntent)
+        views.setViewVisibility(R.id.widget_loading, View.VISIBLE)
+        views.setViewVisibility(R.id.widget_meal_list, View.GONE)
+        views.setViewVisibility(R.id.widget_meal_empty, View.GONE)
 
-        // 제목 클릭 시 앱 열기
-        val appIntent = Intent(context, MainActivity::class.java)
-        val appPendingIntent = PendingIntent.getActivity(
-            context,
-            appWidgetId * 1000 + 1, // 고유한 request code
-            appIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        views.setOnClickPendingIntent(R.id.widget_title, appPendingIntent)
-
-        // 로딩 상태 표시
-        views.setTextViewText(R.id.widget_meal_content, "")
-        views.setViewVisibility(R.id.widget_loading, android.view.View.VISIBLE)
         appWidgetManager.updateAppWidget(appWidgetId, views)
 
-        // 네이티브에서 직접 급식 데이터 가져오기
         fetchMealDataNatively(context)
     }
 
     private fun fetchMealDataNatively(context: Context) {
         val apiClient = MealApiClient(context)
         apiClient.fetchTodayMeal { mealData ->
-            // UI 스레드에서 위젯 업데이트
-            android.os.Handler(android.os.Looper.getMainLooper()).post {
+            Handler(Looper.getMainLooper()).post {
                 updateWidgetWithMealData(context, mealData)
             }
         }
@@ -123,97 +113,162 @@ class MealWidgetProvider : AppWidgetProvider() {
             ComponentName(context, MealWidgetProvider::class.java)
         )
 
-        for (appWidgetId in appWidgetIds) {
+        if (appWidgetIds.isEmpty()) {
+            return
+        }
+
+        saveMealData(context, appWidgetIds, mealData)
+        appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_meal_list)
+
+        val trimmedMealData = mealData.trim()
+        val currentDate = SimpleDateFormat("M/d", Locale.KOREA).format(Date())
+
+        appWidgetIds.forEach { appWidgetId ->
             val views = RemoteViews(context.packageName, R.layout.widget_meal_layout)
 
-            // 크기에 따른 텍스트 크기 조정
-            adjustTextSizeForWidget(views, appWidgetManager, appWidgetId)
+            applyTextSizes(context, appWidgetManager, appWidgetId, views)
 
-            // 로딩 스피너 숨기기
-            views.setViewVisibility(R.id.widget_loading, android.view.View.GONE)
-
-            // 급식 데이터 표시
-            views.setTextViewText(R.id.widget_meal_content, mealData)
-
-            // 현재 날짜 업데이트
-            val dateFormat = SimpleDateFormat("M/d", Locale.KOREA)
-            val currentDate = dateFormat.format(Date())
             views.setTextViewText(R.id.widget_date, currentDate)
+            views.setTextViewText(R.id.widget_meal_empty, "급식 정보 없음")
 
-            // 클릭 리스너 재설정 (데이터 업데이트 시에도 클릭 이벤트 유지)
-            val refreshIntent = Intent(context, MealWidgetProvider::class.java).apply {
-                action = ACTION_WIDGET_UPDATE
-                setPackage(context.packageName)
-                putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-            }
-            val refreshPendingIntent = PendingIntent.getBroadcast(
-                context,
-                appWidgetId * 1000,
-                refreshIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            val refreshPendingIntent = createRefreshPendingIntent(context, appWidgetId)
+            configureMealListView(context, views, appWidgetId, refreshPendingIntent)
+            setClickHandlers(context, views, appWidgetId, refreshPendingIntent)
+
+            views.setViewVisibility(R.id.widget_loading, View.GONE)
+            views.setViewVisibility(R.id.widget_meal_list, View.VISIBLE)
+            views.setViewVisibility(
+                R.id.widget_meal_empty,
+                if (trimmedMealData.isEmpty()) View.VISIBLE else View.GONE
             )
-
-            // 전체 위젯 영역에 클릭 리스너 설정
-            views.setOnClickPendingIntent(R.id.widget_root, refreshPendingIntent)
-            views.setOnClickPendingIntent(R.id.widget_meal_content, refreshPendingIntent)
-            views.setOnClickPendingIntent(R.id.widget_date, refreshPendingIntent)
-
-            // 제목 클릭 시 앱 열기
-            val appIntent = Intent(context, MainActivity::class.java)
-            val appPendingIntent = PendingIntent.getActivity(
-                context,
-                appWidgetId * 1000 + 1,
-                appIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            views.setOnClickPendingIntent(R.id.widget_title, appPendingIntent)
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
     }
 
-    private fun adjustTextSizeForWidget(views: RemoteViews, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
-        try {
-            val options: Bundle = appWidgetManager.getAppWidgetOptions(appWidgetId)
-            val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 110)
-            val minHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 110)
+    private fun configureMealListView(
+        context: Context,
+        views: RemoteViews,
+        appWidgetId: Int,
+        refreshPendingIntent: PendingIntent
+    ) {
+        val adapterIntent = Intent(context, MealWidgetService::class.java).apply {
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+            data = Uri.parse(toUri(Intent.URI_INTENT_SCHEME))
+        }
+        views.setRemoteAdapter(R.id.widget_meal_list, adapterIntent)
+        views.setEmptyView(R.id.widget_meal_list, R.id.widget_meal_empty)
+        views.setPendingIntentTemplate(R.id.widget_meal_list, refreshPendingIntent)
+    }
 
-            // 위젯 크기에 따른 텍스트 크기 계산 (3칸 크기를 4칸 이상에서도 사용)
+    private fun setClickHandlers(
+        context: Context,
+        views: RemoteViews,
+        appWidgetId: Int,
+        refreshPendingIntent: PendingIntent
+    ) {
+        views.setOnClickPendingIntent(R.id.widget_root, refreshPendingIntent)
+        views.setOnClickPendingIntent(R.id.widget_date, refreshPendingIntent)
+        views.setOnClickPendingIntent(R.id.widget_meal_empty, refreshPendingIntent)
+
+        val appIntent = Intent(context, MainActivity::class.java)
+        val appPendingIntent = PendingIntent.getActivity(
+            context,
+            appWidgetId * 1000 + 1,
+            appIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        views.setOnClickPendingIntent(R.id.widget_title, appPendingIntent)
+    }
+
+    private fun applyTextSizes(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+        views: RemoteViews
+    ) {
+        val sizes = resolveTextSizes(appWidgetManager, appWidgetId)
+        views.setTextViewTextSize(R.id.widget_title, TypedValue.COMPLEX_UNIT_SP, sizes.title)
+        views.setTextViewTextSize(R.id.widget_date, TypedValue.COMPLEX_UNIT_SP, sizes.date)
+        views.setTextViewTextSize(R.id.widget_meal_empty, TypedValue.COMPLEX_UNIT_SP, sizes.content)
+        saveContentTextSize(context, appWidgetId, sizes.content)
+    }
+
+    private fun resolveTextSizes(
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int
+    ): TextSizes {
+        return try {
+            val options = appWidgetManager.getAppWidgetOptions(appWidgetId)
+            val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 110)
+
             val titleSize = when {
-                minWidth >= 210 -> 18f // 3칸 이상
-                minWidth >= 140 -> 16f // 2칸
-                else -> 14f // 1칸 (현실적으로 사용 안됨)
+                minWidth >= 210 -> 18f
+                minWidth >= 140 -> 16f
+                else -> 14f
             }
 
             val contentSize = when {
-                minWidth >= 210 -> 15f // 3칸 이상
-                minWidth >= 140 -> 14f // 2칸
-                else -> 13f // 1칸
+                minWidth >= 210 -> 15f
+                minWidth >= 140 -> 14f
+                else -> 13f
             }
 
             val dateSize = when {
-                minWidth >= 210 -> 14f // 3칸 이상
-                minWidth >= 140 -> 13f // 2칸
-                else -> 12f // 1칸
+                minWidth >= 210 -> 14f
+                minWidth >= 140 -> 13f
+                else -> 12f
             }
 
-            // 텍스트 크기 적용
-            views.setTextViewTextSize(R.id.widget_title, TypedValue.COMPLEX_UNIT_SP, titleSize)
-            views.setTextViewTextSize(R.id.widget_meal_content, TypedValue.COMPLEX_UNIT_SP, contentSize)
-            views.setTextViewTextSize(R.id.widget_date, TypedValue.COMPLEX_UNIT_SP, dateSize)
-        } catch (e: Exception) {
-            // 크기 정보를 가져올 수 없는 경우 기본값 사용
-            views.setTextViewTextSize(R.id.widget_title, TypedValue.COMPLEX_UNIT_SP, 16f)
-            views.setTextViewTextSize(R.id.widget_meal_content, TypedValue.COMPLEX_UNIT_SP, 14f)
-            views.setTextViewTextSize(R.id.widget_date, TypedValue.COMPLEX_UNIT_SP, 13f)
+            TextSizes(titleSize, contentSize, dateSize)
+        } catch (_: Exception) {
+            TextSizes(16f, 14f, 13f)
         }
     }
 
-    override fun onAppWidgetOptionsChanged(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int, newOptions: Bundle) {
-        super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
-        // 크기가 변경될 때마다 위젯 업데이트
-        updateAppWidget(context, appWidgetManager, appWidgetId)
+    private fun saveContentTextSize(context: Context, appWidgetId: Int, sizeSp: Float) {
+        val prefs = context.getSharedPreferences(MEAL_WIDGET_PREFS, Context.MODE_PRIVATE)
+        prefs.edit()
+            .putFloat(KEY_MEAL_CONTENT_SIZE_PREFIX + appWidgetId, sizeSp)
+            .apply()
     }
+
+    private fun saveMealData(context: Context, appWidgetIds: IntArray, mealData: String) {
+        val prefs = context.getSharedPreferences(MEAL_WIDGET_PREFS, Context.MODE_PRIVATE)
+        val editor = prefs.edit()
+        appWidgetIds.forEach { editor.putString(KEY_MEAL_DATA_PREFIX + it, mealData) }
+        editor.apply()
+    }
+
+    private fun clearStoredData(context: Context, appWidgetIds: IntArray) {
+        val prefs = context.getSharedPreferences(MEAL_WIDGET_PREFS, Context.MODE_PRIVATE)
+        val editor = prefs.edit()
+        appWidgetIds.forEach {
+            editor.remove(KEY_MEAL_DATA_PREFIX + it)
+            editor.remove(KEY_MEAL_CONTENT_SIZE_PREFIX + it)
+        }
+        editor.apply()
+    }
+
+    private fun createRefreshPendingIntent(context: Context, appWidgetId: Int): PendingIntent {
+        val refreshIntent = Intent(context, MealWidgetProvider::class.java).apply {
+            action = ACTION_WIDGET_UPDATE
+            setPackage(context.packageName)
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+        }
+        return PendingIntent.getBroadcast(
+            context,
+            appWidgetId * 1000,
+            refreshIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    private data class TextSizes(
+        val title: Float,
+        val content: Float,
+        val date: Float
+    )
 
     companion object {
         const val ACTION_WIDGET_UPDATE = "kr.ny64.slunchv2.WIDGET_UPDATE"

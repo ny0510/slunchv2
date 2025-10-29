@@ -73,6 +73,16 @@
                 android:resource="@xml/timetable_widget_info" />
         </receiver>
 
+        <service
+            android:name=".widget.MealWidgetService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <service
+            android:name=".widget.TimetableWidgetService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
     </application>
 
     <queries>
