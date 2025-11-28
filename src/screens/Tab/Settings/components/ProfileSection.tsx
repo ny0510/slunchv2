@@ -10,7 +10,7 @@ import {showToast} from '@/lib/toast';
 
 const ProfileSection = () => {
   const {user, loading, logout, login} = useAuth();
-  const {theme, typography} = useTheme();
+  const {theme, typography, isDark} = useTheme();
 
   if (loading) {
     return <Loading />;
@@ -30,7 +30,7 @@ const ProfileSection = () => {
           borderWidth: 1,
           gap: 12,
         }}>
-        <Image src={user && user.photoURL ? user.photoURL : `${API_BASE_URL}/public/default_profile.png`} style={{width: 48, height: 48, backgroundColor: theme.border, borderRadius: 24}} borderRadius={24} />
+        <Image src={user && user.photoURL ? user.photoURL : isDark ? `${API_BASE_URL}/public/default_profile.png` : `${API_BASE_URL}/public/default_profile_light.png`} style={{width: 48, height: 48, backgroundColor: theme.border, borderRadius: 24}} borderRadius={24} />
         <View style={{flex: 1}}>
           <Text style={[typography.body, {color: theme.primaryText, fontWeight: '600'}]}>{user ? user.displayName : '게스트'}</Text>
           <Text style={[typography.caption, {color: theme.secondaryText}]}>{user ? user.email : '로그인해 주세요'}</Text>
