@@ -36,7 +36,10 @@ const DeveloperCardList = ({title, developers}: {title: string; developers: {nam
 
 const DeveloperInfo = () => {
   const data = {
-    developers: [{name: '김가온 (118기)', role: 'Frontend, Backend', profileImage: `${API_BASE_URL}/public/ny64.png`}],
+    developers: [
+      {name: '김가온 (118기)', role: 'Frontend, Backend', profileImage: `${API_BASE_URL}/public/ny64.png`},
+      {name: '남현석', role: 'Frontend, Backend', profileImage: `${API_BASE_URL}/public/imnyang.webp`},
+    ],
     specialThanks: [{name: '설지원 (118기)', role: 'Backend, CI / CD', profileImage: `${API_BASE_URL}/public/misile.png`}],
   };
 
