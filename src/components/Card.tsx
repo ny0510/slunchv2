@@ -13,10 +13,11 @@ interface Props {
   notificationDot?: boolean;
   style?: object;
   titleIcon?: React.ReactNode;
+  rightComponent?: React.ReactNode;
   children?: React.ReactNode;
 }
 
-const Card = ({title, titleStyle, subtitle, subtitleStyle, style, arrow, titleIcon, children, notificationDot, ...rest}: Props & {[key: string]: any}) => {
+const Card = ({title, titleStyle, subtitle, subtitleStyle, style, arrow, titleIcon, rightComponent, children, notificationDot, ...rest}: Props & {[key: string]: any}) => {
   const {theme, typography} = useTheme();
 
   return (
@@ -29,6 +30,7 @@ const Card = ({title, titleStyle, subtitle, subtitleStyle, style, arrow, titleIc
             {subtitle && <Text style={[typography.caption, {color: theme.secondaryText}, subtitleStyle]}>{subtitle}</Text>}
           </View>
           <View style={{gap: 8, flexDirection: 'row', alignItems: 'center'}}>
+            {rightComponent && rightComponent}
             {notificationDot && <View style={{width: 12, height: 12, borderRadius: 12 / 2, backgroundColor: theme.highlight}} />}
             {arrow && <FontAwesome6 name="chevron-right" iconStyle="solid" size={14} color={theme.secondaryText} />}
           </View>
