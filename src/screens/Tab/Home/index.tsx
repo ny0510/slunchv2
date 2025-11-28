@@ -765,7 +765,7 @@ const Home = ({ setScrollRef }: { setScrollRef?: (ref: any) => void }) => {
 };
 
 const HomeCard = ({ title, titleIcon, arrow, onPress, onLongPress, notificationDot, children, ...rest }: { title?: string; titleIcon?: ReactNode; arrow?: boolean; onPress?: () => void; notificationDot?: boolean; children?: ReactNode } & { [key: string]: any }) => {
-  const { theme } = useTheme();
+  const { theme, typography } = useTheme();
   return (
     <TouchableScale onLongPress={onLongPress} onPress={onPress} activeScale={0.98} tension={100} friction={10} {...rest}>
       <View style={{ backgroundColor: theme.card, borderRadius: 16, padding: 20, gap: 16 }}>
@@ -773,7 +773,7 @@ const HomeCard = ({ title, titleIcon, arrow, onPress, onLongPress, notificationD
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               {titleIcon}
-              <Text style={{ fontSize: 18, fontWeight: '600', color: theme.primaryText }}>{title}</Text>
+              <Text style={[typography.baseTextStyle, { color: theme.primaryText, fontWeight: '600', fontSize: 18 }]}>{title}</Text>
             </View>
             {arrow && <FontAwesome6 name="chevron-right" iconStyle="solid" size={14} color={theme.secondaryText} />}
           </View>
