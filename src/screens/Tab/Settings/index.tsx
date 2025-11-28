@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {BackHandler, Text, TouchableOpacity, View} from 'react-native';
+import {BackHandler, Platform, Text, TouchableOpacity, View} from 'react-native';
 import ScrollPicker from 'react-native-wheel-scrollview-picker';
 
 import AppInfoCard from './components/AppInfoCard';
@@ -20,6 +20,8 @@ import BottomSheet, {BottomSheetBackdrop, BottomSheetView} from '@gorhom/bottom-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
+import BannerAdCard from '@/components/BannerAdCard';
+import { ANDROID_HOME_BANNER_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID } from '@env';
 
 const Settings = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
   const [developerOptions, setDeveloperOptions] = useState(false);
@@ -284,6 +286,9 @@ const Settings = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
             <MyInfoCard schoolInfo={schoolInfo} classInfo={classInfo} />
             <AppInfoCard onDeveloperOptionsEnabled={enabled => setDeveloperOptions(enabled)} />
           </View>
+
+          { /* 야호 */ }
+          <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
         </View>
       </Container>
 
