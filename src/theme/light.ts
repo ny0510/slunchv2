@@ -1,15 +1,15 @@
 import Palette from '@/theme/types/Palette';
 
 const light: Palette = {
-  white: '#FEFCFF',
+  white: '#FAFAFA',
   background: '#F0F1F3',
-  highlight: '#7956FC',
-  highlightLight: '#A28BFF',
+  highlight: '#6A4CFF',
+  highlightLight: '#B2A1FF',
   highlightSecondary: '#FF914D',
   card: '#FAFAFA',
-  primaryText: '#181818',
+  primaryText: '#1A1A1A',
   secondaryText: '#555555',
-  border: '#D1D5DB',
+  border: '#E2E4EA',
 };
 
 export default light;
