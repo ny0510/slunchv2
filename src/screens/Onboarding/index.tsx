@@ -1,29 +1,29 @@
 import dayjs from 'dayjs';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Alert, FlatList, ImageBackground, Platform, Text, TextInput, TouchableOpacity, View} from 'react-native';
-import {trigger} from 'react-native-haptic-feedback';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Alert, FlatList, ImageBackground, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { trigger } from 'react-native-haptic-feedback';
 import LinearGradient from 'react-native-linear-gradient';
-import ScrollPicker from 'react-native-wheel-scrollview-picker';
+import WheelPicker, { type PickerItem } from '@quidone/react-native-wheel-picker';
 
-import {createStyles} from './styles';
-import {comciganSchoolSearch, getClassList, neisSchoolSearch, removeMealNotification, removeTimetableNotification} from '@/api';
+import { createStyles } from './styles';
+import { comciganSchoolSearch, getClassList, neisSchoolSearch, removeMealNotification, removeTimetableNotification } from '@/api';
 import LogoIcon from '@/assets/images/logo.svg';
 import Loading from '@/components/Loading';
 import SlotMachine from '@/components/SlotMachine';
-import {useTheme} from '@/contexts/ThemeContext';
-import {useUser} from '@/contexts/UserContext';
-import {useFirstOpen} from '@/hooks/useFirstOpen';
-import {useWidget} from '@/hooks/useWidget';
-import {showToast} from '@/lib/toast';
-import {RootStackParamList} from '@/navigation/RootStacks';
-import {School} from '@/types/api';
-import {ClassData, SchoolData} from '@/types/onboarding';
-import notifee, {AuthorizationStatus} from '@notifee/react-native';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useUser } from '@/contexts/UserContext';
+import { useFirstOpen } from '@/hooks/useFirstOpen';
+import { useWidget } from '@/hooks/useWidget';
+import { showToast } from '@/lib/toast';
+import { RootStackParamList } from '@/navigation/RootStacks';
+import { School } from '@/types/api';
+import { ClassData, SchoolData } from '@/types/onboarding';
+import notifee, { AuthorizationStatus } from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
-import {NavigationProp, useNavigation} from '@react-navigation/native';
-import {StackScreenProps} from '@react-navigation/stack';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { StackScreenProps } from '@react-navigation/stack';
 
 // Constants
 const DEMO_SCHOOL_DATA: SchoolData = {
@@ -63,7 +63,7 @@ const INTRO_MESSAGES = [
 
 // Utility functions
 const logScreenView = (screenName: string, screenClass: string) => {
-  analytics().logScreenView({screen_name: screenName, screen_class: screenClass});
+  analytics().logScreenView({ screen_name: screenName, screen_class: screenClass });
 };
 
 const handleError = (error: unknown, message: string) => {
@@ -81,7 +81,7 @@ const SearchEmptyState = React.memo<{
   hasInput: boolean;
   hasResults: boolean;
   styles: any;
-}>(({isLoading, hasInput, hasResults, styles}) => {
+}>(({ isLoading, hasInput, hasResults, styles }) => {
   if (isLoading) {
     return (
       <View style={styles.centerView}>
@@ -115,7 +115,7 @@ const SchoolListItem = React.memo<{
   schoolNameStyle: any;
   addressStyle: any;
   itemStyle: any;
-}>(({item, onPress, schoolNameStyle, addressStyle, itemStyle}) => (
+}>(({ item, onPress, schoolNameStyle, addressStyle, itemStyle }) => (
   <TouchableOpacity style={itemStyle} onPress={() => onPress(item)}>
     <Text style={schoolNameStyle}>{item.schoolName}</Text>
     <Text style={addressStyle}>{item.region}</Text>
@@ -124,20 +124,20 @@ const SchoolListItem = React.memo<{
 
 export const IntroScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const {refreshUserData} = useUser();
-  const {syncSchoolInfoToNative} = useWidget();
+  const { refreshUserData } = useUser();
+  const { syncSchoolInfoToNative } = useWidget();
 
-  const {theme, typography, isDark} = useTheme();
+  const { theme, typography, isDark } = useTheme();
   const s = createStyles(theme, typography);
 
   const handlePress = useCallback(() => {
-    navigation.navigate('SchoolSearch', {isFirstOpen: true});
+    navigation.navigate('SchoolSearch', { isFirstOpen: true });
   }, [navigation]);
 
   const handleLongPress = useCallback(() => {
     trigger('impactLight');
     Alert.alert('데모 모드', '데모 모드에서는 학교를 선택할 수 없어요.\n계속하시겠습니까?', [
-      {text: '아니요', style: 'cancel'},
+      { text: '아니요', style: 'cancel' },
       {
         text: '네',
         onPress: async () => {
@@ -145,7 +145,7 @@ export const IntroScreen = () => {
             await setStorageItems({
               demoMode: 'true',
               school: JSON.stringify(DEMO_SCHOOL_DATA),
-              class: JSON.stringify({grade: 1, class: 1}),
+              class: JSON.stringify({ grade: 1, class: 1 }),
             });
             await syncSchoolInfoToNative();
             refreshUserData();
@@ -242,11 +242,11 @@ export const IntroScreen = () => {
   );
 };
 
-export const SchoolSearchScreen = ({route}: StackScreenProps<RootStackParamList, 'SchoolSearch'>) => {
+export const SchoolSearchScreen = ({ route }: StackScreenProps<RootStackParamList, 'SchoolSearch'>) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const {isFirstOpen = true} = route.params;
+  const { isFirstOpen = true } = route.params;
 
-  const {theme, typography} = useTheme();
+  const { theme, typography } = useTheme();
   const s = createStyles(theme, typography);
 
   const [inputText, setInputText] = useState('');
@@ -255,7 +255,7 @@ export const SchoolSearchScreen = ({route}: StackScreenProps<RootStackParamList,
 
   const handleSchoolPress = useCallback(
     (school: School) => {
-      navigation.navigate('ClassSelect', {school, isFirstOpen});
+      navigation.navigate('ClassSelect', { school, isFirstOpen });
     },
     [navigation, isFirstOpen],
   );
@@ -339,7 +339,7 @@ export const SchoolSearchScreen = ({route}: StackScreenProps<RootStackParamList,
             style={s.searchResultList}
             data={schoolList}
             keyExtractor={item => item.schoolCode.toString()}
-            renderItem={({item}) => (
+            renderItem={({ item }) => (
               <TouchableOpacity style={s.searchResultItem} onPress={() => handleSchoolPress(item)} activeOpacity={0.7}>
                 <View style={s.searchResultContent}>
                   <Text style={s.searchResultName}>{item.schoolName}</Text>
@@ -355,11 +355,11 @@ export const SchoolSearchScreen = ({route}: StackScreenProps<RootStackParamList,
   );
 };
 
-export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 'ClassSelect'>) => {
+export const ClassSelectScreen = ({ route }: StackScreenProps<RootStackParamList, 'ClassSelect'>) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const {school, isFirstOpen = true} = route.params;
-  const {refreshUserData} = useUser();
-  const {syncSchoolInfoToNative} = useWidget();
+  const { school, isFirstOpen = true } = route.params;
+  const { refreshUserData } = useUser();
+  const { syncSchoolInfoToNative } = useWidget();
 
   const [gradeList, setGradeList] = useState<number[]>([]);
   const [classList, setClassList] = useState<number[][]>([]);
@@ -368,11 +368,9 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
-  const {completeOnboarding} = useFirstOpen();
-  const {theme, typography} = useTheme();
+  const { completeOnboarding } = useFirstOpen();
+  const { theme, typography, isDark } = useTheme();
   const s = createStyles(theme, typography);
-
-  const classScrollPickerRef = useRef<any>(null);
 
   useEffect(() => {
     logScreenView('학급 선택 스크린', 'ClassSelect');
@@ -407,7 +405,6 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
     const newGradeIndex = index - 1;
     setSelectedGrade(gradeList[newGradeIndex]);
     setSelectedClass(classList[newGradeIndex][0]);
-    classScrollPickerRef.current?.scrollToTargetIndex(0);
   };
 
   const handleClassChange = (index?: number) => {
@@ -449,7 +446,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
         neisRegionCode: neisSchool.regionCode,
       };
 
-      const classData: ClassData = {grade: selectedGrade, class: selectedClass};
+      const classData: ClassData = { grade: selectedGrade, class: selectedClass };
 
       // Set storage items
       await Promise.all([
@@ -516,7 +513,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
 
       navigation.reset({
         index: 0,
-        routes: [{name: 'Tab'}],
+        routes: [{ name: 'Tab' }],
       });
     } catch (error) {
       handleError(error, '학교 정보를 불러오는 중 오류가 발생했어요.');
@@ -545,44 +542,37 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
           ) : (
             <>
               <View style={s.classSelectPickerContainer}>
-                <ScrollPicker
-                  dataSource={gradeList}
-                  wrapperBackground={'transparent'}
+                <WheelPicker
+                  data={gradeList.map(grade => ({ value: grade, label: `${grade}학년` }))}
+                  value={selectedGrade}
                   itemHeight={50}
-                  highlightColor={theme.secondaryText}
-                  highlightBorderWidth={1}
-                  onValueChange={handleGradeChange}
-                  selectedIndex={gradeList.indexOf(selectedGrade)}
-                  renderItem={(data, _, isSelected) => (
-                    <Text
-                      style={{
-                        fontSize: 20,
-                        color: isSelected ? theme.primaryText : theme.secondaryText,
-                        fontWeight: '500',
-                      }}>
-                      {data}학년
-                    </Text>
-                  )}
+                  visibleItemCount={5}
+                  onValueChanged={({ item }) => handleGradeChange(gradeList.indexOf(item.value) + 1)}
+                  itemTextStyle={{
+                    fontSize: 20,
+                    color: theme.primaryText,
+                    fontWeight: '500',
+                  }}
+                  overlayItemStyle={isDark ? {
+                    backgroundColor: theme.white
+                  } : undefined}
+                  style={{ flex: 1 }}
                 />
-                <ScrollPicker
-                  dataSource={classList[gradeList.indexOf(selectedGrade)] || []}
-                  wrapperBackground={'transparent'}
+                <WheelPicker
+                  data={(classList[gradeList.indexOf(selectedGrade)] || []).map(cls => ({ value: cls, label: `${cls}반` }))}
+                  value={selectedClass}
                   itemHeight={50}
-                  highlightColor={theme.secondaryText}
-                  highlightBorderWidth={1}
-                  onValueChange={handleClassChange}
-                  selectedIndex={classList[gradeList.indexOf(selectedGrade)]?.indexOf(selectedClass) || 0}
-                  ref={classScrollPickerRef}
-                  renderItem={(data, _, isSelected) => (
-                    <Text
-                      style={{
-                        fontSize: 20,
-                        color: isSelected ? theme.primaryText : theme.secondaryText,
-                        fontWeight: '500',
-                      }}>
-                      {data}반
-                    </Text>
-                  )}
+                  visibleItemCount={5}
+                  onValueChanged={({ item }) => handleClassChange((classList[gradeList.indexOf(selectedGrade)] || []).indexOf(item.value) + 1)}
+                  itemTextStyle={{
+                    fontSize: 20,
+                    color: theme.primaryText,
+                    fontWeight: '500',
+                  }}
+                  overlayItemStyle={isDark ? {
+                    backgroundColor: theme.white
+                  } : undefined}
+                  style={{ flex: 1 }}
                 />
               </View>
 

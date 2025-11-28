@@ -1,6 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {BackHandler, Platform, Text, TouchableOpacity, View} from 'react-native';
-import ScrollPicker from 'react-native-wheel-scrollview-picker';
 
 import AppInfoCard from './components/AppInfoCard';
 import DeveloperSettingCard from './components/DeveloperSettingCard';
@@ -22,6 +21,7 @@ import analytics from '@react-native-firebase/analytics';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 import BannerAdCard from '@/components/BannerAdCard';
 import { ANDROID_HOME_BANNER_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID } from '@env';
+import WheelPicker from '@quidone/react-native-wheel-picker';
 
 const Settings = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
   const [developerOptions, setDeveloperOptions] = useState(false);
@@ -38,7 +38,7 @@ const Settings = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
   const gradeScrollPickerRef = useRef<any>(null);
   const scrollViewRef = useRef<any>(null);
 
-  const {theme, typography} = useTheme();
+  const {theme, typography, isDark} = useTheme();
   const {schoolInfo, classInfo, refreshUserData, setClassChangedTrigger} = useUser();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
@@ -317,46 +317,38 @@ const Settings = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
                 </View>
               ) : (
                 <View style={{flex: 1, flexDirection: 'row'}}>
-                  <ScrollPicker
-                    ref={gradeScrollPickerRef}
-                    dataSource={gradeList}
-                    wrapperBackground={'transparent'}
-                    itemHeight={45}
-                    highlightColor={theme.secondaryText}
-                    highlightBorderWidth={1}
-                    onValueChange={handleGradeChange}
-                    selectedIndex={gradeList.indexOf(selectedGrade)}
-                    renderItem={(data, _, isSelected) => (
-                      <Text
-                        style={{
-                          fontSize: 20,
-                          color: isSelected ? theme.primaryText : theme.secondaryText,
-                          fontWeight: '500',
-                        }}>
-                        {data}학년
-                      </Text>
-                    )}
-                  />
-                  <ScrollPicker
-                    ref={classScrollPickerRef}
-                    dataSource={classList[gradeList.indexOf(selectedGrade)] || []}
-                    wrapperBackground={'transparent'}
-                    itemHeight={45}
-                    highlightColor={theme.secondaryText}
-                    highlightBorderWidth={1}
-                    onValueChange={handleClassChange}
-                    selectedIndex={classList[gradeList.indexOf(selectedGrade)]?.indexOf(selectedClass) || 0}
-                    renderItem={(data, _, isSelected) => (
-                      <Text
-                        style={{
-                          fontSize: 20,
-                          color: isSelected ? theme.primaryText : theme.secondaryText,
-                          fontWeight: '500',
-                        }}>
-                        {data}반
-                      </Text>
-                    )}
-                  />
+                <WheelPicker
+                  data={gradeList.map(grade => ({ value: grade, label: `${grade}학년` }))}
+                  value={selectedGrade}
+                  itemHeight={50}
+                  visibleItemCount={5}
+                  onValueChanged={({ item }) => handleGradeChange(gradeList.indexOf(item.value) + 1)}
+                  itemTextStyle={{
+                    fontSize: 20,
+                    color: theme.primaryText,
+                    fontWeight: '500',
+                  }}
+                  overlayItemStyle={isDark ? {
+                    backgroundColor: theme.white
+                  } : undefined}
+                  style={{ flex: 1 }}
+                />
+                <WheelPicker
+                  data={(classList[gradeList.indexOf(selectedGrade)] || []).map(cls => ({ value: cls, label: `${cls}반` }))}
+                  value={selectedClass}
+                  itemHeight={50}
+                  visibleItemCount={5}
+                  onValueChanged={({ item }) => handleClassChange((classList[gradeList.indexOf(selectedGrade)] || []).indexOf(item.value) + 1)}
+                  itemTextStyle={{
+                    fontSize: 20,
+                    color: theme.primaryText,
+                    fontWeight: '500',
+                  }}
+                  overlayItemStyle={isDark ? {
+                    backgroundColor: theme.white
+                  } : undefined}
+                  style={{ flex: 1 }}
+                />
                 </View>
               )}
 
