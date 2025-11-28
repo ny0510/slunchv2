@@ -316,7 +316,7 @@ const Settings = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
                   <Loading />
                 </View>
               ) : (
-                <View style={{flex: 1, flexDirection: 'row'}}>
+                <View style={{flex: 1, flexDirection: 'row', gap: 12}}>
                 <WheelPicker
                   data={gradeList.map(grade => ({ value: grade, label: `${grade}학년` }))}
                   value={selectedGrade}
