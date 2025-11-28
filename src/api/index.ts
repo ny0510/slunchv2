@@ -16,15 +16,15 @@ export const getClassList = async (schoolCode: number | string): Promise<ClassLi
   return response.data;
 };
 
-export const getTimetable = async (schoolCode: number | string, grade: number | string, classNum: number | string): Promise<Timetable[][]> => {
-  const cacheKey = `timetable_${schoolCode}_${grade}_${classNum}`;
+export const getTimetable = async (schoolCode: number | string, grade: number | string, classNum: number | string, nextweek: boolean = false): Promise<Timetable[][]> => {
+  const cacheKey = `timetable_${schoolCode}_${grade}_${classNum}_${nextweek}`;
   const cachedData = await getCachedData(cacheKey);
   if (cachedData) {
     return cachedData;
   }
 
   const response = await httpClient.get('/comcigan/timetable', {
-    params: {schoolCode, grade, class: classNum},
+    params: {schoolCode, grade, class: classNum, nextweek},
   });
   await setCachedData(cacheKey, response.data);
   return response.data;
