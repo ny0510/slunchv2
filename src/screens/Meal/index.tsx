@@ -40,6 +40,8 @@ const Meal = () => {
   const {theme, typography} = useTheme();
   const flatListRef = useRef<FlatList | null>(null);
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const initialLoadDone = useRef<boolean>(false);
+  const isAutoLoading = useRef<boolean>(false);
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
@@ -74,19 +76,28 @@ const Meal = () => {
         filteredMeals = mealResponse.filter(m => dayjs(m.date).isSame(today, 'day') || dayjs(m.date).isAfter(today, 'day'));
       }
 
+      let newMealsCount = 0;
       if (append) {
-        setMeal(prev => [...prev, ...filteredMeals]);
+        setMeal(prev => {
+          // 중복 데이터 필터링 (date + type으로 구분)
+          const existingKeys = new Set(prev.map(m => `${m.date}-${m.type}`));
+          const uniqueNewMeals = filteredMeals.filter(m => !existingKeys.has(`${m.date}-${m.type}`));
+          const newMeals = [...prev, ...uniqueNewMeals];
+          newMealsCount = newMeals.length;
+          return newMeals;
+        });
       } else {
         setMeal(filteredMeals);
+        newMealsCount = filteredMeals.length;
       }
 
-      // 데이터가 없으면 더 이상 로드할 데이터가 없을 수 있음
-      if (mealResponse.length === 0) {
-        setHasMore(false);
-        if (append) {
-          showToast('더 이상 급식 데이터가 없어요.');
-        }
+      // 데이터가 있으면 hasMore 유지
+      if (mealResponse.length > 0) {
+        setHasMore(true);
       }
+
+      // 10개 미만이면 자동으로 다음 달 불러오기
+      return newMealsCount;
     } catch (e) {
       const err = e as Error;
 
@@ -94,22 +105,28 @@ const Meal = () => {
         showToast('급식을 불러오는 중 오류가 발생했어요.');
       }
       console.error('Error fetching data:', err);
-      
-      // 에러가 발생하면 더 이상 로드 시도하지 않음
-      if (append) {
-        setHasMore(false);
-      }
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
   }, [showAllergy]);
 
-  const loadMore = useCallback(async () => {
+  const loadMore = useCallback(async (silent: boolean = false) => {
     if (loadingMore || !hasMore) return;
 
-    setLoadingMore(true);
     const nextMonth = currentMonth.add(1, 'month');
+    const limitDate = dayjs().add(1, 'year').month(1).endOf('month'); // 다음 년도 2월 말
+    
+    // 다음 년도 2월까지만 불러오기
+    if (nextMonth.isAfter(limitDate, 'month')) {
+      setHasMore(false);
+      if (!silent) {
+        showToast('더 이상 급식 데이터가 없어요.');
+      }
+      return;
+    }
+
+    setLoadingMore(true);
     setCurrentMonth(nextMonth);
     await fetchData(nextMonth, true);
   }, [loadingMore, hasMore, currentMonth, fetchData]);
@@ -119,8 +136,22 @@ const Meal = () => {
   }, []);
 
   useEffect(() => {
-    fetchData();
+    // 이미 로드된 상태면 스킵
+    if (initialLoadDone.current) return;
+    fetchData().then(() => {
+      initialLoadDone.current = true;
+    });
   }, []);
+
+  // 10개 미만이면 자동으로 다음 달 불러오기
+  useEffect(() => {
+    if (initialLoadDone.current && !loading && !loadingMore && !refreshing && meal.length < 10 && hasMore && !isAutoLoading.current) {
+      isAutoLoading.current = true;
+      loadMore(true).finally(() => {
+        isAutoLoading.current = false;
+      });
+    }
+  }, [loading, loadingMore, refreshing, meal.length, hasMore, loadMore]);
 
   // Handle allergy setting changes when screen is focused
   useFocusEffect(
@@ -145,12 +176,17 @@ const Meal = () => {
   );
 
   const onRefresh = useCallback(async () => {
+    initialLoadDone.current = false;
     setRefreshing(true);
     await clearCache('@cache/meal');
     setCurrentMonth(dayjs());
     setHasMore(true);
     await fetchData();
     setRefreshing(false);
+    // 약간의 딜레이 후 initialLoadDone 설정 (useEffect 트리거 방지)
+    setTimeout(() => {
+      initialLoadDone.current = true;
+    }, 100);
   }, [fetchData]);
 
   const openBottomSheet = (_meal: string, date: string) => {
@@ -235,7 +271,7 @@ const Meal = () => {
           keyExtractor={(item, index) => `${item.date}-${item.type}-${index}`}
           contentContainerStyle={{paddingHorizontal: 16, paddingVertical: 16, gap: 12}}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}
-          onEndReached={loadMore}
+          onEndReached={() => loadMore()}
           onEndReachedThreshold={0.5}
           ListHeaderComponent={renderHeader}
           ListFooterComponent={renderFooter}

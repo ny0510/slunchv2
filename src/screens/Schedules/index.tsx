@@ -1,11 +1,10 @@
 import {ANDROID_HOME_BANNER_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
 import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
-import {Platform, RefreshControl, ScrollView, Text, View} from 'react-native';
+import {ActivityIndicator, FlatList, Platform, RefreshControl, Text, View} from 'react-native';
 
 import {getSchedules} from '@/api';
 import BannerAdCard from '@/components/BannerAdCard';
-import Container from '@/components/Container';
 import Loading from '@/components/Loading';
 import {useTheme} from '@/contexts/ThemeContext';
 import {clearCache} from '@/lib/cache';
@@ -16,10 +15,15 @@ import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 
 const Schedules = () => {
-  const scrollViewRef = useRef<ScrollView | null>(null);
+  const flatListRef = useRef<FlatList | null>(null);
+  const initialLoadDone = useRef<boolean>(false);
+  const isAutoLoading = useRef<boolean>(false);
   const [schedules, setSchedules] = useState<ScheduleType[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [currentMonth, setCurrentMonth] = useState<dayjs.Dayjs>(dayjs());
 
   const {theme, typography} = useTheme();
 
@@ -27,36 +31,102 @@ const Schedules = () => {
   const AD_FREQUENCY = 3;
   const MAX_ADS = 10;
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (month?: dayjs.Dayjs, append: boolean = false) => {
     try {
       const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
-      const today = dayjs();
+      const targetMonth = month || dayjs();
 
-      const scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'));
-      setSchedules(scheduleResponse);
+      const scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, targetMonth.format('YYYY'), targetMonth.format('MM'));
+      
+      let newSchedulesCount = 0;
+      if (append) {
+        setSchedules(prev => {
+          // 중복 데이터 필터링 (date + schedule로 구분)
+          const existingKeys = new Set(prev.map(s => `${s.date}-${s.schedule}`));
+          const uniqueNewSchedules = scheduleResponse.filter(s => !existingKeys.has(`${s.date}-${s.schedule}`));
+          const newSchedules = [...prev, ...uniqueNewSchedules];
+          newSchedulesCount = newSchedules.length;
+          return newSchedules;
+        });
+      } else {
+        setSchedules(scheduleResponse);
+        newSchedulesCount = scheduleResponse.length;
+      }
+
+      // 데이터가 있으면 hasMore 유지
+      if (scheduleResponse.length > 0) {
+        setHasMore(true);
+      }
+
+      // 10개 미만이면 자동으로 다음 달 불러오기
+      return newSchedulesCount;
     } catch (e) {
       const err = e as Error;
 
-      showToast('학사일정을 불러오는 중 오류가 발생했어요.');
+      if (!append) {
+        showToast('학사일정을 불러오는 중 오류가 발생했어요.');
+      }
       console.error('Error fetching data:', err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }, []);
+
+  const loadMore = useCallback(async (silent: boolean = false) => {
+    if (loadingMore || !hasMore) return;
+
+    const nextMonth = currentMonth.add(1, 'month');
+    const limitDate = dayjs().add(1, 'year').month(1).endOf('month'); // 다음 년도 2월 말
+    
+    // 다음 년도 2월까지만 불러오기
+    if (nextMonth.isAfter(limitDate, 'month')) {
+      setHasMore(false);
+      if (!silent) {
+        showToast('더 이상 학사일정 데이터가 없어요.');
+      }
+      return;
+    }
+
+    setLoadingMore(true);
+    setCurrentMonth(nextMonth);
+    await fetchData(nextMonth, true);
+  }, [loadingMore, hasMore, currentMonth, fetchData]);
 
   useEffect(() => {
     analytics().logScreenView({screen_name: '학사일정 상세 페이지', screen_class: 'Schedules'});
   }, []);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    // 이미 로드된 상태면 스킵
+    if (initialLoadDone.current) return;
+    fetchData().then(() => {
+      initialLoadDone.current = true;
+    });
+  }, []);
+
+  // 10개 미만이면 자동으로 다음 달 불러오기
+  useEffect(() => {
+    if (initialLoadDone.current && !loading && !loadingMore && !refreshing && schedules.length < 10 && hasMore && !isAutoLoading.current) {
+      isAutoLoading.current = true;
+      loadMore(true).finally(() => {
+        isAutoLoading.current = false;
+      });
+    }
+  }, [loading, loadingMore, refreshing, schedules.length, hasMore, loadMore]);
 
   const onRefresh = useCallback(async () => {
+    initialLoadDone.current = false;
     setRefreshing(true);
     await clearCache('@cache/schedules');
+    setCurrentMonth(dayjs());
+    setHasMore(true);
     await fetchData();
     setRefreshing(false);
+    // 약간의 딜레이 후 initialLoadDone 설정 (useEffect 트리거 방지)
+    setTimeout(() => {
+      initialLoadDone.current = true;
+    }, 100);
   }, [fetchData]);
 
   // 일정 유형별 키워드 정의
@@ -91,38 +161,61 @@ const Schedules = () => {
 
   const today = dayjs();
 
+  const renderScheduleItem = useCallback(({item, index}: {item: ScheduleType; index: number}) => {
+    const isToday = today.isSame(item.date.start, 'day');
+
+    // 광고 삽입 로직
+    const shouldShowAd = AD_FREQUENCY > 0 && index > 0 && index % AD_FREQUENCY === 0 && Math.floor(index / AD_FREQUENCY) <= MAX_ADS;
+
+    return (
+      <Fragment key={index}>
+        {shouldShowAd && <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />}
+        <TimelineItem item={item} isLast={index === schedules.length - 1} isToday={isToday} getScheduleType={getScheduleType} getScheduleColor={getScheduleColor} />
+      </Fragment>
+    );
+  }, [today, schedules.length, AD_FREQUENCY, MAX_ADS, getScheduleType, getScheduleColor]);
+
+  const renderFooter = useCallback(() => {
+    if (!loadingMore) return null;
+    return (
+      <View style={{paddingVertical: 20, alignItems: 'center'}}>
+        <ActivityIndicator size="small" color={theme.highlight} />
+        <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 8}]}>더 불러오는 중...</Text>
+      </View>
+    );
+  }, [loadingMore, theme, typography]);
+
+  const renderEmpty = useCallback(() => (
+    <View style={{alignItems: 'center', justifyContent: 'center', width: '100%', paddingVertical: 40}}>
+      <FontAwesome6 name="calendar-xmark" size={48} color={theme.secondaryText} iconStyle="solid" />
+      <Text style={[typography.body, {color: theme.secondaryText, marginTop: 12}]}>학사일정 데이터가 없어요.</Text>
+      <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 4}]}>학교에서 제공하지 않는 경우도 있어요.</Text>
+    </View>
+  ), [theme, typography]);
+
+  const renderHeader = useCallback(() => (
+    <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
+  ), []);
+
   return loading ? (
     <Loading fullScreen />
   ) : (
-    <Container scrollView bounce={!loading} scrollViewRef={scrollViewRef} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}>
-      <View style={{gap: 24, width: '100%'}}>
-        <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
-
-        {schedules?.length > 0 ? (
-          <View style={{gap: 12}}>
-            {schedules.map((item, index) => {
-              const isToday = today.isSame(item.date.start, 'day');
-
-              // 광고 삽입 로직
-              const shouldShowAd = AD_FREQUENCY > 0 && index > 0 && index % AD_FREQUENCY === 0 && Math.floor(index / AD_FREQUENCY) <= MAX_ADS;
-
-              return (
-                <Fragment key={index}>
-                  {shouldShowAd && <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />}
-                  <TimelineItem item={item} isLast={index === schedules.length - 1} isToday={isToday} getScheduleType={getScheduleType} getScheduleColor={getScheduleColor} />
-                </Fragment>
-              );
-            })}
-          </View>
-        ) : (
-          <View style={{alignItems: 'center', justifyContent: 'center', width: '100%', paddingVertical: 40}}>
-            <FontAwesome6 name="calendar-xmark" size={48} color={theme.secondaryText} iconStyle="solid" />
-            <Text style={[typography.body, {color: theme.secondaryText, marginTop: 12}]}>학사일정 데이터가 없어요.</Text>
-            <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 4}]}>학교에서 제공하지 않는 경우도 있어요.</Text>
-          </View>
-        )}
-      </View>
-    </Container>
+    <View style={{flex: 1, backgroundColor: theme.background}}>
+      <FlatList
+        ref={flatListRef}
+        data={schedules}
+        renderItem={renderScheduleItem}
+        keyExtractor={(item, index) => `${item.date.start}-${index}`}
+        contentContainerStyle={{paddingHorizontal: 16, paddingVertical: 16, gap: 12}}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}
+        onEndReached={() => loadMore()}
+        onEndReachedThreshold={0.5}
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
+        ListEmptyComponent={renderEmpty}
+        showsVerticalScrollIndicator={false}
+      />
+    </View>
   );
 };
 
