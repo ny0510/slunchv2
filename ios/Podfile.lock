@@ -1412,8 +1412,7 @@ PODS:
     - Yoga
   - react-native-device-brightness (1.2.7):
     - React
-  - react-native-keep-awake (1.3.1):
-    - RCT-Folly
+  - react-native-keep-awake (1.4.0):
     - RCTRequired
     - RCTTypeSafety
     - React-Codegen
@@ -1490,7 +1489,7 @@ PODS:
     - Yoga
   - react-native-tracking-transparency (0.1.2):
     - React
-  - react-native-vector-icons-fontawesome6 (12.2.0)
+  - react-native-vector-icons-fontawesome6 (12.3.0)
   - react-native-version-check (3.5.0):
     - React-Core
   - react-native-view-shot (4.0.3):
@@ -1867,23 +1866,23 @@ PODS:
     - Yoga
   - RNDeviceInfo (14.1.1):
     - React-Core
-  - RNFBAnalytics (23.4.1):
+  - RNFBAnalytics (23.5.0):
     - FirebaseAnalytics/Core (= 12.4.0)
     - React-Core
     - RNFBApp
-  - RNFBApp (23.4.1):
+  - RNFBApp (23.5.0):
     - Firebase/CoreOnly (= 12.4.0)
     - React-Core
-  - RNFBAuth (23.4.1):
+  - RNFBAuth (23.5.0):
     - Firebase/Auth (= 12.4.0)
     - React-Core
     - RNFBApp
-  - RNFBMessaging (23.4.1):
+  - RNFBMessaging (23.5.0):
     - Firebase/Messaging (= 12.4.0)
     - FirebaseCoreExtension
     - React-Core
     - RNFBApp
-  - RNGestureHandler (2.29.0):
+  - RNGestureHandler (2.29.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1976,7 +1975,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNReanimated (4.1.3):
+  - RNReanimated (4.1.5):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1998,10 +1997,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNReanimated/reanimated (= 4.1.3)
+    - RNReanimated/reanimated (= 4.1.5)
     - RNWorklets
     - Yoga
-  - RNReanimated/reanimated (4.1.3):
+  - RNReanimated/reanimated (4.1.5):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2023,10 +2022,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNReanimated/reanimated/apple (= 4.1.3)
+    - RNReanimated/reanimated/apple (= 4.1.5)
     - RNWorklets
     - Yoga
-  - RNReanimated/reanimated/apple (4.1.3):
+  - RNReanimated/reanimated/apple (4.1.5):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2095,7 +2094,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSentry (7.4.0):
+  - RNSentry (7.6.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2116,7 +2115,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - Sentry/HybridSDK (= 8.57.0)
+    - Sentry/HybridSDK (= 8.57.2)
     - Yoga
   - RNShare (12.0.11):
     - DoubleConversion
@@ -2139,7 +2138,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSVG (15.14.0):
+  - RNSVG (15.15.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2159,9 +2158,9 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNSVG/common (= 15.14.0)
+    - RNSVG/common (= 15.15.0)
     - Yoga
-  - RNSVG/common (15.14.0):
+  - RNSVG/common (15.15.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2253,7 +2252,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - Sentry/HybridSDK (8.57.0)
+  - Sentry/HybridSDK (8.57.2)
   - SocketRocket (0.7.1)
   - SplashView (0.0.18):
     - DoubleConversion
@@ -2672,11 +2671,11 @@ SPEC CHECKSUMS:
   react-native-cameraroll: e4baf7686acd8bb91e43aeb1031493b3bd3904ca
   react-native-date-picker: 3b048da884ad001f1a328208478d0771f27edfc7
   react-native-device-brightness: 1a997350d060c3df9f303b1df84a4f7c5cbeb924
-  react-native-keep-awake: a351e6f67006b47f316ae2b17ee8ee69386167f4
+  react-native-keep-awake: 129cb4bd75d0f304a479b4c4527d2994fe18e43c
   react-native-midnight: 2e0176d84b2c7cd07145795e03bb86a329ccdbd6
   react-native-safe-area-context: 5b5d3eb6ec9ef848f16c064a4eab4a92c7d7895e
   react-native-tracking-transparency: 15eb319f2b982070eb9831582af27d87badfa624
-  react-native-vector-icons-fontawesome6: 1b667969bef2f430d1d7515163b980b856f58670
+  react-native-vector-icons-fontawesome6: 1a73ea16a698f70851ad47e94521a99499e8e974
   react-native-version-check: 842a3b0e7221798cbe8c6abaf24aab3ed0b485ce
   react-native-view-shot: 953665e255e264a09c921fe139901bb735c76b6c
   React-NativeModulesApple: 5c61cef9e7f0e1d6216ff0af41a3b882806a5cec
@@ -2712,22 +2711,22 @@ SPEC CHECKSUMS:
   RNCClipboard: 9f7b908de4bf4353871fb454c15fc03db4917b88
   RNCMaskedView: f1d7a375655e54d0aca367a16692a04a8cb69a71
   RNDeviceInfo: bcce8752b5043a623fe3c26789679b473f705d3c
-  RNFBAnalytics: ac1124d77a75c69b5b79102aa9564ce1a6883d21
-  RNFBApp: d1f587866b6e188d95c5f541abedd8e4ce167bbe
-  RNFBAuth: b27ebeb2e99adaa2538b0660619381d0a3d3e72c
-  RNFBMessaging: 81842deb236bfd87d8e49f22ce7acf05d1eea04b
-  RNGestureHandler: 0e35a1c193aa514d178fae05d1bcc88e9f63c95e
+  RNFBAnalytics: 50ca3be24d20cf2bb40c5ec5435e6ae48dd6c208
+  RNFBApp: 255fa19a91d6c1309e021ee75d5d209754e5961b
+  RNFBAuth: 7123a71a1fc8dec4aa4e6cb656562661b3ece9f7
+  RNFBMessaging: c304c1d8949f996d3eed1cf4eeba33148d13b4ea
+  RNGestureHandler: 4fb6e090f571a15cae471f53005aea43d771acd2
   RNGoogleMobileAds: 14e0355b691a3ae55410b05664dfb770f183fd47
   RNGoogleSignin: 4793dbd9dcd0152ea78901cf8e660914bbdcfcb1
   RNNotifee: 5e3b271e8ea7456a36eec994085543c9adca9168
   RNReactNativeHapticFeedback: eb5395b503c7a8f10de5e6722ef8afd3c61bc4f5
-  RNReanimated: aab3fb61ab766c81204ca260fce157cd72efb9e9
+  RNReanimated: f6912a1b52b180f3b093d1eba39ecc3fc3011c6b
   RNScreens: 4d82f330e5ee1b51efaa45c1d8603773e6cf28b0
-  RNSentry: f6698a6343af3e31ba953707d25b0dfc08592290
+  RNSentry: 38f9bdbbec9f66002fc7d0521e3d556c103da507
   RNShare: 98ec3a7b7b130ac6c6eb8139b88d8d7873302ee5
-  RNSVG: bb8cfac75649a133646f119ae3c9157e9485610d
+  RNSVG: 87605a62e0aa6311872371879d0d8ec7c62e76ea
   RNWorklets: 2df41324a34cb9d17e3b40ab95a691266b133ba1
-  Sentry: e1b49e5f49367ff211b25c431a60e2bd83b792aa
+  Sentry: 83a3814c3ca042874b39c5c5bdffb6570d4d760e
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SplashView: 9eaa28486bf8f3b89b10bd31c1825684be3e0770
   Yoga: 6eb60fc2c0eef63e7d2ef4a56e0a3353534143a2
