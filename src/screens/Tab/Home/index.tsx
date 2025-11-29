@@ -595,7 +595,7 @@ const Home = ({ setScrollRef }: { setScrollRef?: (ref: any) => void }) => {
                       titleIcon={<FontAwesome6 name={card.iconName as any} size={16} color={theme.primaryText} iconStyle="solid" />}
                       rightComponent={<View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                         <TouchableOpacity onPress={() => setIsNextWeek(prev => !prev)} style={{ padding: 4 }}>
-                          <Text style={[typography.caption, { color: isNextWeek ? theme.highlightLight : theme.secondaryText }, isNextWeek ? { fontWeight: '800' } : {}]}>{isNextWeek ? '🌠' : ''} 다음주</Text>
+                          <Text style={[typography.caption, { color: isNextWeek ? theme.highlightLight : theme.secondaryText }, isNextWeek ? { fontWeight: '800' } : {}]}>{isNextWeek ? '*' : ''} 다음주</Text>
                         </TouchableOpacity>
                       </View>}
                     >
@@ -619,7 +619,7 @@ const Home = ({ setScrollRef }: { setScrollRef?: (ref: any) => void }) => {
                     return loadingSchedule ? (
                       <LoadingView height={100} />
                     ) : schedules.length === 0 ? (
-                      <Text style={[typography.body, { color: theme.secondaryText }]}>학사일정이 없어요.</Text>
+                      <Text style={[typography.body, { color: theme.secondaryText }]}>이번달에 남은 학사일정이 없어요.</Text>
                     ) : (
                       <FlatList contentContainerStyle={{ gap: 8 }} data={schedules.slice(0, 4)} renderItem={({ item }) => <ScheduleItem item={item} />} scrollEnabled={false} />
                     );
