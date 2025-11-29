@@ -1,7 +1,7 @@
 import {ANDROID_HOME_BANNER_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID} from '@env';
 import dayjs from 'dayjs';
 import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
-import {Platform, RefreshControl, ScrollView, Text, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, FlatList, Platform, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
 import {trigger} from 'react-native-haptic-feedback';
 import Share from 'react-native-share';
 import TouchableScale from 'react-native-touchable-scale';
@@ -9,7 +9,6 @@ import TouchableScale from 'react-native-touchable-scale';
 import Content from '../Tab/Settings/components/Content';
 import {getMeal} from '@/api';
 import BannerAdCard from '@/components/BannerAdCard';
-import Container from '@/components/Container';
 import Loading from '@/components/Loading';
 import {useTheme} from '@/contexts/ThemeContext';
 import {clearCache} from '@/lib/cache';
@@ -30,13 +29,16 @@ const Meal = () => {
   const [prevShowAllergy, setPrevShowAllergy] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
+  const [hasMore, setHasMore] = useState<boolean>(true);
   const [schoolName, setSchoolName] = useState<string>('알 수 없음');
   const [selectedMeal, setSelectedMeal] = useState<string>('');
   const [selectedMealDate, setSelectedMealDate] = useState<string>('');
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState<dayjs.Dayjs>(dayjs());
 
   const {theme, typography} = useTheme();
-  const scrollViewRef = useRef<ScrollView | null>(null);
+  const flatListRef = useRef<FlatList | null>(null);
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -52,9 +54,10 @@ const Meal = () => {
     })();
   }, []);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (month?: dayjs.Dayjs, append: boolean = false) => {
     const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
     const today = dayjs();
+    const targetMonth = month || today;
     const currentShowAllergy = settings.showAllergy || false;
     setPrevShowAllergy(showAllergy);
     setShowAllergy(currentShowAllergy);
@@ -62,22 +65,54 @@ const Meal = () => {
     try {
       const school = JSON.parse((await AsyncStorage.getItem('school')) || '{}');
 
-      const mealResponse = await getMeal(school.neisCode, school.neisRegionCode, today.format('YYYY'), today.format('MM'), undefined, currentShowAllergy, true, true);
-      const afterToday = mealResponse.filter(m => dayjs(m.date).isSame(today, 'day') || dayjs(m.date).isAfter(today, 'day'));
-      if (afterToday.length === 0) {
-        showToast('급식이 없습니다.');
-        return;
+      const mealResponse = await getMeal(school.neisCode, school.neisRegionCode, targetMonth.format('YYYY'), targetMonth.format('MM'), undefined, currentShowAllergy, true, true);
+      
+      let filteredMeals = mealResponse;
+      
+      // 첫 번째 로드일 때만 오늘 이후 데이터 필터링
+      if (!append) {
+        filteredMeals = mealResponse.filter(m => dayjs(m.date).isSame(today, 'day') || dayjs(m.date).isAfter(today, 'day'));
       }
-      setMeal(afterToday);
+
+      if (append) {
+        setMeal(prev => [...prev, ...filteredMeals]);
+      } else {
+        setMeal(filteredMeals);
+      }
+
+      // 데이터가 없으면 더 이상 로드할 데이터가 없을 수 있음
+      if (mealResponse.length === 0) {
+        setHasMore(false);
+        if (append) {
+          showToast('더 이상 급식 데이터가 없어요.');
+        }
+      }
     } catch (e) {
       const err = e as Error;
 
-      showToast('급식을 불러오는 중 오류가 발생했어요.');
+      if (!append) {
+        showToast('급식을 불러오는 중 오류가 발생했어요.');
+      }
       console.error('Error fetching data:', err);
+      
+      // 에러가 발생하면 더 이상 로드 시도하지 않음
+      if (append) {
+        setHasMore(false);
+      }
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }, [showAllergy]);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+
+    setLoadingMore(true);
+    const nextMonth = currentMonth.add(1, 'month');
+    setCurrentMonth(nextMonth);
+    await fetchData(nextMonth, true);
+  }, [loadingMore, hasMore, currentMonth, fetchData]);
 
   useEffect(() => {
     analytics().logScreenView({screen_name: '급식 상세 페이지', screen_class: 'Meal'});
@@ -85,7 +120,7 @@ const Meal = () => {
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, []);
 
   // Handle allergy setting changes when screen is focused
   useFocusEffect(
@@ -98,6 +133,8 @@ const Meal = () => {
         if (allergySettingChanged) {
           setRefreshing(true);
           await clearCache('@cache/meal_');
+          setCurrentMonth(dayjs());
+          setHasMore(true);
           await fetchData();
           setRefreshing(false);
         }
@@ -110,6 +147,8 @@ const Meal = () => {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await clearCache('@cache/meal');
+    setCurrentMonth(dayjs());
+    setHasMore(true);
     await fetchData();
     setRefreshing(false);
   }, [fetchData]);
@@ -136,42 +175,74 @@ const Meal = () => {
 
   const today = dayjs();
 
+  const renderMealItem = useCallback(({item: m, index}: {item: MealType; index: number}) => {
+    const isToday = today.isSame(m.date, 'day');
+    const date = dayjs(m.date);
+    const mealData = m.meal.filter(mealItem => typeof mealItem === 'string' || (mealItem as MealItem).food !== '');
+    const mealText = mealData.map(mealItem => (typeof mealItem === 'string' ? mealItem : (mealItem as MealItem).food)).join('\n');
+
+    // 광고 삽입 로직
+    const shouldShowAd = AD_FREQUENCY > 0 && index > 0 && index % AD_FREQUENCY === 0 && Math.floor(index / AD_FREQUENCY) <= MAX_ADS;
+
+    return (
+      <Fragment key={index}>
+        {shouldShowAd && <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />}
+        <MealCard date={date} isToday={isToday} meal={m} mealType={m.type} showAllergy={showAllergy} onLongPress={() => openBottomSheet(mealText, date.format('M월 D일 ddd요일'))} />
+      </Fragment>
+    );
+  }, [today, showAllergy, AD_FREQUENCY, MAX_ADS]);
+
+  const renderFooter = useCallback(() => {
+    if (!loadingMore) return null;
+    return (
+      <View style={{paddingVertical: 20, alignItems: 'center'}}>
+        <ActivityIndicator size="small" color={theme.highlight} />
+        <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 8}]}>더 불러오는 중...</Text>
+      </View>
+    );
+  }, [loadingMore, theme, typography]);
+
+  const renderEmpty = useCallback(() => {
+    return (
+      <View style={{alignItems: 'center', justifyContent: 'center', width: '100%', paddingVertical: 40}}>
+        <FontAwesome6 name="utensils" size={48} color={theme.secondaryText} iconStyle="solid" />
+        <Text style={[typography.body, {color: theme.secondaryText, marginTop: 12}]}>급식 데이터가 없어요.</Text>
+        <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 4}]}>학교에서 제공하지 않는 경우도 있어요.</Text>
+      </View>
+    );
+  }, [theme, typography]);
+
+  // 급식 데이터가 없을 때 Toast 표시 (더 이상 불러올 데이터도 없을 때만)
+  useEffect(() => {
+    if (!loading && !loadingMore && meal.length === 0 && !hasMore) {
+      showToast('급식이 없습니다.');
+    }
+  }, [loading, loadingMore, meal.length, hasMore]);
+
+  const renderHeader = useCallback(() => (
+    <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
+  ), []);
+
   return loading ? (
     <Loading fullScreen />
   ) : (
     <>
-      <Container scrollView bounce={!loading} scrollViewRef={scrollViewRef} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}>
-        <View style={{gap: 24, width: '100%'}}>
-          <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
-
-          {meal?.length > 0 ? (
-            <View style={{gap: 12}}>
-              {meal.map((m, index) => {
-                const isToday = today.isSame(m.date, 'day');
-                const date = dayjs(m.date);
-                const mealData = m.meal.filter(mealItem => typeof mealItem === 'string' || (mealItem as MealItem).food !== '');
-                const mealText = mealData.map(mealItem => (typeof mealItem === 'string' ? mealItem : (mealItem as MealItem).food)).join('\n');
-
-                // 광고 삽입 로직
-                const shouldShowAd = AD_FREQUENCY > 0 && index > 0 && index % AD_FREQUENCY === 0 && Math.floor(index / AD_FREQUENCY) <= MAX_ADS;
-
-                return (
-                  <Fragment key={index}>
-                    {shouldShowAd && <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />}
-                    <MealCard date={date} isToday={isToday} meal={m} mealType={m.type} showAllergy={showAllergy} onLongPress={() => openBottomSheet(mealText, date.format('M월 D일 ddd요일'))} />
-                  </Fragment>
-                );
-              })}
-            </View>
-          ) : (
-            <View style={{alignItems: 'center', justifyContent: 'center', width: '100%', paddingVertical: 40}}>
-              <FontAwesome6 name="utensils" size={48} color={theme.secondaryText} iconStyle="solid" />
-              <Text style={[typography.body, {color: theme.secondaryText, marginTop: 12}]}>급식 데이터가 없어요.</Text>
-              <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 4}]}>학교에서 제공하지 않는 경우도 있어요.</Text>
-            </View>
-          )}
-        </View>
-      </Container>
+      <View style={{flex: 1, backgroundColor: theme.background}}>
+        <FlatList
+          ref={flatListRef}
+          data={meal}
+          renderItem={renderMealItem}
+          keyExtractor={(item, index) => `${item.date}-${item.type}-${index}`}
+          contentContainerStyle={{paddingHorizontal: 16, paddingVertical: 16, gap: 12}}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          ListHeaderComponent={renderHeader}
+          ListFooterComponent={renderFooter}
+          ListEmptyComponent={renderEmpty}
+          showsVerticalScrollIndicator={false}
+        />
+      </View>
 
       {isBottomSheetOpen && (
         <BottomSheet
