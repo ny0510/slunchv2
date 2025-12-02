@@ -60,6 +60,24 @@ class TimetableWidgetProvider : AppWidgetProvider() {
                 intent.getIntExtra(EXTRA_CURRENT_PERIOD, -1)
                 updateWidgetWithTimetableResult(context, TimetableResult(timetableData, displayDate, daysOffset))
             }
+
+            ACTION_TOGGLE_NEXT_WEEK -> {
+                val appWidgetManager = AppWidgetManager.getInstance(context)
+                val widgetId = intent.getIntExtra(
+                    AppWidgetManager.EXTRA_APPWIDGET_ID,
+                    AppWidgetManager.INVALID_APPWIDGET_ID
+                )
+
+                if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                    // 현재 상태 토글
+                    val prefs = context.getSharedPreferences(TIMETABLE_WIDGET_PREFS, Context.MODE_PRIVATE)
+                    val currentNextWeek = prefs.getBoolean(KEY_NEXT_WEEK_PREFIX + widgetId, false)
+                    prefs.edit().putBoolean(KEY_NEXT_WEEK_PREFIX + widgetId, !currentNextWeek).apply()
+                    
+                    // 위젯 업데이트
+                    updateWeeklyWidget(context, appWidgetManager, widgetId)
+                }
+            }
         }
     }
 
@@ -131,10 +149,33 @@ class TimetableWidgetProvider : AppWidgetProvider() {
     ) {
         val views = RemoteViews(context.packageName, R.layout.widget_timetable_weekly_layout)
 
+        // 다음주 토글 상태 확인
+        val prefs = context.getSharedPreferences(TIMETABLE_WIDGET_PREFS, Context.MODE_PRIVATE)
+        val isNextWeek = prefs.getBoolean(KEY_NEXT_WEEK_PREFIX + appWidgetId, false)
+
         views.setTextViewText(R.id.widget_timetable_date, "")
         views.setViewVisibility(R.id.widget_timetable_loading, View.VISIBLE)
         views.setViewVisibility(R.id.widget_timetable_table, View.GONE)
         views.setViewVisibility(R.id.widget_timetable_empty, View.GONE)
+
+        // 토글 버튼 설정 (현재 보고 있는 주를 표시)
+        val toggleText = if (isNextWeek) "다음주" else "이번주"
+        views.setTextViewText(R.id.widget_next_week_toggle, toggleText)
+        val toggleBg = if (isNextWeek) R.drawable.toggle_button_background_active else R.drawable.toggle_button_background
+        views.setInt(R.id.widget_next_week_toggle, "setBackgroundResource", toggleBg)
+
+        // 토글 버튼 클릭 핸들러
+        val toggleIntent = Intent(context, TimetableWidgetProvider::class.java).apply {
+            action = ACTION_TOGGLE_NEXT_WEEK
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+        }
+        val togglePendingIntent = PendingIntent.getBroadcast(
+            context,
+            appWidgetId * 2000 + 2,
+            toggleIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        views.setOnClickPendingIntent(R.id.widget_next_week_toggle, togglePendingIntent)
 
         val refreshPendingIntent = createRefreshPendingIntent(context, appWidgetId)
         views.setOnClickPendingIntent(R.id.widget_root, refreshPendingIntent)
@@ -150,7 +191,7 @@ class TimetableWidgetProvider : AppWidgetProvider() {
 
         appWidgetManager.updateAppWidget(appWidgetId, views)
 
-        fetchWeeklyTimetableDataNatively(context, appWidgetId)
+        fetchWeeklyTimetableDataNatively(context, appWidgetId, isNextWeek)
     }
 
     private fun fetchTimetableDataNatively(context: Context) {
@@ -162,11 +203,11 @@ class TimetableWidgetProvider : AppWidgetProvider() {
         }
     }
 
-    private fun fetchWeeklyTimetableDataNatively(context: Context, appWidgetId: Int) {
+    private fun fetchWeeklyTimetableDataNatively(context: Context, appWidgetId: Int, forceNextWeek: Boolean = false) {
         val apiClient = TimetableApiClient(context)
-        apiClient.fetchWeeklyTimetable { weeklyResult ->
+        apiClient.fetchWeeklyTimetable(forceNextWeek) { weeklyResult ->
             Handler(Looper.getMainLooper()).post {
-                updateWidgetWithWeeklyResult(context, appWidgetId, weeklyResult)
+                updateWidgetWithWeeklyResult(context, appWidgetId, weeklyResult, forceNextWeek)
             }
         }
     }
@@ -174,10 +215,30 @@ class TimetableWidgetProvider : AppWidgetProvider() {
     private fun updateWidgetWithWeeklyResult(
         context: Context,
         appWidgetId: Int,
-        weeklyResult: WeeklyTimetableResult?
+        weeklyResult: WeeklyTimetableResult?,
+        forceNextWeek: Boolean = false
     ) {
         val appWidgetManager = AppWidgetManager.getInstance(context)
         val views = RemoteViews(context.packageName, R.layout.widget_timetable_weekly_layout)
+
+        // 토글 버튼 설정 (현재 보고 있는 주를 표시)
+        val toggleText = if (forceNextWeek) "다음주" else "이번주"
+        views.setTextViewText(R.id.widget_next_week_toggle, toggleText)
+        val toggleBg = if (forceNextWeek) R.drawable.toggle_button_background_active else R.drawable.toggle_button_background
+        views.setInt(R.id.widget_next_week_toggle, "setBackgroundResource", toggleBg)
+
+        // 토글 버튼 클릭 핸들러
+        val toggleIntent = Intent(context, TimetableWidgetProvider::class.java).apply {
+            action = ACTION_TOGGLE_NEXT_WEEK
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+        }
+        val togglePendingIntent = PendingIntent.getBroadcast(
+            context,
+            appWidgetId * 2000 + 2,
+            toggleIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        views.setOnClickPendingIntent(R.id.widget_next_week_toggle, togglePendingIntent)
 
         val refreshPendingIntent = createRefreshPendingIntent(context, appWidgetId)
         views.setOnClickPendingIntent(R.id.widget_root, refreshPendingIntent)
@@ -201,13 +262,7 @@ class TimetableWidgetProvider : AppWidgetProvider() {
             return
         }
 
-        // 날짜 표시
-        val dateText = if (weeklyResult.isNextWeek) {
-            "(다음주) ${weeklyResult.weekStartDate}~${weeklyResult.weekEndDate}"
-        } else {
-            "${weeklyResult.weekStartDate}~${weeklyResult.weekEndDate}"
-        }
-        views.setTextViewText(R.id.widget_timetable_date, dateText)
+        views.setTextViewText(R.id.widget_timetable_date, "${weeklyResult.weekStartDate}~${weeklyResult.weekEndDate}")
 
         views.setViewVisibility(R.id.widget_timetable_table, View.VISIBLE)
         views.setViewVisibility(R.id.widget_timetable_empty, View.GONE)
@@ -256,7 +311,7 @@ class TimetableWidgetProvider : AppWidgetProvider() {
 
         // 날짜 표시: N일 뒤면 "(N일뒤) M/d" 형식으로 표시
         val dateText = if (timetableResult.daysOffset > 0) {
-            "(${timetableResult.daysOffset}일뒤) ${timetableResult.displayDate}"
+            "${timetableResult.displayDate} (${timetableResult.daysOffset}일뒤)"
         } else {
             timetableResult.displayDate
         }
@@ -420,10 +475,12 @@ class TimetableWidgetProvider : AppWidgetProvider() {
     companion object {
         const val ACTION_WIDGET_UPDATE = "kr.ny64.slunchv2.TIMETABLE_WIDGET_UPDATE"
         const val ACTION_TIMETABLE_DATA_UPDATE = "kr.ny64.slunchv2.TIMETABLE_DATA_UPDATE"
+        const val ACTION_TOGGLE_NEXT_WEEK = "kr.ny64.slunchv2.TOGGLE_NEXT_WEEK"
         const val EXTRA_TIMETABLE_DATA = "timetable_data"
         const val EXTRA_DISPLAY_DATE = "display_date"
         const val EXTRA_DAYS_OFFSET = "days_offset"
         const val EXTRA_CURRENT_PERIOD = "current_period"
+        const val KEY_NEXT_WEEK_PREFIX = "next_week_"
 
         fun updateWidgets(context: Context, timetableResult: TimetableResult, currentPeriod: Int) {
             val intent = Intent(ACTION_TIMETABLE_DATA_UPDATE)

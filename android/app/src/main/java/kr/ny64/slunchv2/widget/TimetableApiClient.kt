@@ -92,7 +92,7 @@ class TimetableApiClient(private val context: Context) {
 
         val baseUrl = "https://slunch-v2.ny64.kr"
         val url = if (useNextWeek) {
-            "$baseUrl/comcigan/timetable?schoolCode=$schoolCode&grade=$grade&class=$classNum&nextweek=1"
+            "$baseUrl/comcigan/timetable?schoolCode=$schoolCode&grade=$grade&class=$classNum&nextweek=true"
         } else {
             "$baseUrl/comcigan/timetable?schoolCode=$schoolCode&grade=$grade&class=$classNum"
         }
@@ -190,7 +190,7 @@ class TimetableApiClient(private val context: Context) {
     }
 
     // 주간 전체 시간표 가져오기
-    fun fetchWeeklyTimetable(callback: (WeeklyTimetableResult?) -> Unit) {
+    fun fetchWeeklyTimetable(forceNextWeek: Boolean = false, callback: (WeeklyTimetableResult?) -> Unit) {
         val schoolCode = prefs.getString("comciganSchoolCode", null)
         val grade = prefs.getInt("grade", 0)
         val classNum = prefs.getInt("class", 0)
@@ -200,14 +200,14 @@ class TimetableApiClient(private val context: Context) {
             return
         }
 
-        // 오늘이 주말이면 다음 주, 아니면 이번 주
+        // forceNextWeek가 true면 무조건 다음 주, 아니면 주말에만 다음 주
         val todayCalendar = Calendar.getInstance()
         val todayDayOfWeek = todayCalendar.get(Calendar.DAY_OF_WEEK)
-        val isNextWeek = todayDayOfWeek == Calendar.SATURDAY || todayDayOfWeek == Calendar.SUNDAY
+        val isNextWeek = forceNextWeek || todayDayOfWeek == Calendar.SATURDAY || todayDayOfWeek == Calendar.SUNDAY
 
         val baseUrl = "https://slunch-v2.ny64.kr"
         val url = if (isNextWeek) {
-            "$baseUrl/comcigan/timetable?schoolCode=$schoolCode&grade=$grade&class=$classNum&nextweek=1"
+            "$baseUrl/comcigan/timetable?schoolCode=$schoolCode&grade=$grade&class=$classNum&nextweek=true"
         } else {
             "$baseUrl/comcigan/timetable?schoolCode=$schoolCode&grade=$grade&class=$classNum"
         }

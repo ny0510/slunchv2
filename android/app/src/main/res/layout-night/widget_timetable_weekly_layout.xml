@@ -11,7 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginBottom="8dp">
+        android:layout_marginBottom="8dp"
+        android:gravity="center_vertical">
 
         <TextView
             android:id="@+id/widget_timetable_title"
@@ -32,7 +33,21 @@
             android:textSize="12sp"
             android:textColor="#7956FC"
             android:textStyle="bold"
-            android:gravity="end" />
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:id="@+id/widget_next_week_toggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="다음주"
+            android:textSize="11sp"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:background="@drawable/toggle_button_background"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp" />
 
     </LinearLayout>
 

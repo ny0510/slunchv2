@@ -124,20 +124,23 @@ class MealWidgetProvider : AppWidgetProvider() {
         appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_meal_list)
 
         val trimmedMealData = mealResult.mealData.trim()
-        
-        // 날짜 표시: N일 뒤면 "(* N일뒤) M/d" 형식으로 표시
-        val dateText = if (mealResult.daysOffset > 0) {
-            "(${mealResult.daysOffset}일뒤) ${mealResult.displayDate}"
-        } else {
-            mealResult.displayDate
-        }
 
         appWidgetIds.forEach { appWidgetId ->
             val views = RemoteViews(context.packageName, R.layout.widget_meal_layout)
 
             applyTextSizes(context, appWidgetManager, appWidgetId, views)
 
-            views.setTextViewText(R.id.widget_date, dateText)
+            // 날짜 표시
+            views.setTextViewText(R.id.widget_date, mealResult.displayDate)
+            
+            // N일뒤 벱지 표시
+            if (mealResult.daysOffset > 0) {
+                views.setTextViewText(R.id.widget_days_offset_badge, "${mealResult.daysOffset}일뒤")
+                views.setViewVisibility(R.id.widget_days_offset_badge, View.VISIBLE)
+            } else {
+                views.setViewVisibility(R.id.widget_days_offset_badge, View.GONE)
+            }
+            
             views.setTextViewText(R.id.widget_meal_empty, "급식 정보 없음")
 
             val refreshPendingIntent = createRefreshPendingIntent(context, appWidgetId)
