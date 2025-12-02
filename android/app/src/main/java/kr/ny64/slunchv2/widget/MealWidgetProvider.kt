@@ -52,7 +52,10 @@ class MealWidgetProvider : AppWidgetProvider() {
 
             ACTION_MEAL_DATA_UPDATE -> {
                 val mealData = intent.getStringExtra(EXTRA_MEAL_DATA) ?: "급식 정보 없음"
-                updateWidgetWithMealData(context, mealData)
+                val displayDate = intent.getStringExtra(EXTRA_DISPLAY_DATE) 
+                    ?: SimpleDateFormat("M/d", Locale.KOREA).format(Date())
+                val daysOffset = intent.getIntExtra(EXTRA_DAYS_OFFSET, 0)
+                updateWidgetWithMealResult(context, MealResult(mealData, displayDate, daysOffset))
             }
         }
     }
@@ -100,14 +103,14 @@ class MealWidgetProvider : AppWidgetProvider() {
 
     private fun fetchMealDataNatively(context: Context) {
         val apiClient = MealApiClient(context)
-        apiClient.fetchTodayMeal { mealData ->
+        apiClient.fetchMeal { mealResult ->
             Handler(Looper.getMainLooper()).post {
-                updateWidgetWithMealData(context, mealData)
+                updateWidgetWithMealResult(context, mealResult)
             }
         }
     }
 
-    private fun updateWidgetWithMealData(context: Context, mealData: String) {
+    private fun updateWidgetWithMealResult(context: Context, mealResult: MealResult) {
         val appWidgetManager = AppWidgetManager.getInstance(context)
         val appWidgetIds = appWidgetManager.getAppWidgetIds(
             ComponentName(context, MealWidgetProvider::class.java)
@@ -117,18 +120,24 @@ class MealWidgetProvider : AppWidgetProvider() {
             return
         }
 
-        saveMealData(context, appWidgetIds, mealData)
+        saveMealData(context, appWidgetIds, mealResult.mealData)
         appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_meal_list)
 
-        val trimmedMealData = mealData.trim()
-        val currentDate = SimpleDateFormat("M/d", Locale.KOREA).format(Date())
+        val trimmedMealData = mealResult.mealData.trim()
+        
+        // 날짜 표시: N일 뒤면 "(* N일뒤) M/d" 형식으로 표시
+        val dateText = if (mealResult.daysOffset > 0) {
+            "(${mealResult.daysOffset}일뒤) ${mealResult.displayDate}"
+        } else {
+            mealResult.displayDate
+        }
 
         appWidgetIds.forEach { appWidgetId ->
             val views = RemoteViews(context.packageName, R.layout.widget_meal_layout)
 
             applyTextSizes(context, appWidgetManager, appWidgetId, views)
 
-            views.setTextViewText(R.id.widget_date, currentDate)
+            views.setTextViewText(R.id.widget_date, dateText)
             views.setTextViewText(R.id.widget_meal_empty, "급식 정보 없음")
 
             val refreshPendingIntent = createRefreshPendingIntent(context, appWidgetId)
@@ -274,10 +283,14 @@ class MealWidgetProvider : AppWidgetProvider() {
         const val ACTION_WIDGET_UPDATE = "kr.ny64.slunchv2.WIDGET_UPDATE"
         const val ACTION_MEAL_DATA_UPDATE = "kr.ny64.slunchv2.MEAL_DATA_UPDATE"
         const val EXTRA_MEAL_DATA = "meal_data"
+        const val EXTRA_DISPLAY_DATE = "display_date"
+        const val EXTRA_DAYS_OFFSET = "days_offset"
 
-        fun updateWidgets(context: Context, mealData: String) {
+        fun updateWidgets(context: Context, mealResult: MealResult) {
             val intent = Intent(ACTION_MEAL_DATA_UPDATE)
-            intent.putExtra(EXTRA_MEAL_DATA, mealData)
+            intent.putExtra(EXTRA_MEAL_DATA, mealResult.mealData)
+            intent.putExtra(EXTRA_DISPLAY_DATE, mealResult.displayDate)
+            intent.putExtra(EXTRA_DAYS_OFFSET, mealResult.daysOffset)
             context.sendBroadcast(intent)
         }
     }

@@ -54,8 +54,11 @@ class TimetableWidgetProvider : AppWidgetProvider() {
 
             ACTION_TIMETABLE_DATA_UPDATE -> {
                 val timetableData = intent.getStringArrayListExtra(EXTRA_TIMETABLE_DATA) ?: arrayListOf()
+                val displayDate = intent.getStringExtra(EXTRA_DISPLAY_DATE)
+                    ?: SimpleDateFormat("M/d", Locale.KOREA).format(Date())
+                val daysOffset = intent.getIntExtra(EXTRA_DAYS_OFFSET, 0)
                 intent.getIntExtra(EXTRA_CURRENT_PERIOD, -1)
-                updateWidgetWithTimetableData(context, timetableData)
+                updateWidgetWithTimetableResult(context, TimetableResult(timetableData, displayDate, daysOffset))
             }
         }
     }
@@ -103,14 +106,14 @@ class TimetableWidgetProvider : AppWidgetProvider() {
 
     private fun fetchTimetableDataNatively(context: Context) {
         val apiClient = TimetableApiClient(context)
-        apiClient.fetchTodayTimetable { timetableData ->
+        apiClient.fetchTimetable { timetableResult ->
             Handler(Looper.getMainLooper()).post {
-                updateWidgetWithTimetableData(context, timetableData)
+                updateWidgetWithTimetableResult(context, timetableResult)
             }
         }
     }
 
-    private fun updateWidgetWithTimetableData(context: Context, timetableData: ArrayList<String>) {
+    private fun updateWidgetWithTimetableResult(context: Context, timetableResult: TimetableResult) {
         val appWidgetManager = AppWidgetManager.getInstance(context)
         val appWidgetIds = appWidgetManager.getAppWidgetIds(
             ComponentName(context, TimetableWidgetProvider::class.java)
@@ -120,19 +123,24 @@ class TimetableWidgetProvider : AppWidgetProvider() {
             return
         }
 
-        saveTimetableData(context, appWidgetIds, timetableData)
+        saveTimetableData(context, appWidgetIds, timetableResult.timetableData)
         appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_timetable_list)
 
-        val currentDate = SimpleDateFormat("M/d", Locale.KOREA).format(Date())
-        val isEmpty = timetableData.isEmpty()
+        // 날짜 표시: N일 뒤면 "(N일뒤) M/d" 형식으로 표시
+        val dateText = if (timetableResult.daysOffset > 0) {
+            "(${timetableResult.daysOffset}일뒤) ${timetableResult.displayDate}"
+        } else {
+            timetableResult.displayDate
+        }
+        val isEmpty = timetableResult.timetableData.isEmpty()
 
         appWidgetIds.forEach { appWidgetId ->
             val views = RemoteViews(context.packageName, R.layout.widget_timetable_layout)
 
             applyTextSizes(context, appWidgetManager, appWidgetId, views)
 
-            views.setTextViewText(R.id.widget_timetable_date, currentDate)
-            views.setTextViewText(R.id.widget_timetable_empty, "오늘은 시간표가 없습니다.")
+            views.setTextViewText(R.id.widget_timetable_date, dateText)
+            views.setTextViewText(R.id.widget_timetable_empty, "시간표 정보가 없습니다.")
 
             val refreshPendingIntent = createRefreshPendingIntent(context, appWidgetId)
             configureTimetableListView(context, views, appWidgetId, refreshPendingIntent)
@@ -285,11 +293,15 @@ class TimetableWidgetProvider : AppWidgetProvider() {
         const val ACTION_WIDGET_UPDATE = "kr.ny64.slunchv2.TIMETABLE_WIDGET_UPDATE"
         const val ACTION_TIMETABLE_DATA_UPDATE = "kr.ny64.slunchv2.TIMETABLE_DATA_UPDATE"
         const val EXTRA_TIMETABLE_DATA = "timetable_data"
+        const val EXTRA_DISPLAY_DATE = "display_date"
+        const val EXTRA_DAYS_OFFSET = "days_offset"
         const val EXTRA_CURRENT_PERIOD = "current_period"
 
-        fun updateWidgets(context: Context, timetableData: ArrayList<String>, currentPeriod: Int) {
+        fun updateWidgets(context: Context, timetableResult: TimetableResult, currentPeriod: Int) {
             val intent = Intent(ACTION_TIMETABLE_DATA_UPDATE)
-            intent.putStringArrayListExtra(EXTRA_TIMETABLE_DATA, timetableData)
+            intent.putStringArrayListExtra(EXTRA_TIMETABLE_DATA, timetableResult.timetableData)
+            intent.putExtra(EXTRA_DISPLAY_DATE, timetableResult.displayDate)
+            intent.putExtra(EXTRA_DAYS_OFFSET, timetableResult.daysOffset)
             intent.putExtra(EXTRA_CURRENT_PERIOD, currentPeriod)
             context.sendBroadcast(intent)
         }

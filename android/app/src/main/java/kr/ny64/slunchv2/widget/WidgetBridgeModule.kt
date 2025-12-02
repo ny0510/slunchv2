@@ -5,6 +5,8 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.Promise
+import java.text.SimpleDateFormat
+import java.util.*
 
 class WidgetBridgeModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
 
@@ -15,7 +17,9 @@ class WidgetBridgeModule(reactContext: ReactApplicationContext) : ReactContextBa
     @ReactMethod
     fun updateWidget(mealData: String, promise: Promise) {
         try {
-            MealWidgetProvider.updateWidgets(reactApplicationContext, mealData)
+            val today = SimpleDateFormat("M/d", Locale.KOREA).format(Date())
+            val mealResult = MealResult(mealData, today, 0)
+            MealWidgetProvider.updateWidgets(reactApplicationContext, mealResult)
             promise.resolve(true)
         } catch (e: Exception) {
             promise.reject("WIDGET_UPDATE_ERROR", e.message, e)

@@ -9,29 +9,53 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
+data class MealResult(
+    val mealData: String,
+    val displayDate: String,  // "M/d" 형식
+    val daysOffset: Int       // 0 = 오늘, 1 = 1일 뒤, ...
+)
+
 class MealApiClient(private val context: Context) {
     private val client = OkHttpClient()
     private val prefs: SharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
 
-    fun fetchTodayMeal(callback: (String) -> Unit) {
-        // SharedPreferences에서 학교 정보 가져오기 (React Native 앱과 동일한 키 사용)
+    fun fetchMeal(callback: (MealResult) -> Unit) {
         val schoolCode = prefs.getString("schoolCode", null)
         val regionCode = prefs.getString("regionCode", null)
 
         if (schoolCode == null || regionCode == null) {
-            callback("학교 정보가 없습니다.\n앱에서 학교를 설정해주세요.")
+            val today = SimpleDateFormat("M/d", Locale.KOREA).format(Date())
+            callback(MealResult("학교 정보가 없습니다.\n앱에서 학교를 설정해주세요.", today, 0))
+            return
+        }
+
+        // 오늘부터 최대 3일 뒤까지 시도
+        fetchMealWithOffset(schoolCode, regionCode, 0, callback)
+    }
+
+    private fun fetchMealWithOffset(
+        schoolCode: String,
+        regionCode: String,
+        dayOffset: Int,
+        callback: (MealResult) -> Unit
+    ) {
+        // 최대 3일 뒤까지만 시도
+        if (dayOffset > 3) {
+            val today = SimpleDateFormat("M/d", Locale.KOREA).format(Date())
+            callback(MealResult("급식 정보가 없습니다.", today, 0))
             return
         }
 
         val calendar = Calendar.getInstance()
+        calendar.add(Calendar.DAY_OF_MONTH, dayOffset)
+        
         val year = calendar.get(Calendar.YEAR).toString()
         val month = String.format("%02d", calendar.get(Calendar.MONTH) + 1)
         val day = String.format("%02d", calendar.get(Calendar.DAY_OF_MONTH))
+        val displayDate = SimpleDateFormat("M/d", Locale.KOREA).format(calendar.time)
 
-        // 커스텀 API 서버 호출 (React Native 앱과 동일한 API)
         val baseUrl = "https://slunch-v2.ny64.kr"
         val url = "$baseUrl/neis/meal?schoolCode=$schoolCode&regionCode=$regionCode&year=$year&month=$month&day=$day"
-
 
         val request = Request.Builder()
             .url(url)
@@ -39,13 +63,15 @@ class MealApiClient(private val context: Context) {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                callback("급식 정보를 불러올 수 없습니다.\n네트워크를 확인해주세요.")
+                val today = SimpleDateFormat("M/d", Locale.KOREA).format(Date())
+                callback(MealResult("급식 정보를 불러올 수 없습니다.\n네트워크를 확인해주세요.", today, 0))
             }
 
             override fun onResponse(call: Call, response: Response) {
                 response.use {
                     if (!response.isSuccessful) {
-                        callback("급식 정보를 불러올 수 없습니다.\n서버 오류 (${response.code})")
+                        val today = SimpleDateFormat("M/d", Locale.KOREA).format(Date())
+                        callback(MealResult("급식 정보를 불러올 수 없습니다.\n서버 오류 (${response.code})", today, 0))
                         return
                     }
 
@@ -53,30 +79,39 @@ class MealApiClient(private val context: Context) {
                         val body = response.body?.string()
                         if (body != null) {
                             val mealData = parseMealData(body)
-                            callback(mealData)
+                            if (mealData != null) {
+                                // 급식 데이터가 있으면 반환
+                                callback(MealResult(mealData, displayDate, dayOffset))
+                            } else {
+                                // 급식이 없으면 다음 날 시도
+                                fetchMealWithOffset(schoolCode, regionCode, dayOffset + 1, callback)
+                            }
                         } else {
-                            callback("급식 정보가 없습니다.")
+                            // 응답 body가 없으면 다음 날 시도
+                            fetchMealWithOffset(schoolCode, regionCode, dayOffset + 1, callback)
                         }
                     } catch (e: Exception) {
-                        callback("급식 정보 처리 중 오류가 발생했습니다.")
+                        val today = SimpleDateFormat("M/d", Locale.KOREA).format(Date())
+                        callback(MealResult("급식 정보 처리 중 오류가 발생했습니다.", today, 0))
                     }
                 }
             }
         })
     }
 
-    private fun parseMealData(jsonString: String): String {
+    // 급식이 있으면 문자열 반환, 없으면 null 반환
+    private fun parseMealData(jsonString: String): String? {
         try {
             val jsonArray = JSONArray(jsonString)
             if (jsonArray.length() == 0) {
-                return "오늘은 급식이 없습니다."
+                return null
             }
 
             val todayMeal = jsonArray.getJSONObject(0)
             val dishes = todayMeal.getJSONArray("meal")
 
             if (dishes.length() == 0) {
-                return "오늘은 급식이 없습니다."
+                return null
             }
 
             val mealItems = mutableListOf<String>()
@@ -88,7 +123,7 @@ class MealApiClient(private val context: Context) {
             return mealItems.joinToString("\n")
 
         } catch (e: Exception) {
-            return "급식 정보 분석 중 오류가 발생했습니다."
+            return null
         }
     }
 }
