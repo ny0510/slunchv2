@@ -69,11 +69,14 @@ const Meal = () => {
 
       const mealResponse = await getMeal(school.neisCode, school.neisRegionCode, targetMonth.format('YYYY'), targetMonth.format('MM'), undefined, currentShowAllergy, true, true);
       
-      let filteredMeals = mealResponse;
+      // API 응답이 배열이 아닌 경우 빈 배열로 처리
+      const mealArray = Array.isArray(mealResponse) ? mealResponse : [];
+      
+      let filteredMeals = mealArray;
       
       // 첫 번째 로드일 때만 오늘 이후 데이터 필터링
       if (!append) {
-        filteredMeals = mealResponse.filter(m => dayjs(m.date).isSame(today, 'day') || dayjs(m.date).isAfter(today, 'day'));
+        filteredMeals = mealArray.filter(m => dayjs(m.date).isSame(today, 'day') || dayjs(m.date).isAfter(today, 'day'));
       }
 
       let newMealsCount = 0;
@@ -92,7 +95,7 @@ const Meal = () => {
       }
 
       // 데이터가 있으면 hasMore 유지
-      if (mealResponse.length > 0) {
+      if (mealArray.length > 0) {
         setHasMore(true);
       }
 
