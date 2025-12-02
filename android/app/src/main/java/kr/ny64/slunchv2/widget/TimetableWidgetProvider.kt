@@ -106,8 +106,8 @@ class TimetableWidgetProvider : AppWidgetProvider() {
         val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 110)
         val minHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 110)
         
-        // 큰 위젯이면 주간 시간표 모드 (대략 4x3 이상)
-        val isWeeklyMode = minWidth >= 250 && minHeight >= 180
+        // 3x4 이상 (너비 180dp, 높이 250dp 이상)이면 주간 시간표 모드
+        val isWeeklyMode = minWidth >= 180 && minHeight >= 300
 
         if (isWeeklyMode) {
             updateWeeklyWidget(context, appWidgetManager, appWidgetId)
