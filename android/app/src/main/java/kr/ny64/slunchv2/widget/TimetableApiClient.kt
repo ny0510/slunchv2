@@ -15,6 +15,15 @@ data class TimetableResult(
     val daysOffset: Int       // 0 = 오늘, 1 = 1일 뒤, ...
 )
 
+// 주간 시간표 결과 (월~금 전체)
+data class WeeklyTimetableResult(
+    val weeklyData: List<List<String>>,  // [월, 화, 수, 목, 금] 각 요일별 과목 리스트
+    val maxPeriods: Int,                  // 최대 교시 수
+    val isNextWeek: Boolean,              // 다음 주 시간표인지
+    val weekStartDate: String,            // 주 시작 날짜 (월요일 M/d)
+    val weekEndDate: String               // 주 종료 날짜 (금요일 M/d)
+)
+
 class TimetableApiClient(private val context: Context) {
     private val client = OkHttpClient()
     private val prefs: SharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
@@ -174,6 +183,132 @@ class TimetableApiClient(private val context: Context) {
             }
 
             return if (timetableList.isEmpty()) null else timetableList
+
+        } catch (e: Exception) {
+            return null
+        }
+    }
+
+    // 주간 전체 시간표 가져오기
+    fun fetchWeeklyTimetable(callback: (WeeklyTimetableResult?) -> Unit) {
+        val schoolCode = prefs.getString("comciganSchoolCode", null)
+        val grade = prefs.getInt("grade", 0)
+        val classNum = prefs.getInt("class", 0)
+
+        if (schoolCode == null || grade == 0 || classNum == 0) {
+            callback(null)
+            return
+        }
+
+        // 오늘이 주말이면 다음 주, 아니면 이번 주
+        val todayCalendar = Calendar.getInstance()
+        val todayDayOfWeek = todayCalendar.get(Calendar.DAY_OF_WEEK)
+        val isNextWeek = todayDayOfWeek == Calendar.SATURDAY || todayDayOfWeek == Calendar.SUNDAY
+
+        val baseUrl = "https://slunch-v2.ny64.kr"
+        val url = if (isNextWeek) {
+            "$baseUrl/comcigan/timetable?schoolCode=$schoolCode&grade=$grade&class=$classNum&nextweek=1"
+        } else {
+            "$baseUrl/comcigan/timetable?schoolCode=$schoolCode&grade=$grade&class=$classNum"
+        }
+
+        val request = Request.Builder()
+            .url(url)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                callback(null)
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    if (!response.isSuccessful) {
+                        callback(null)
+                        return
+                    }
+
+                    try {
+                        val body = response.body?.string()
+                        if (body != null) {
+                            val result = parseWeeklyTimetableData(body, isNextWeek)
+                            callback(result)
+                        } else {
+                            callback(null)
+                        }
+                    } catch (e: Exception) {
+                        callback(null)
+                    }
+                }
+            }
+        })
+    }
+
+    private fun parseWeeklyTimetableData(jsonString: String, isNextWeek: Boolean): WeeklyTimetableResult? {
+        try {
+            val jsonArray = JSONArray(jsonString)
+            if (jsonArray.length() == 0) {
+                return null
+            }
+
+            val weeklyData = mutableListOf<List<String>>()
+            var maxPeriods = 0
+
+            // 월~금 (인덱스 0~4)
+            for (dayIndex in 0 until minOf(5, jsonArray.length())) {
+                val dayData = jsonArray.getJSONArray(dayIndex)
+                val daySubjects = mutableListOf<String>()
+
+                for (i in 0 until dayData.length()) {
+                    val period = dayData.getJSONObject(i)
+                    val subject = period.getString("subject")
+                    val changed = period.optBoolean("changed", false)
+
+                    if (subject.isNotBlank() && subject != "null") {
+                        val displayText = if (changed) "$subject*" else subject
+                        daySubjects.add(displayText)
+                    }
+                }
+
+                weeklyData.add(daySubjects)
+                if (daySubjects.size > maxPeriods) {
+                    maxPeriods = daySubjects.size
+                }
+            }
+
+            // 5일이 안 되면 빈 리스트로 채우기
+            while (weeklyData.size < 5) {
+                weeklyData.add(emptyList())
+            }
+
+            if (maxPeriods == 0) {
+                return null
+            }
+
+            // 주 시작/종료 날짜 계산
+            val calendar = Calendar.getInstance()
+            if (isNextWeek) {
+                // 다음 주 월요일로 이동
+                val daysUntilNextMonday = (Calendar.MONDAY - calendar.get(Calendar.DAY_OF_WEEK) + 7) % 7
+                calendar.add(Calendar.DAY_OF_MONTH, if (daysUntilNextMonday == 0) 7 else daysUntilNextMonday)
+            } else {
+                // 이번 주 월요일로 이동
+                val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+                val daysFromMonday = if (dayOfWeek == Calendar.SUNDAY) -6 else Calendar.MONDAY - dayOfWeek
+                calendar.add(Calendar.DAY_OF_MONTH, daysFromMonday)
+            }
+
+            val weekStartDate = SimpleDateFormat("M/d", Locale.KOREA).format(calendar.time)
+            calendar.add(Calendar.DAY_OF_MONTH, 4) // 금요일
+            val weekEndDate = SimpleDateFormat("M/d", Locale.KOREA).format(calendar.time)
+
+            return WeeklyTimetableResult(
+                weeklyData = weeklyData,
+                maxPeriods = maxPeriods,
+                isNextWeek = isNextWeek,
+                weekStartDate = weekStartDate,
+                weekEndDate = weekEndDate
+            )
 
         } catch (e: Exception) {
             return null

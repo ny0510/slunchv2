@@ -83,6 +83,26 @@ class TimetableWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetId: Int
     ) {
+        // 위젯 크기 확인
+        val options = appWidgetManager.getAppWidgetOptions(appWidgetId)
+        val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 110)
+        val minHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 110)
+        
+        // 큰 위젯이면 주간 시간표 모드 (대략 4x3 이상)
+        val isWeeklyMode = minWidth >= 250 && minHeight >= 180
+
+        if (isWeeklyMode) {
+            updateWeeklyWidget(context, appWidgetManager, appWidgetId)
+        } else {
+            updateDailyWidget(context, appWidgetManager, appWidgetId)
+        }
+    }
+
+    private fun updateDailyWidget(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int
+    ) {
         val views = RemoteViews(context.packageName, R.layout.widget_timetable_layout)
 
         applyTextSizes(context, appWidgetManager, appWidgetId, views)
@@ -104,6 +124,35 @@ class TimetableWidgetProvider : AppWidgetProvider() {
         fetchTimetableDataNatively(context)
     }
 
+    private fun updateWeeklyWidget(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int
+    ) {
+        val views = RemoteViews(context.packageName, R.layout.widget_timetable_weekly_layout)
+
+        views.setTextViewText(R.id.widget_timetable_date, "")
+        views.setViewVisibility(R.id.widget_timetable_loading, View.VISIBLE)
+        views.setViewVisibility(R.id.widget_timetable_table, View.GONE)
+        views.setViewVisibility(R.id.widget_timetable_empty, View.GONE)
+
+        val refreshPendingIntent = createRefreshPendingIntent(context, appWidgetId)
+        views.setOnClickPendingIntent(R.id.widget_root, refreshPendingIntent)
+        
+        val appIntent = Intent(context, MainActivity::class.java)
+        val appPendingIntent = PendingIntent.getActivity(
+            context,
+            appWidgetId * 2000 + 1,
+            appIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        views.setOnClickPendingIntent(R.id.widget_timetable_title, appPendingIntent)
+
+        appWidgetManager.updateAppWidget(appWidgetId, views)
+
+        fetchWeeklyTimetableDataNatively(context, appWidgetId)
+    }
+
     private fun fetchTimetableDataNatively(context: Context) {
         val apiClient = TimetableApiClient(context)
         apiClient.fetchTimetable { timetableResult ->
@@ -111,6 +160,85 @@ class TimetableWidgetProvider : AppWidgetProvider() {
                 updateWidgetWithTimetableResult(context, timetableResult)
             }
         }
+    }
+
+    private fun fetchWeeklyTimetableDataNatively(context: Context, appWidgetId: Int) {
+        val apiClient = TimetableApiClient(context)
+        apiClient.fetchWeeklyTimetable { weeklyResult ->
+            Handler(Looper.getMainLooper()).post {
+                updateWidgetWithWeeklyResult(context, appWidgetId, weeklyResult)
+            }
+        }
+    }
+
+    private fun updateWidgetWithWeeklyResult(
+        context: Context,
+        appWidgetId: Int,
+        weeklyResult: WeeklyTimetableResult?
+    ) {
+        val appWidgetManager = AppWidgetManager.getInstance(context)
+        val views = RemoteViews(context.packageName, R.layout.widget_timetable_weekly_layout)
+
+        val refreshPendingIntent = createRefreshPendingIntent(context, appWidgetId)
+        views.setOnClickPendingIntent(R.id.widget_root, refreshPendingIntent)
+
+        val appIntent = Intent(context, MainActivity::class.java)
+        val appPendingIntent = PendingIntent.getActivity(
+            context,
+            appWidgetId * 2000 + 1,
+            appIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        views.setOnClickPendingIntent(R.id.widget_timetable_title, appPendingIntent)
+
+        views.setViewVisibility(R.id.widget_timetable_loading, View.GONE)
+
+        if (weeklyResult == null) {
+            views.setTextViewText(R.id.widget_timetable_date, "")
+            views.setViewVisibility(R.id.widget_timetable_table, View.GONE)
+            views.setViewVisibility(R.id.widget_timetable_empty, View.VISIBLE)
+            appWidgetManager.updateAppWidget(appWidgetId, views)
+            return
+        }
+
+        // 날짜 표시
+        val dateText = if (weeklyResult.isNextWeek) {
+            "(다음주) ${weeklyResult.weekStartDate}~${weeklyResult.weekEndDate}"
+        } else {
+            "${weeklyResult.weekStartDate}~${weeklyResult.weekEndDate}"
+        }
+        views.setTextViewText(R.id.widget_timetable_date, dateText)
+
+        views.setViewVisibility(R.id.widget_timetable_table, View.VISIBLE)
+        views.setViewVisibility(R.id.widget_timetable_empty, View.GONE)
+
+        // 기존 행들 제거
+        views.removeAllViews(R.id.widget_timetable_rows)
+
+        // 시간표 행 추가
+        for (period in 0 until weeklyResult.maxPeriods) {
+            val rowView = RemoteViews(context.packageName, R.layout.widget_timetable_row)
+            rowView.setTextViewText(R.id.period_num, (period + 1).toString())
+
+            // 월~금 과목 설정
+            val subjectIds = listOf(
+                R.id.subject_mon,
+                R.id.subject_tue,
+                R.id.subject_wed,
+                R.id.subject_thu,
+                R.id.subject_fri
+            )
+
+            for (dayIndex in 0 until 5) {
+                val subjects = weeklyResult.weeklyData.getOrNull(dayIndex) ?: emptyList()
+                val subject = subjects.getOrNull(period) ?: ""
+                rowView.setTextViewText(subjectIds[dayIndex], subject)
+            }
+
+            views.addView(R.id.widget_timetable_rows, rowView)
+        }
+
+        appWidgetManager.updateAppWidget(appWidgetId, views)
     }
 
     private fun updateWidgetWithTimetableResult(context: Context, timetableResult: TimetableResult) {
