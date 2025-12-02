@@ -114,7 +114,8 @@ const BottomTabs = () => {
         tabBarStyle: {
           backgroundColor: theme.background,
           borderTopColor: theme.border,
-          paddingBottom: 0,
+          paddingTop: 8,
+          paddingBottom: 8,
           height: 60,
           // borderTopLeftRadius: 24,
           // borderTopRightRadius: 24,
@@ -125,7 +126,8 @@ const BottomTabs = () => {
         },
         tabBarActiveTintColor: theme.primaryText,
         tabBarInactiveTintColor: '#8E8E93',
-        tabBarLabelStyle: [typography.baseTextStyle, {fontSize: 12, fontWeight: 500, lineHeight: 15}],
+        tabBarLabelStyle: [typography.baseTextStyle, {fontSize: 12, fontWeight: 500, marginTop: 4}],
+        tabBarIconStyle: {marginBottom: 0},
         tabBarButton: props => (props.onPress ? <TabBarButton children={props.children} onPress={event => props.onPress && props.onPress(event!)} /> : null),
         tabBarIcon: props => <TabBarIcon route={route} size={20} color={props.color} />,
       })}>
