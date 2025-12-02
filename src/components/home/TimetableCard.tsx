@@ -128,7 +128,7 @@ const TimetableCard = forwardRef<TimetableCardRef, TimetableCardProps>(({ onLong
                   { color: isNextWeek ? theme.highlightLight : theme.secondaryText },
                   isNextWeek ? { fontWeight: '800' } : {},
                 ]}>
-                {isNextWeek ? '*' : ''} 다음주
+                {isNextWeek ? '다음주' : '이번주'}
               </Text>
             </TouchableOpacity>
           </View>
