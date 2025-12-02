@@ -29,18 +29,23 @@ class MealApiClient(private val context: Context) {
             return
         }
 
-        // 오늘부터 최대 3일 뒤까지 시도
-        fetchMealWithOffset(schoolCode, regionCode, 0, callback)
+        // 오후 2시 이후면 내일부터 검색
+        val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        val startOffset = if (currentHour >= 14) 1 else 0
+
+        // 시작일부터 최대 3일 뒤까지 시도
+        fetchMealWithOffset(schoolCode, regionCode, startOffset, startOffset, callback)
     }
 
     private fun fetchMealWithOffset(
         schoolCode: String,
         regionCode: String,
         dayOffset: Int,
+        baseOffset: Int,
         callback: (MealResult) -> Unit
     ) {
-        // 최대 3일 뒤까지만 시도
-        if (dayOffset > 3) {
+        // 시작일 기준 최대 3일 뒤까지만 시도
+        if (dayOffset > baseOffset + 3) {
             val today = SimpleDateFormat("M/d", Locale.KOREA).format(Date())
             callback(MealResult("급식 정보가 없습니다.", today, 0))
             return
@@ -84,11 +89,11 @@ class MealApiClient(private val context: Context) {
                                 callback(MealResult(mealData, displayDate, dayOffset))
                             } else {
                                 // 급식이 없으면 다음 날 시도
-                                fetchMealWithOffset(schoolCode, regionCode, dayOffset + 1, callback)
+                                fetchMealWithOffset(schoolCode, regionCode, dayOffset + 1, baseOffset, callback)
                             }
                         } else {
                             // 응답 body가 없으면 다음 날 시도
-                            fetchMealWithOffset(schoolCode, regionCode, dayOffset + 1, callback)
+                            fetchMealWithOffset(schoolCode, regionCode, dayOffset + 1, baseOffset, callback)
                         }
                     } catch (e: Exception) {
                         val today = SimpleDateFormat("M/d", Locale.KOREA).format(Date())
