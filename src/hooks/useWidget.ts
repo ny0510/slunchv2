@@ -5,12 +5,12 @@ import type {WidgetBridge} from '@/types/WidgetBridge';
 import type {UserSchoolInfo} from '@/types/user';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const {WidgetBridge} = Platform.OS === 'android' ? NativeModules as {WidgetBridge: WidgetBridge} : {WidgetBridge: null};
+const {WidgetBridge} = NativeModules as {WidgetBridge: WidgetBridge};
 
 export const useWidget = () => {
   useEffect(() => {
-    // Android가 아니거나 위젯 브릿지가 없으면 실행하지 않음
-    if (Platform.OS !== 'android' || !WidgetBridge) {
+    // 위젯 브릿지가 없으면 실행하지 않음
+    if (!WidgetBridge) {
       return;
     }
 
