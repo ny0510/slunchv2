@@ -483,11 +483,9 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = slunchv2/slunchv2.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 39;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 40;
 				DEVELOPMENT_TEAM = "";
-				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = SS7CSVL2U8;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = slunchv2/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = NYL;
@@ -506,7 +504,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = kr.ny64.slunchv2;
 				PRODUCT_NAME = slunchv2;
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = A;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -521,11 +518,9 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = slunchv2/slunchv2.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 39;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 40;
 				DEVELOPMENT_TEAM = "";
-				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = SS7CSVL2U8;
 				INFOPLIST_FILE = slunchv2/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = NYL;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
@@ -543,7 +538,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = kr.ny64.slunchv2;
 				PRODUCT_NAME = slunchv2;
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = A;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
