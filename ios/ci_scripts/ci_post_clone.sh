@@ -6,17 +6,19 @@ cd ../../
 ls -al
 
 echo $SENTRY_PROPERTIES | base64 -d > ios/sentry.properties
-echo $GOOGLE_SERVICES_JSON | base64 -d > ios/GoogleService-Info.plist
+echo $GOOGLE_SERVICE_JSON | base64 -d > ios/GoogleService-Info.plist
 echo "API_BASE_URL='$API_BASE_URL'" > .env
 
 export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
-brew install oven-sh/bun/bun rbenv node fastfetch
+brew install oven-sh/bun/bun ruby node fastfetch
+echo 'export PATH="/opt/homebrew/opt/ruby/bin:$PATH"' >> /Users/neko/.zshrc
+export LDFLAGS="-L/opt/homebrew/opt/ruby/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/ruby/include"
+export PKG_CONFIG_PATH="/opt/homebrew/opt/ruby/lib/pkgconfig"
+
 fastfetch
-rbenv install 3.4.1
-rbenv global 3.4.1
-rbenv rehash
-rbenv exec gem install bundler -v 2.4.13
-rbenv exec gem install cocoapods -v 1.16.2
+gem install bundler -v 2.4.13
+gem install cocoapods -v 1.16.2
 #brew install cocoapods
 # gem install cocoapods -v 1.16.2
 
