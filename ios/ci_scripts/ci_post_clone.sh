@@ -6,7 +6,7 @@ cd ../../
 ls -al
 
 echo $SENTRY_PROPERTIES | base64 -d > ios/sentry.properties
-echo $GOOGLE_SERVICES_JSON | base64 -d > ios/GoogleService-Info.plist
+echo $GOOGLE_SERVICE_JSON | base64 -d > ios/GoogleService-Info.plist
 echo "API_BASE_URL='$API_BASE_URL'" > .env
 
 export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
