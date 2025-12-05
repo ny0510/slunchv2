@@ -43,23 +43,23 @@ const Notifications = ({onReadNotification, setScrollRef}: {onReadNotification: 
     }, [])
   );
 
-  const fetchReadNotifications = async () => {
-    try {
-      const storedReadNotifications = await AsyncStorage.getItem('readNotifications');
-      if (storedReadNotifications) {
-        setReadNotifications(JSON.parse(storedReadNotifications));
-      }
-    } catch (e) {
-      console.error('Error fetching read notifications:', e);
-    }
-  };
-
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const notifications = await getNotifications();
       setNoti(notifications);
-      await fetchReadNotifications();
+
+      // 초기 설정시 모든 알림을 읽음 처리
+      const storedReadNotifications = await AsyncStorage.getItem('readNotifications');
+      if (!storedReadNotifications) {
+        // 처음 사용하는 경우 모든 알림을 읽음 처리
+        const allNotificationIds = notifications.map((n: Notification) => n.id);
+        await AsyncStorage.setItem('readNotifications', JSON.stringify(allNotificationIds));
+        setReadNotifications(allNotificationIds);
+      } else {
+        setReadNotifications(JSON.parse(storedReadNotifications));
+      }
+
       onReadNotification();
     } catch (e) {
       const err = e as Error;
