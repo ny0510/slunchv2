@@ -13,7 +13,7 @@ import SunrinLogo from '@/assets/images/sunrin.svg';
 import BannerAdCard from '@/components/BannerAdCard';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
-import { ScheduleCard, MealCard, TimetableCard, ScheduleCardRef, MealCardRef, TimetableCardRef } from '@/components/home';
+import { ScheduleCard, MealCard, TimetableCard, ScheduleCardRef, MealCardRef, TimetableCardRef } from '@/screens/Tab/Home/components';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useUser } from '@/contexts/UserContext';
 import { useScrollToTop } from '@/hooks/useScrollToTop';
