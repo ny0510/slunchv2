@@ -1,5 +1,6 @@
 package kr.ny64.slunchv2.widget
 
+import android.content.Context
 import android.content.Intent
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
@@ -40,7 +41,7 @@ class WidgetBridgeModule(reactContext: ReactApplicationContext) : ReactContextBa
     @ReactMethod
     fun saveSchoolInfo(schoolCode: String, regionCode: String, promise: Promise) {
         try {
-            val prefs = reactApplicationContext.getSharedPreferences("user_prefs", ReactApplicationContext.MODE_PRIVATE)
+            val prefs = reactApplicationContext.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
             prefs.edit()
                 .putString("schoolCode", schoolCode)
                 .putString("regionCode", regionCode)
@@ -54,14 +55,13 @@ class WidgetBridgeModule(reactContext: ReactApplicationContext) : ReactContextBa
     @ReactMethod
     fun saveTimetableInfo(comciganSchoolCode: String, grade: Int, classNum: Int, promise: Promise) {
         try {
-            val prefs = reactApplicationContext.getSharedPreferences("user_prefs", ReactApplicationContext.MODE_PRIVATE)
+            val prefs = reactApplicationContext.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
             prefs.edit()
                 .putString("comciganSchoolCode", comciganSchoolCode)
                 .putInt("grade", grade)
                 .putInt("class", classNum)
                 .apply()
 
-            // 시간표 위젯 강제 업데이트
             val intent = Intent(TimetableWidgetProvider.ACTION_WIDGET_UPDATE)
             reactApplicationContext.sendBroadcast(intent)
 
@@ -74,17 +74,18 @@ class WidgetBridgeModule(reactContext: ReactApplicationContext) : ReactContextBa
     @ReactMethod
     fun getSchoolInfo(promise: Promise) {
         try {
-            val prefs = reactApplicationContext.getSharedPreferences("user_prefs", ReactApplicationContext.MODE_PRIVATE)
+            val prefs = reactApplicationContext.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
             val schoolCode = prefs.getString("schoolCode", null)
             val regionCode = prefs.getString("regionCode", null)
 
-            val result = hashMapOf<String, String?>()
-            result["schoolCode"] = schoolCode
-            result["regionCode"] = regionCode
+            val result = hashMapOf<String, String?>(
+                "schoolCode" to schoolCode,
+                "regionCode" to regionCode
+            )
+
             promise.resolve(result)
         } catch (e: Exception) {
             promise.reject("GET_SCHOOL_INFO_ERROR", e.message, e)
         }
     }
-
 }
