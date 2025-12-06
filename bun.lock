@@ -34,7 +34,7 @@
         "react-native": "0.82.1",
         "react-native-boost": "^0.6.2",
         "react-native-calendars": "^1.1313.0",
-        "react-native-date-picker": "^5.0.13",
+        "react-native-date-picker": "^5.0.12",
         "react-native-device-info": "^15.0.1",
         "react-native-dotenv": "^3.4.11",
         "react-native-draggable-flatlist": "^4.0.3",

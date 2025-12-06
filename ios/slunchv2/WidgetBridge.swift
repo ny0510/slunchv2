@@ -1,6 +1,9 @@
 import Foundation
 import WidgetKit
-import React
+
+// Type aliases for React Native promise blocks
+typealias RCTPromiseResolveBlock = (Any?) -> Void
+typealias RCTPromiseRejectBlock = (String?, String?, Error?) -> Void
 
 @objc(WidgetBridge)
 class WidgetBridge: NSObject {
