@@ -50,7 +50,16 @@ const BottomTabs = () => {
     try {
       const notifications = await getNotifications();
       const storedReadNotifications = await AsyncStorage.getItem('readNotifications');
-      const readNotifications = storedReadNotifications ? JSON.parse(storedReadNotifications) : [];
+
+      // 초기화 시 readNotifications가 없으면 모든 알림을 읽음 상태로 설정
+      if (!storedReadNotifications) {
+        const allNotificationIds = notifications.map((notification: Notification) => notification.id);
+        await AsyncStorage.setItem('readNotifications', JSON.stringify(allNotificationIds));
+        setUnreadCount(0);
+        return 0;
+      }
+
+      const readNotifications = JSON.parse(storedReadNotifications);
       const unreadNotifications = notifications.filter((notification: Notification) => !readNotifications.includes(notification.id));
       setUnreadCount(unreadNotifications.length);
       return unreadNotifications.length;
