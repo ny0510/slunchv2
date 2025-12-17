@@ -12,7 +12,7 @@ import AppIntents
 
 // MARK: - App Intent
 
-struct RefreshTimetableIntent: AppIntent {
+struct RefreshTimetableIntent: WidgetConfigurationIntent {
     static var title: LocalizedStringResource = "시간표 새로고침"
     
     func perform() async throws -> some IntentResult {
@@ -66,34 +66,32 @@ struct TimetableEntry: TimelineEntry {
 
 // MARK: - Timetable Provider
 
-struct TimetableProvider: TimelineProvider {
+struct TimetableProvider: AppIntentTimelineProvider {
+    typealias Intent = RefreshTimetableIntent
+    typealias Entry = TimetableEntry
+    
     let appGroupId = "group.kr.ny64.slunchv2"
     
     func placeholder(in context: Context) -> TimetableEntry {
         TimetableEntry(date: Date(), timetableResult: nil, weeklyResult: nil, message: "시간표를 불러오는 중...")
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (TimetableEntry) -> ()) {
-        let entry = TimetableEntry(date: Date(), timetableResult: nil, weeklyResult: nil, message: "시간표를 불러오는 중...")
-        completion(entry)
+    func snapshot(for configuration: RefreshTimetableIntent, in context: Context) async -> TimetableEntry {
+        return TimetableEntry(date: Date(), timetableResult: nil, weeklyResult: nil, message: "시간표를 불러오는 중...")
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<TimetableEntry>) -> ()) {
+    func timeline(for configuration: RefreshTimetableIntent, in context: Context) async -> Timeline<TimetableEntry> {
         let currentDate = Date()
         let refreshDate = Calendar.current.date(byAdding: .minute, value: 15, to: currentDate)!
         
         guard let userDefaults = UserDefaults(suiteName: appGroupId) else {
             let entry = TimetableEntry(date: currentDate, timetableResult: nil, weeklyResult: nil, message: "설정 오류")
-            let timeline = Timeline(entries: [entry], policy: .after(refreshDate))
-            completion(timeline)
-            return
+            return Timeline(entries: [entry], policy: .after(refreshDate))
         }
         
         guard let comciganSchoolCode = userDefaults.string(forKey: "comciganSchoolCode") else {
             let entry = TimetableEntry(date: currentDate, timetableResult: nil, weeklyResult: nil, message: "앱에서 학교를 설정해주세요.")
-            let timeline = Timeline(entries: [entry], policy: .after(refreshDate))
-            completion(timeline)
-            return
+            return Timeline(entries: [entry], policy: .after(refreshDate))
         }
         
         let grade = userDefaults.integer(forKey: "grade")
@@ -101,44 +99,36 @@ struct TimetableProvider: TimelineProvider {
         
         if grade == 0 || classNum == 0 {
             let entry = TimetableEntry(date: currentDate, timetableResult: nil, weeklyResult: nil, message: "앱에서 학급을 설정해주세요.")
-            let timeline = Timeline(entries: [entry], policy: .after(refreshDate))
-            completion(timeline)
-            return
+            return Timeline(entries: [entry], policy: .after(refreshDate))
         }
         
         // 위젯 크기에 따라 다른 데이터 로드
         if context.family == .systemLarge {
             // 큰 위젯: 주간 시간표
-            fetchWeeklyTimetable(schoolCode: comciganSchoolCode, grade: grade, classNum: classNum) { result in
-                let entry: TimetableEntry
-                switch result {
-                case .success(let weeklyResult):
-                    entry = TimetableEntry(date: currentDate, timetableResult: nil, weeklyResult: weeklyResult, message: nil)
-                case .failure(let error):
-                    entry = TimetableEntry(date: currentDate, timetableResult: nil, weeklyResult: nil, message: error.localizedDescription)
-                }
-                
-                let timeline = Timeline(entries: [entry], policy: .after(refreshDate))
-                completion(timeline)
+            let result = await fetchWeeklyTimetableAsync(schoolCode: comciganSchoolCode, grade: grade, classNum: classNum)
+            let entry: TimetableEntry
+            switch result {
+            case .success(let weeklyResult):
+                entry = TimetableEntry(date: currentDate, timetableResult: nil, weeklyResult: weeklyResult, message: nil)
+            case .failure(let error):
+                entry = TimetableEntry(date: currentDate, timetableResult: nil, weeklyResult: nil, message: error.localizedDescription)
             }
+            return Timeline(entries: [entry], policy: .after(refreshDate))
         } else {
             // 작은/중간 위젯: 하루 시간표
-            fetchTimetableWithOffset(schoolCode: comciganSchoolCode, grade: grade, classNum: classNum, dayOffset: 0) { result in
-                let entry: TimetableEntry
-                switch result {
-                case .success(let timetableResult):
-                    entry = TimetableEntry(date: currentDate, timetableResult: timetableResult, weeklyResult: nil, message: nil)
-                case .failure(let error):
-                    entry = TimetableEntry(date: currentDate, timetableResult: nil, weeklyResult: nil, message: error.localizedDescription)
-                }
-                
-                let timeline = Timeline(entries: [entry], policy: .after(refreshDate))
-                completion(timeline)
+            let result = await fetchTimetableWithOffsetAsync(schoolCode: comciganSchoolCode, grade: grade, classNum: classNum, dayOffset: 0)
+            let entry: TimetableEntry
+            switch result {
+            case .success(let timetableResult):
+                entry = TimetableEntry(date: currentDate, timetableResult: timetableResult, weeklyResult: nil, message: nil)
+            case .failure(let error):
+                entry = TimetableEntry(date: currentDate, timetableResult: nil, weeklyResult: nil, message: error.localizedDescription)
             }
+            return Timeline(entries: [entry], policy: .after(refreshDate))
         }
     }
     
-    private func fetchWeeklyTimetable(schoolCode: String, grade: Int, classNum: Int, completion: @escaping (Result<WeeklyTimetableResult, Error>) -> Void) {
+    private func fetchWeeklyTimetableAsync(schoolCode: String, grade: Int, classNum: Int) async -> Result<WeeklyTimetableResult, Error> {
         let dateFormatter = DateFormatter()
         dateFormatter.timeZone = TimeZone(identifier: "Asia/Seoul")
         dateFormatter.dateFormat = "yyyyMMdd"
@@ -146,20 +136,16 @@ struct TimetableProvider: TimelineProvider {
         
         let cacheKey = "weeklyTimetableCache_\(schoolCode)_\(grade)_\(classNum)_\(currentDateString)"
         
-        var cachedResult: WeeklyTimetableResult?
-        
         if let userDefaults = UserDefaults(suiteName: appGroupId),
            let cachedData = userDefaults.data(forKey: cacheKey) {
             do {
-                cachedResult = try JSONDecoder().decode(WeeklyTimetableResult.self, from: cachedData)
-                completion(.success(cachedResult!))
-                return
+                let cachedResult = try JSONDecoder().decode(WeeklyTimetableResult.self, from: cachedData)
+                return .success(cachedResult)
             } catch {
                 // 캐시 파싱 실패 시 계속 진행
             }
         }
         
-        // 현재 날짜 캐시 없으면 API 호출
         var calendar = Calendar.current
         calendar.timeZone = TimeZone(identifier: "Asia/Seoul")!
         
@@ -178,94 +164,76 @@ struct TimetableProvider: TimelineProvider {
         let urlString = "https://slunch-v2.ny64.kr/comcigan/timetable?schoolCode=\(schoolCode)&grade=\(grade)&class=\(classNum)"
         
         guard let url = URL(string: urlString) else {
-            completion(.failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
-            return
+            return .failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"]))
         }
         
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error {
-                // 네트워크 오류 시 이전 캐시 사용 (어제)
-                if let yesterday = calendar.date(byAdding: .day, value: -1, to: Date()) {
-                    let yesterdayString = dateFormatter.string(from: yesterday)
-                    let yesterdayKey = "weeklyTimetableCache_\(schoolCode)_\(grade)_\(classNum)_\(yesterdayString)"
-                    if let userDefaults = UserDefaults(suiteName: self.appGroupId),
-                       let yesterdayData = userDefaults.data(forKey: yesterdayKey) {
-                        do {
-                            let yesterdayResult = try JSONDecoder().decode(WeeklyTimetableResult.self, from: yesterdayData)
-                            completion(.success(yesterdayResult))
-                            return
-                        } catch {
-                            // 실패 시 오류
-                        }
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let weeklyData = try JSONDecoder().decode([[TimetableData]].self, from: data)
+            
+            var weeklySubjects: [[SubjectItem]] = []
+            for dayData in weeklyData {
+                var subjects: [SubjectItem] = []
+                for period in dayData {
+                    if !period.subject.isEmpty && period.subject != "null" {
+                        let subjectItem = SubjectItem(name: period.subject.replacingOccurrences(of: "없음", with: "-"), changed: period.changed)
+                        subjects.append(subjectItem)
                     }
                 }
-                completion(.failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "네트워크 오류"])))
-                return
+                weeklySubjects.append(subjects)
             }
             
-            guard let data = data else {
-                completion(.failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "데이터 없음"])))
-                return
+            while weeklySubjects.count < 5 {
+                weeklySubjects.append([])
             }
             
-            do {
-                let weeklyData = try JSONDecoder().decode([[TimetableData]].self, from: data)
-                
-                var weeklySubjects: [[SubjectItem]] = []
-                for dayData in weeklyData {
-                    var subjects: [SubjectItem] = []
-                    for period in dayData {
-                        if !period.subject.isEmpty && period.subject != "null" {
-                            let subjectItem = SubjectItem(name: period.subject.replacingOccurrences(of: "없음", with: "-"), changed: period.changed)
-                            subjects.append(subjectItem)
-                        }
+            let result = WeeklyTimetableResult(
+                weeklySubjects: weeklySubjects,
+                todayIndex: todayIndex,
+                isNextWeek: false
+            )
+            
+            // 캐시 저장
+            if let userDefaults = UserDefaults(suiteName: appGroupId),
+               let encodedData = try? JSONEncoder().encode(result) {
+                userDefaults.set(encodedData, forKey: cacheKey)
+            }
+            
+            return .success(result)
+        } catch {
+            // 네트워크 오류 시 이전 캐시 사용 (어제)
+            if let yesterday = calendar.date(byAdding: .day, value: -1, to: Date()) {
+                let yesterdayString = dateFormatter.string(from: yesterday)
+                let yesterdayKey = "weeklyTimetableCache_\(schoolCode)_\(grade)_\(classNum)_\(yesterdayString)"
+                if let userDefaults = UserDefaults(suiteName: appGroupId),
+                   let yesterdayData = userDefaults.data(forKey: yesterdayKey) {
+                    do {
+                        let yesterdayResult = try JSONDecoder().decode(WeeklyTimetableResult.self, from: yesterdayData)
+                        return .success(yesterdayResult)
+                    } catch {
+                        return .failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "파싱 오류"]))
                     }
-                    weeklySubjects.append(subjects)
                 }
-                
-                while weeklySubjects.count < 5 {
-                    weeklySubjects.append([])
-                }
-                
-                let result = WeeklyTimetableResult(
-                    weeklySubjects: weeklySubjects,
-                    todayIndex: todayIndex,
-                    isNextWeek: false
-                )
-                
-                // 캐시 저장
-                if let userDefaults = UserDefaults(suiteName: self.appGroupId),
-                   let encodedData = try? JSONEncoder().encode(result) {
-                    userDefaults.set(encodedData, forKey: cacheKey)
-                }
-                
-                completion(.success(result))
-            } catch {
-                completion(.failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "파싱 오류"])))
             }
-        }.resume()
+            return .failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "네트워크 오류"]))
+        }
     }
     
-    private func fetchTimetableWithOffset(schoolCode: String, grade: Int, classNum: Int, dayOffset: Int, completion: @escaping (Result<TimetableResult, Error>) -> Void) {
-        // 최대 7일 뒤까지만 시도
+    private func fetchTimetableWithOffsetAsync(schoolCode: String, grade: Int, classNum: Int, dayOffset: Int) async -> Result<TimetableResult, Error> {
         if dayOffset > 7 {
-            completion(.failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "시간표가 없습니다."])))
-            return
+            return .failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "시간표가 없습니다."]))
         }
         
         var calendar = Calendar.current
         calendar.timeZone = TimeZone(identifier: "Asia/Seoul")!
         guard let targetDate = calendar.date(byAdding: .day, value: dayOffset, to: Date()) else {
-            completion(.failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "날짜 계산 오류"])))
-            return
+            return .failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "날짜 계산 오류"]))
         }
         
         let weekday = calendar.component(.weekday, from: targetDate)
         
-        // 주말인 경우 오류 반환
-        if weekday == 1 || weekday == 7 { // 1 = Sunday, 7 = Saturday
-            completion(.failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "주말에는 시간표가 없습니다."])))
-            return
+        if weekday == 1 || weekday == 7 {
+            return await fetchTimetableWithOffsetAsync(schoolCode: schoolCode, grade: grade, classNum: classNum, dayOffset: dayOffset + 1)
         }
         
         let dateFormatter = DateFormatter()
@@ -273,70 +241,49 @@ struct TimetableProvider: TimelineProvider {
         dateFormatter.dateFormat = "M/d"
         let displayDate = dateFormatter.string(from: targetDate)
         
-        // 다음 주인지 확인 (항상 현재 주로 설정)
-        let useNextWeek = false
-        
-        var urlString = "https://slunch-v2.ny64.kr/comcigan/timetable?schoolCode=\(schoolCode)&grade=\(grade)&class=\(classNum)"
-        if useNextWeek {
-            urlString += "&nextweek=true"
-        }
+        let urlString = "https://slunch-v2.ny64.kr/comcigan/timetable?schoolCode=\(schoolCode)&grade=\(grade)&class=\(classNum)"
         
         guard let url = URL(string: urlString) else {
-            completion(.failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
-            return
+            return .failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"]))
         }
         
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error {
-                completion(.failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "네트워크 오류"])))
-                return
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let weeklyData = try JSONDecoder().decode([[TimetableData]].self, from: data)
+            
+            let dayIndex: Int
+            switch weekday {
+            case 2: dayIndex = 0
+            case 3: dayIndex = 1
+            case 4: dayIndex = 2
+            case 5: dayIndex = 3
+            case 6: dayIndex = 4
+            default: dayIndex = -1
             }
             
-            guard let data = data else {
-                self.fetchTimetableWithOffset(schoolCode: schoolCode, grade: grade, classNum: classNum, dayOffset: dayOffset + 1, completion: completion)
-                return
+            if dayIndex < 0 || dayIndex >= weeklyData.count {
+                return await fetchTimetableWithOffsetAsync(schoolCode: schoolCode, grade: grade, classNum: classNum, dayOffset: dayOffset + 1)
             }
             
-            do {
-                let weeklyData = try JSONDecoder().decode([[TimetableData]].self, from: data)
-                
-                // weekday: 1=Sun, 2=Mon, 3=Tue, 4=Wed, 5=Thu, 6=Fri, 7=Sat
-                // API index: 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri
-                let dayIndex: Int
-                switch weekday {
-                case 2: dayIndex = 0 // Monday
-                case 3: dayIndex = 1 // Tuesday
-                case 4: dayIndex = 2 // Wednesday
-                case 5: dayIndex = 3 // Thursday
-                case 6: dayIndex = 4 // Friday
-                default: dayIndex = -1
+            let dayData = weeklyData[dayIndex]
+            var subjects: [SubjectItem] = []
+            
+            for period in dayData {
+                if !period.subject.isEmpty && period.subject != "null" {
+                    let subjectItem = SubjectItem(name: period.subject, changed: period.changed)
+                    subjects.append(subjectItem)
                 }
-                
-                if dayIndex < 0 || dayIndex >= weeklyData.count {
-                    self.fetchTimetableWithOffset(schoolCode: schoolCode, grade: grade, classNum: classNum, dayOffset: dayOffset + 1, completion: completion)
-                    return
-                }
-                
-                let dayData = weeklyData[dayIndex]
-                var subjects: [SubjectItem] = []
-                
-                for period in dayData {
-                    if !period.subject.isEmpty && period.subject != "null" {
-                        let subjectItem = SubjectItem(name: period.subject, changed: period.changed)
-                        subjects.append(subjectItem)
-                    }
-                }
-                
-                if subjects.isEmpty {
-                    completion(.failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "시간표가 없습니다."])))
-                } else {
-                    let result = TimetableResult(subjects: subjects, displayDate: displayDate, daysOffset: dayOffset)
-                    completion(.success(result))
-                }
-            } catch {
-                self.fetchTimetableWithOffset(schoolCode: schoolCode, grade: grade, classNum: classNum, dayOffset: dayOffset + 1, completion: completion)
             }
-        }.resume()
+            
+            if subjects.isEmpty {
+                return await fetchTimetableWithOffsetAsync(schoolCode: schoolCode, grade: grade, classNum: classNum, dayOffset: dayOffset + 1)
+            } else {
+                let result = TimetableResult(subjects: subjects, displayDate: displayDate, daysOffset: dayOffset)
+                return .success(result)
+            }
+        } catch {
+            return await fetchTimetableWithOffsetAsync(schoolCode: schoolCode, grade: grade, classNum: classNum, dayOffset: dayOffset + 1)
+        }
     }
 }
 
@@ -539,7 +486,7 @@ struct TimetableWidget: Widget {
     let kind: String = "TimetableWidget"
 
     var body: some WidgetConfiguration {
-        IntentConfiguration(kind: kind, intent: RefreshTimetableIntent.self, provider: TimetableProvider()) { entry in
+        AppIntentConfiguration(kind: kind, intent: RefreshTimetableIntent.self, provider: TimetableProvider()) { entry in
             if #available(iOS 17.0, *) {
                 TimetableWidgetEntryView(entry: entry)
                     .containerBackground(for: .widget) {
