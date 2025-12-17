@@ -17,6 +17,8 @@ export LDFLAGS="-L/opt/homebrew/opt/ruby/lib"
 export PKG_CONFIG_PATH="/opt/homebrew/opt/ruby/lib/pkgconfig"
 export PATH="/opt/homebrew/opt/ruby@3.3/bin:$PATH"
 
+sudo gem install cocoapods
+
 fastfetch
 
 sudo gem install bundler -v 2.4.13
@@ -26,8 +28,8 @@ bundle install
 bun install
 
 cd ios
-bundle exec pod update hermes-engine --no-repo-update
-bundle exec pod install
+pod update hermes-engine --no-repo-update
+pod install
 
 ls -al
 cd ..
