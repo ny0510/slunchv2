@@ -7,6 +7,7 @@
 
 import WidgetKit
 import SwiftUI
+import UIKit
 
 // MARK: - Models
 
@@ -126,21 +127,17 @@ struct TimetableProvider: TimelineProvider {
         
         let todayWeekday = calendar.component(.weekday, from: Date())
         let todayIndex: Int
-        let useNextWeek: Bool
         
         switch todayWeekday {
-        case 2: todayIndex = 0; useNextWeek = false
-        case 3: todayIndex = 1; useNextWeek = false
-        case 4: todayIndex = 2; useNextWeek = false
-        case 5: todayIndex = 3; useNextWeek = false
-        case 6: todayIndex = 4; useNextWeek = false
-        default: todayIndex = -1; useNextWeek = true
+        case 2: todayIndex = 0
+        case 3: todayIndex = 1
+        case 4: todayIndex = 2
+        case 5: todayIndex = 3
+        case 6: todayIndex = 4
+        default: todayIndex = -1
         }
         
-        var urlString = "https://slunch-v2.ny64.kr/comcigan/timetable?schoolCode=\(schoolCode)&grade=\(grade)&class=\(classNum)"
-        if useNextWeek {
-            urlString += "&nextweek=true"
-        }
+        let urlString = "https://slunch-v2.ny64.kr/comcigan/timetable?schoolCode=\(schoolCode)&grade=\(grade)&class=\(classNum)"
         
         guard let url = URL(string: urlString) else {
             completion(.failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
@@ -179,8 +176,8 @@ struct TimetableProvider: TimelineProvider {
                 
                 let result = WeeklyTimetableResult(
                     weeklySubjects: weeklySubjects,
-                    todayIndex: useNextWeek ? -1 : todayIndex,
-                    isNextWeek: useNextWeek
+                    todayIndex: todayIndex,
+                    isNextWeek: false
                 )
                 completion(.success(result))
             } catch {
@@ -205,9 +202,9 @@ struct TimetableProvider: TimelineProvider {
         
         let weekday = calendar.component(.weekday, from: targetDate)
         
-        // 주말인 경우 다음 날로 넘어감
+        // 주말인 경우 오류 반환
         if weekday == 1 || weekday == 7 { // 1 = Sunday, 7 = Saturday
-            fetchTimetableWithOffset(schoolCode: schoolCode, grade: grade, classNum: classNum, dayOffset: dayOffset + 1, completion: completion)
+            completion(.failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "주말에는 시간표가 없습니다."])))
             return
         }
         
@@ -216,25 +213,8 @@ struct TimetableProvider: TimelineProvider {
         dateFormatter.dateFormat = "M/d"
         let displayDate = dateFormatter.string(from: targetDate)
         
-        // 다음 주인지 확인
-        let todayWeekday = calendar.component(.weekday, from: Date())
-        var daysUntilWeekend = 0
-        
-        switch todayWeekday {
-        case 2: daysUntilWeekend = 4 // Monday
-        case 3: daysUntilWeekend = 3 // Tuesday
-        case 4: daysUntilWeekend = 2 // Wednesday
-        case 5: daysUntilWeekend = 1 // Thursday
-        case 6: daysUntilWeekend = 0 // Friday
-        default: daysUntilWeekend = -1 // Weekend
-        }
-        
-        let useNextWeek: Bool
-        if todayWeekday == 1 || todayWeekday == 7 {
-            useNextWeek = true
-        } else {
-            useNextWeek = dayOffset > daysUntilWeekend
-        }
+        // 다음 주인지 확인 (항상 현재 주로 설정)
+        let useNextWeek = false
         
         var urlString = "https://slunch-v2.ny64.kr/comcigan/timetable?schoolCode=\(schoolCode)&grade=\(grade)&class=\(classNum)"
         if useNextWeek {
@@ -288,13 +268,13 @@ struct TimetableProvider: TimelineProvider {
                 }
                 
                 if subjects.isEmpty {
-                    self.fetchTimetableWithOffset(schoolCode: schoolCode, grade: grade, classNum: classNum, dayOffset: dayOffset + 1, completion: completion)
+                    completion(.failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "시간표가 없습니다."])))
                 } else {
                     let result = TimetableResult(subjects: subjects, displayDate: displayDate, daysOffset: dayOffset)
                     completion(.success(result))
                 }
             } catch {
-                self.fetchTimetableWithOffset(schoolCode: schoolCode, grade: grade, classNum: classNum, dayOffset: dayOffset + 1, completion: completion)
+                completion(.failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "파싱 오류"])))
             }
         }.resume()
     }

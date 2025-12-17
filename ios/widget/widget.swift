@@ -7,6 +7,7 @@
 
 import WidgetKit
 import SwiftUI
+import UIKit
 
 struct Provider: TimelineProvider {
     let appGroupId = "group.kr.ny64.slunchv2"
