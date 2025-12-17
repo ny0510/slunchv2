@@ -11,6 +11,11 @@ import UIKit
 
 // MARK: - Models
 
+struct SubjectItem {
+    let name: String
+    let changed: Bool
+}
+
 struct TimetableData: Decodable {
     let subject: String
     let changed: Bool
@@ -27,13 +32,13 @@ struct TimetableData: Decodable {
 }
 
 struct TimetableResult {
-    let subjects: [String]
+    let subjects: [SubjectItem]
     let displayDate: String
     let daysOffset: Int
 }
 
 struct WeeklyTimetableResult {
-    let weeklySubjects: [[String]] // [월, 화, 수, 목, 금] 각 요일별 과목 배열
+    let weeklySubjects: [[SubjectItem]] // [월, 화, 수, 목, 금] 각 요일별 과목 배열
     let todayIndex: Int // 오늘이 몇 번째 요일인지 (0=월, 1=화, ..., 4=금, -1=주말)
     let isNextWeek: Bool
 }
@@ -158,13 +163,13 @@ struct TimetableProvider: TimelineProvider {
             do {
                 let weeklyData = try JSONDecoder().decode([[TimetableData]].self, from: data)
                 
-                var weeklySubjects: [[String]] = []
+                var weeklySubjects: [[SubjectItem]] = []
                 for dayData in weeklyData {
-                    var subjects: [String] = []
+                    var subjects: [SubjectItem] = []
                     for period in dayData {
                         if !period.subject.isEmpty && period.subject != "null" {
-                            let displayText = period.subject + (period.changed ? "*" : "")
-                            subjects.append(displayText)
+                            let subjectItem = SubjectItem(name: period.subject.replacingOccurrences(of: "없음", with: "-"), changed: period.changed)
+                            subjects.append(subjectItem)
                         }
                     }
                     weeklySubjects.append(subjects)
@@ -258,12 +263,12 @@ struct TimetableProvider: TimelineProvider {
                 }
                 
                 let dayData = weeklyData[dayIndex]
-                var subjects: [String] = []
+                var subjects: [SubjectItem] = []
                 
                 for period in dayData {
                     if !period.subject.isEmpty && period.subject != "null" {
-                        let displayText = "\(period.subject)" + (period.changed ? "*" : "")
-                        subjects.append(displayText)
+                        let subjectItem = SubjectItem(name: period.subject, changed: period.changed)
+                        subjects.append(subjectItem)
                     }
                 }
                 
@@ -274,7 +279,7 @@ struct TimetableProvider: TimelineProvider {
                     completion(.success(result))
                 }
             } catch {
-                completion(.failure(NSError(domain: "TimetableWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "파싱 오류"])))
+                self.fetchTimetableWithOffset(schoolCode: schoolCode, grade: grade, classNum: classNum, dayOffset: dayOffset + 1, completion: completion)
             }
         }.resume()
     }
@@ -293,6 +298,14 @@ struct TimetableWidgetEntryView: View {
     
     private var accentColor: Color {
         Color(red: 0.475, green: 0.337, blue: 0.988)
+    }
+    
+    private var changedColor: Color {
+        if colorScheme == .dark {
+            Color(red: 186/255, green: 166/255, blue: 255/255)
+        } else {
+            Color(red: 178/255, green: 161/255, blue: 255/255)
+        }
     }
 
     private var dateFontSize: CGFloat {
@@ -336,9 +349,9 @@ struct TimetableWidgetEntryView: View {
                                     .font(.system(size: itemFontSize, weight: .medium))
                                     .foregroundColor(.gray)
                                     .frame(width: family == .systemSmall ? 10 : 14, alignment: .trailing)
-                                Text(subject)
+                                Text(subject.name)
                                     .font(.system(size: itemFontSize))
-                                    .foregroundColor(primaryTextColor)
+                                    .foregroundColor(subject.changed ? changedColor : primaryTextColor)
                                     .lineLimit(1)
                             }
                         }
@@ -439,11 +452,11 @@ struct TimetableWidgetEntryView: View {
                             // 각 요일 과목
                             ForEach(0..<5, id: \.self) { dayIndex in
                                 let subjects = weeklyResult.weeklySubjects[dayIndex]
-                                let subject = period < subjects.count ? subjects[period] : ""
+                                let subjectItem = period < subjects.count ? subjects[period] : SubjectItem(name: "-", changed: false)
                                 
-                                Text(subject)
+                                Text(subjectItem.name)
                                     .font(.system(size: 13))
-                                    .foregroundColor(dayIndex == weeklyResult.todayIndex ? accentColor : primaryTextColor)
+                                    .foregroundColor(subjectItem.changed ? changedColor : (dayIndex == weeklyResult.todayIndex ? accentColor : primaryTextColor))
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.6)
                                     .frame(maxWidth: .infinity, maxHeight: .infinity)
