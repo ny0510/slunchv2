@@ -248,7 +248,7 @@ struct MealWidgetEntryView: View {
                             .font(.system(size: dateFontSize, weight: .bold))
                             .foregroundColor(accentColor)
                         
-                        if mealResult.daysOffset > 0 {
+                        if family != .systemSmall && mealResult.daysOffset > 0 {
                             Text(mealResult.daysOffset == 1 ? "내일" : "+\(mealResult.daysOffset)일")
                                 .font(.system(size: family == .systemSmall ? 10 : 9, weight: .bold))
                                 .foregroundColor(.white)
