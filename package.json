@@ -1,6 +1,6 @@
 {
   "name": "slunchv2",
-  "version": "0.0.1",
+  "version": "0.17.2",
   "private": true,
   "scripts": {
     "start": "react-native start",
