@@ -22,6 +22,5 @@ module.exports = {
     ],
     'react-native-boost/plugin',
     'react-native-worklets/plugin',
-    'react-native-reanimated/plugin',
   ],
 };
