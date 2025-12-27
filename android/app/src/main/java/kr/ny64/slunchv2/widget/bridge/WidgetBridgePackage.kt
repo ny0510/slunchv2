@@ -1,4 +1,4 @@
-package kr.ny64.slunchv2.widget
+package kr.ny64.slunchv2.widget.bridge
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule

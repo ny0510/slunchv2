@@ -1,4 +1,8 @@
-package kr.ny64.slunchv2.widget
+package kr.ny64.slunchv2.widget.meal
+
+import kr.ny64.slunchv2.widget.common.KEY_MEAL_CONTENT_SIZE_PREFIX
+import kr.ny64.slunchv2.widget.common.KEY_MEAL_DATA_PREFIX
+import kr.ny64.slunchv2.widget.common.MEAL_WIDGET_PREFS
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -13,6 +17,11 @@ import android.os.Looper
 import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
+import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
 import kr.ny64.slunchv2.MainActivity
 import kr.ny64.slunchv2.R
 import java.text.SimpleDateFormat
@@ -20,6 +29,24 @@ import java.util.Date
 import java.util.Locale
 
 class MealWidgetProvider : AppWidgetProvider() {
+
+    companion object {
+        const val ACTION_WIDGET_UPDATE = "kr.ny64.slunchv2.MEAL_WIDGET_UPDATE"
+        const val ACTION_MEAL_DATA_UPDATE = "kr.ny64.slunchv2.MEAL_DATA_UPDATE"
+        const val EXTRA_MEAL_DATA = "meal_data"
+        const val EXTRA_DISPLAY_DATE = "display_date"
+        const val EXTRA_DAYS_OFFSET = "days_offset"
+
+        private var isFetching = false
+
+        fun updateWidgets(context: Context, mealResult: MealResult) {
+            val intent = Intent(ACTION_MEAL_DATA_UPDATE)
+            intent.putExtra(EXTRA_MEAL_DATA, mealResult.mealData)
+            intent.putExtra(EXTRA_DISPLAY_DATE, mealResult.displayDate)
+            intent.putExtra(EXTRA_DAYS_OFFSET, mealResult.daysOffset)
+            context.sendBroadcast(intent)
+        }
+    }
 
     override fun onUpdate(
         context: Context,
@@ -34,20 +61,7 @@ class MealWidgetProvider : AppWidgetProvider() {
 
         when (intent.action) {
             ACTION_WIDGET_UPDATE -> {
-                val appWidgetManager = AppWidgetManager.getInstance(context)
-                val widgetId = intent.getIntExtra(
-                    AppWidgetManager.EXTRA_APPWIDGET_ID,
-                    AppWidgetManager.INVALID_APPWIDGET_ID
-                )
-
-                if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                    updateAppWidget(context, appWidgetManager, widgetId)
-                } else {
-                    val appWidgetIds = appWidgetManager.getAppWidgetIds(
-                        ComponentName(context, MealWidgetProvider::class.java)
-                    )
-                    onUpdate(context, appWidgetManager, appWidgetIds)
-                }
+                fetchMealDataNatively(context, forceRefresh = true)
             }
 
             ACTION_MEAL_DATA_UPDATE -> {
@@ -81,30 +95,63 @@ class MealWidgetProvider : AppWidgetProvider() {
         appWidgetId: Int
     ) {
         val views = RemoteViews(context.packageName, R.layout.widget_meal_layout)
-
         applyTextSizes(context, appWidgetManager, appWidgetId, views)
-
-        val currentDate = SimpleDateFormat("M/d", Locale.KOREA).format(Date())
-        views.setTextViewText(R.id.widget_date, currentDate)
-        views.setTextViewText(R.id.widget_meal_empty, "급식 정보 없음")
 
         val refreshPendingIntent = createRefreshPendingIntent(context, appWidgetId)
         configureMealListView(context, views, appWidgetId, refreshPendingIntent)
         setClickHandlers(context, views, appWidgetId, refreshPendingIntent)
 
-        views.setViewVisibility(R.id.widget_loading, View.VISIBLE)
-        views.setViewVisibility(R.id.widget_meal_list, View.GONE)
-        views.setViewVisibility(R.id.widget_meal_empty, View.GONE)
-
-        appWidgetManager.updateAppWidget(appWidgetId, views)
-
-        fetchMealDataNatively(context)
+        // 1. Check Cache
+        val cachePrefs = context.getSharedPreferences("meal_cache_prefs", Context.MODE_PRIVATE)
+        val todayCalendar = java.util.Calendar.getInstance()
+        val currentHour = todayCalendar.get(java.util.Calendar.HOUR_OF_DAY)
+        val dayOffset = if (currentHour >= 14) 1 else 0
+        
+        val targetCalendar = java.util.Calendar.getInstance()
+        targetCalendar.add(java.util.Calendar.DAY_OF_MONTH, dayOffset)
+        
+        val dateKey = "${targetCalendar.get(java.util.Calendar.YEAR)}${String.format("%02d", targetCalendar.get(java.util.Calendar.MONTH) + 1)}${String.format("%02d", targetCalendar.get(java.util.Calendar.DAY_OF_MONTH))}"
+        
+        val cachedMeal = cachePrefs.getString(dateKey, null)
+        if (cachedMeal != null) {
+            val displayDate = SimpleDateFormat("M/d", Locale.KOREA).format(targetCalendar.time)
+            
+            views.setTextViewText(R.id.widget_date, displayDate)
+            if (dayOffset > 0) {
+                views.setTextViewText(R.id.widget_days_offset_badge, "${dayOffset}일뒤")
+                views.setViewVisibility(R.id.widget_days_offset_badge, View.VISIBLE)
+            } else {
+                views.setViewVisibility(R.id.widget_days_offset_badge, View.GONE)
+            }
+            
+            views.setViewVisibility(R.id.widget_loading, View.GONE)
+            views.setViewVisibility(R.id.widget_meal_list, View.VISIBLE)
+            views.setViewVisibility(
+                R.id.widget_meal_empty,
+                if (cachedMeal.trim().isEmpty()) View.VISIBLE else View.GONE
+            )
+            
+            saveMealData(context, intArrayOf(appWidgetId), cachedMeal)
+            appWidgetManager.updateAppWidget(appWidgetId, views)
+            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.widget_meal_list)
+        } else {
+            // 2. No Cache -> Show Empty State (No automatic fetch)
+            views.setViewVisibility(R.id.widget_loading, View.GONE)
+            views.setViewVisibility(R.id.widget_meal_list, View.GONE)
+            views.setViewVisibility(R.id.widget_meal_empty, View.VISIBLE)
+            views.setTextViewText(R.id.widget_meal_empty, "급식 정보 없음\n(터치하여 새로고침)")
+            appWidgetManager.updateAppWidget(appWidgetId, views)
+        }
     }
 
-    private fun fetchMealDataNatively(context: Context) {
-        val apiClient = MealApiClient(context)
-        apiClient.fetchMeal { mealResult ->
+    private fun fetchMealDataNatively(context: Context, forceRefresh: Boolean = false) {
+        if (isFetching) return
+        isFetching = true
+
+        val repository = MealRepository(context)
+        repository.fetchMeal(forceRefresh) { mealResult ->
             Handler(Looper.getMainLooper()).post {
+                isFetching = false
                 updateWidgetWithMealResult(context, mealResult)
             }
         }
@@ -281,20 +328,4 @@ class MealWidgetProvider : AppWidgetProvider() {
         val content: Float,
         val date: Float
     )
-
-    companion object {
-        const val ACTION_WIDGET_UPDATE = "kr.ny64.slunchv2.WIDGET_UPDATE"
-        const val ACTION_MEAL_DATA_UPDATE = "kr.ny64.slunchv2.MEAL_DATA_UPDATE"
-        const val EXTRA_MEAL_DATA = "meal_data"
-        const val EXTRA_DISPLAY_DATE = "display_date"
-        const val EXTRA_DAYS_OFFSET = "days_offset"
-
-        fun updateWidgets(context: Context, mealResult: MealResult) {
-            val intent = Intent(ACTION_MEAL_DATA_UPDATE)
-            intent.putExtra(EXTRA_MEAL_DATA, mealResult.mealData)
-            intent.putExtra(EXTRA_DISPLAY_DATE, mealResult.displayDate)
-            intent.putExtra(EXTRA_DAYS_OFFSET, mealResult.daysOffset)
-            context.sendBroadcast(intent)
-        }
-    }
 }

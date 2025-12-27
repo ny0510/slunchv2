@@ -1,4 +1,8 @@
-package kr.ny64.slunchv2.widget
+package kr.ny64.slunchv2.widget.meal
+
+import kr.ny64.slunchv2.widget.common.KEY_MEAL_CONTENT_SIZE_PREFIX
+import kr.ny64.slunchv2.widget.common.KEY_MEAL_DATA_PREFIX
+import kr.ny64.slunchv2.widget.common.MEAL_WIDGET_PREFS
 
 import android.appwidget.AppWidgetManager
 import android.content.Context

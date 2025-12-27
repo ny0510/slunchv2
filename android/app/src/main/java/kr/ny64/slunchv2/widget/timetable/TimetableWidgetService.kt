@@ -1,8 +1,14 @@
-package kr.ny64.slunchv2.widget
+package kr.ny64.slunchv2.widget.timetable
+
+import kr.ny64.slunchv2.widget.common.KEY_TIMETABLE_CONTENT_SIZE_PREFIX
+import kr.ny64.slunchv2.widget.common.KEY_TIMETABLE_DATA_PREFIX
+import kr.ny64.slunchv2.widget.common.TIMETABLE_WIDGET_PREFS
 
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
+import android.graphics.Color
 import android.text.Html
 import android.util.TypedValue
 import android.widget.RemoteViews
@@ -76,11 +82,18 @@ class TimetableWidgetService : RemoteViewsService() {
             } else {
                 subject
             }
+            val finalSubject = displaySubject.replace("*", "")
             val periodNum = position + 1
-            val html = "<b>${periodNum}교시</b> $displaySubject"
+            val html = "<b>${periodNum}교시</b> $finalSubject"
             val styled = Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY)
 
+            val isDark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+            val changedColor = Color.parseColor(if (isDark) "#BAA6FF" else "#B2A1FF")
+            val normalColor = Color.parseColor(if (isDark) "#FFFFFF" else "#000000")
+            val textColor = if (displaySubject.contains("*")) changedColor else normalColor
+
             view.setTextViewText(R.id.widget_timetable_item_text, styled)
+            view.setTextColor(R.id.widget_timetable_item_text, textColor)
             view.setTextViewTextSize(
                 R.id.widget_timetable_item_text,
                 TypedValue.COMPLEX_UNIT_SP,
@@ -104,8 +117,8 @@ class TimetableWidgetService : RemoteViewsService() {
         override fun hasStableIds(): Boolean = true
 
         companion object {
-            private const val DEFAULT_CONTENT_SIZE_SP = 13f
-            private const val MIN_CONTENT_SIZE_SP = 10f
+            private const val DEFAULT_CONTENT_SIZE_SP = 14f
+            private const val MIN_CONTENT_SIZE_SP = 12f
         }
     }
 }

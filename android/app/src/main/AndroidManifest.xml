@@ -48,7 +48,7 @@
         </activity>
 
         <!-- 급식 위젯 -->
-        <receiver android:name=".widget.MealWidgetProvider"
+        <receiver android:name=".widget.meal.MealWidgetProvider"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -61,7 +61,7 @@
         </receiver>
 
         <!-- 시간표 위젯 -->
-        <receiver android:name=".widget.TimetableWidgetProvider"
+        <receiver android:name=".widget.timetable.TimetableWidgetProvider"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -74,12 +74,12 @@
         </receiver>
 
         <service
-            android:name=".widget.MealWidgetService"
+            android:name=".widget.meal.MealWidgetService"
             android:exported="false"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
 
         <service
-            android:name=".widget.TimetableWidgetService"
+            android:name=".widget.timetable.TimetableWidgetService"
             android:exported="false"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
 

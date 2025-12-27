@@ -1,4 +1,8 @@
-package kr.ny64.slunchv2.widget
+package kr.ny64.slunchv2.widget.bridge
+
+import kr.ny64.slunchv2.widget.meal.MealWidgetProvider
+import kr.ny64.slunchv2.widget.meal.MealResult
+import kr.ny64.slunchv2.widget.timetable.TimetableWidgetProvider
 
 import android.content.Context
 import android.content.Intent

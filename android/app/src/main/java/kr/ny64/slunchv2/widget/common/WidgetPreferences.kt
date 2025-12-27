@@ -1,4 +1,4 @@
-package kr.ny64.slunchv2.widget
+package kr.ny64.slunchv2.widget.common
 
 const val MEAL_WIDGET_PREFS = "MealWidgetPrefs"
 const val KEY_MEAL_DATA_PREFIX = "meal_data_"
