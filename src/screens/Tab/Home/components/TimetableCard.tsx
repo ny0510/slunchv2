@@ -144,6 +144,7 @@ const TimetableCard = forwardRef<TimetableCardRef, TimetableCardProps>(({ onLong
             renderItem={({ item, index }) => (
               <TimetableRow item={item} index={index} todayIndex={todayIndex} onSubjectLongPress={handleSubjectLongPress} />
             )}
+            keyExtractor={(item, index) => `timetable-row-${index}`}
             scrollEnabled={false}
           />
         )}

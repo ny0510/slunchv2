@@ -30,6 +30,20 @@ export const getTimetable = async (schoolCode: number | string, grade: number | 
   return response.data;
 };
 
+export const getGradeTimetable = async (schoolCode: number | string, grade: number | string, nextweek: boolean = false): Promise<Timetable[][][]> => {
+  const cacheKey = `grade_timetable_${schoolCode}_${grade}_${nextweek}`;
+  const cachedData = await getCachedData(cacheKey);
+  if (cachedData) {
+    return cachedData;
+  }
+
+  const response = await httpClient.get('/comcigan/timetable', {
+    params: {schoolCode, grade, nextweek},
+  });
+  await setCachedData(cacheKey, response.data);
+  return response.data;
+};
+
 export const neisSchoolSearch = async (schoolName: string): Promise<School[]> => {
   const response = await httpClient.get('/neis/search', {
     params: {schoolName},

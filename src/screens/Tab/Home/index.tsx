@@ -1,7 +1,7 @@
 import { ANDROID_HOME_BANNER_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID } from '@env';
 import dayjs from 'dayjs';
 import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react';
-import { AppState, BackHandler, Keyboard, Platform, RefreshControl, Text, ToastAndroid, TouchableOpacity, View } from 'react-native';
+import { AppState, BackHandler, Button, Keyboard, Platform, RefreshControl, Text, ToastAndroid, TouchableOpacity, View } from 'react-native';
 import DraggableFlatList, { OpacityDecorator, RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { trigger } from 'react-native-haptic-feedback';
 import Midnight from 'react-native-midnight';
@@ -27,11 +27,13 @@ import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
 import 'dayjs/locale/ko';
+import GradeTimetableCard, { GradeTimetableCardRef } from './components/GradeTimetableCard';
 
 interface CardData {
-  id: 'schedule' | 'meal' | 'timetable';
+  id: 'schedule' | 'meal' | 'timetable' | 'grade-timetable';
   title: string;
   iconName: string;
+  visible: boolean;
 }
 
 const Home = ({ setScrollRef }: { setScrollRef?: (ref: any) => void }) => {
@@ -41,9 +43,10 @@ const Home = ({ setScrollRef }: { setScrollRef?: (ref: any) => void }) => {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [cardOrder, setCardOrder] = useState<CardData[]>([
-    { id: 'schedule', title: '학사일정', iconName: 'calendar' },
-    { id: 'meal', title: '급식', iconName: 'utensils' },
-    { id: 'timetable', title: '시간표', iconName: 'table' },
+    { id: 'schedule', title: '학사일정', iconName: 'calendar', visible: true },
+    { id: 'meal', title: '급식', iconName: 'utensils', visible: true },
+    { id: 'timetable', title: '시간표', iconName: 'table', visible: true },
+    { id: 'grade-timetable', title: '학년 시간표', iconName: 'table-cells', visible: false },
   ]);
 
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -52,6 +55,7 @@ const Home = ({ setScrollRef }: { setScrollRef?: (ref: any) => void }) => {
   const scheduleCardRef = useRef<ScheduleCardRef>(null);
   const mealCardRef = useRef<MealCardRef>(null);
   const timetableCardRef = useRef<TimetableCardRef>(null);
+  const gradeTimetableCardRef = useRef<GradeTimetableCardRef>(null);
 
   const { theme, typography } = useTheme();
   const { schoolInfo, classInfo, classChangedTrigger, setClassChangedTrigger } = useUser();
@@ -66,7 +70,12 @@ const Home = ({ setScrollRef }: { setScrollRef?: (ref: any) => void }) => {
       if (savedOrder) {
         try {
           const parsedOrder = JSON.parse(savedOrder);
-          setCardOrder(parsedOrder);
+          // Ensure all cards have visible property, default to true if missing
+          const updatedOrder = parsedOrder.map((card: any) => ({
+            ...card,
+            visible: card.visible !== undefined ? card.visible : true,
+          }));
+          setCardOrder(updatedOrder);
         } catch (error) {
           console.error('Failed to parse saved card order:', error);
         }
@@ -246,6 +255,10 @@ const Home = ({ setScrollRef }: { setScrollRef?: (ref: any) => void }) => {
   // Render draggable card item
   const renderDraggableItem = useCallback(
     ({ item, drag, isActive }: RenderItemParams<CardData>) => {
+      const toggleVisibility = () => {
+        setCardOrder(prev => prev.map(card => card.id === item.id ? { ...card, visible: !card.visible } : card));
+      };
+
       return (
         <ScaleDecorator activeScale={0.95}>
           <OpacityDecorator activeOpacity={isActive ? 0.95 : 1}>
@@ -256,6 +269,16 @@ const Home = ({ setScrollRef }: { setScrollRef?: (ref: any) => void }) => {
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                     <FontAwesome6 name="grip-vertical" iconStyle="solid" size={14} color={theme.secondaryText} />
                   </View>
+                }
+                rightComponent={
+                  <TouchableOpacity onPress={toggleVisibility} style={{ padding: 4 }}>
+                    <FontAwesome6
+                      name={item.visible ? "eye" : "eye-slash"}
+                      iconStyle="solid"
+                      size={16}
+                      color={item.visible ? theme.primaryText : theme.secondaryText}
+                    />
+                  </TouchableOpacity>
                 }>
                 <View style={{ height: 40, justifyContent: 'center', alignItems: 'center' }}>
                   <Text style={[typography.caption, { color: theme.secondaryText }]}>길게 눌러 순서 변경</Text>
@@ -398,42 +421,48 @@ const Home = ({ setScrollRef }: { setScrollRef?: (ref: any) => void }) => {
             <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
 
             {/* Render cards based on saved order */}
-            {cardOrder.map(card => {
-              if (card.id === 'timetable') {
+            {cardOrder.filter(card => card.visible).map(card => {
+              switch (card.id) {
+              case 'timetable':
                 return (
-                  <TimetableCard
-                    key={card.id}
-                    ref={timetableCardRef}
-                    onLongPress={handleCardLongPress}
-                    onSubjectLongPress={handleSubjectLongPress}
-                  />
+                <TimetableCard
+                  key={card.id}
+                  ref={timetableCardRef}
+                  onLongPress={handleCardLongPress}
+                  onSubjectLongPress={handleSubjectLongPress}
+                />
                 );
-              }
-
-              if (card.id === 'schedule') {
+              case 'grade-timetable':
                 return (
-                  <ScheduleCard
-                    key={card.id}
-                    ref={scheduleCardRef}
-                    onPress={() => navigation.navigate('Schedules')}
-                    onLongPress={handleCardLongPress}
-                  />
+                <GradeTimetableCard
+                  key="grade-timetable-card"
+                  ref={gradeTimetableCardRef}
+                  onLongPress={handleCardLongPress}
+                />
                 );
-              }
-
-              if (card.id === 'meal') {
+              case 'schedule':
                 return (
-                  <MealCard
-                    key={card.id}
-                    ref={mealCardRef}
-                    onPress={() => navigation.navigate('Meal')}
-                    onLongPress={handleCardLongPress}
-                  />
+                <ScheduleCard
+                  key={card.id}
+                  ref={scheduleCardRef}
+                  onPress={() => navigation.navigate('Schedules')}
+                  onLongPress={handleCardLongPress}
+                />
                 );
+              case 'meal':
+                return (
+                <MealCard
+                  key={card.id}
+                  ref={mealCardRef}
+                  onPress={() => navigation.navigate('Meal')}
+                  onLongPress={handleCardLongPress}
+                />
+                );
+              default:
+                return null;
               }
-
-              return null;
             })}
+            <Text style={[typography.caption, { color: theme.secondaryText, textAlign: 'center', marginTop: 12 }]}>카드를 길게 눌러 순서를 변경하거나 숨길 수 있어요.</Text>
           </View>
         </Container>
       )}
