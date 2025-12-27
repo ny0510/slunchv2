@@ -53,6 +53,9 @@ react {
 
     /* Autolinking */
     autolinkLibrariesWithApp()
+
+    /* Hermes */
+    hermesEnabled = true
 }
 
 /**
@@ -132,6 +135,9 @@ dependencies {
     // HTTP client for widget
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.json:json:20231013")
+
+    // WorkManager for background tasks
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
