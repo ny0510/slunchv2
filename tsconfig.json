@@ -1,10 +1,17 @@
 {
   "extends": "@react-native/typescript-config/tsconfig.json",
   "compilerOptions": {
+    "jsx": "react-native",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     },
-    "types": ["./env.d.ts"]
+    "types": [
+      "./env.d.ts"
+    ],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   }
 }
