@@ -1,18 +1,19 @@
-import {ANDROID_HOME_BANNER_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID} from '@env';
+import { ANDROID_HOME_BANNER_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID } from '@env';
 import dayjs from 'dayjs';
-import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
-import {ActivityIndicator, FlatList, Platform, RefreshControl, Text, View} from 'react-native';
+import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, FlatList, Platform, RefreshControl, Text, TouchableOpacity, View } from 'react-native';
 
-import {getSchedules} from '@/api';
+import { getSchedules } from '@/api';
 import BannerAdCard from '@/components/BannerAdCard';
 import Loading from '@/components/Loading';
-import {useTheme} from '@/contexts/ThemeContext';
-import {clearCache} from '@/lib/cache';
-import {showToast} from '@/lib/toast';
-import {Schedule as ScheduleType} from '@/types/api';
+import { useTheme } from '@/contexts/ThemeContext';
+import { clearCache } from '@/lib/cache';
+import { showToast } from '@/lib/toast';
+import { Schedule as ScheduleType } from '@/types/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
+import RNCalendarEvents from 'react-native-calendar-events';
 
 const Schedules = () => {
   const flatListRef = useRef<FlatList | null>(null);
@@ -25,7 +26,7 @@ const Schedules = () => {
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [currentMonth, setCurrentMonth] = useState<dayjs.Dayjs>(dayjs());
 
-  const {theme, typography} = useTheme();
+  const { theme, typography } = useTheme();
 
   // 광고 빈도 설정 (N개마다 1개 광고 표시)
   const AD_FREQUENCY = 3;
@@ -37,7 +38,7 @@ const Schedules = () => {
       const targetMonth = month || dayjs();
 
       const scheduleResponse = await getSchedules(school.neisCode, school.neisRegionCode, targetMonth.format('YYYY'), targetMonth.format('MM'));
-      
+
       let newSchedulesCount = 0;
       if (append) {
         setSchedules(prev => {
@@ -78,7 +79,7 @@ const Schedules = () => {
 
     const nextMonth = currentMonth.add(1, 'month');
     const limitDate = dayjs().add(1, 'year').month(1).endOf('month'); // 다음 년도 2월 말
-    
+
     // 다음 년도 2월까지만 불러오기
     if (nextMonth.isAfter(limitDate, 'month')) {
       setHasMore(false);
@@ -94,7 +95,7 @@ const Schedules = () => {
   }, [loadingMore, hasMore, currentMonth, fetchData]);
 
   useEffect(() => {
-    analytics().logScreenView({screen_name: '학사일정 상세 페이지', screen_class: 'Schedules'});
+    analytics().logScreenView({ screen_name: '학사일정 상세 페이지', screen_class: 'Schedules' });
   }, []);
 
   useEffect(() => {
@@ -149,7 +150,7 @@ const Schedules = () => {
   };
 
   const getScheduleColor = (type: string) => {
-    const colors: {[key: string]: string} = {
+    const colors: { [key: string]: string } = {
       exam: '#FF6B6B', // 빨간색
       vacation: theme.highlightLight, // 초록색 계열
       ceremony: theme.highlightSecondary, // 보라색 계열
@@ -161,7 +162,68 @@ const Schedules = () => {
 
   const today = dayjs();
 
-  const renderScheduleItem = useCallback(({item, index}: {item: ScheduleType; index: number}) => {
+  const addToCalendar = useCallback(async (item: ScheduleType) => {
+    try {
+      const authStatus = await RNCalendarEvents.requestPermissions();
+      if (authStatus !== 'authorized') {
+        showToast('캘린더 권한이 필요해요.');
+        return;
+      }
+
+      const startDate = dayjs(item.date.start).startOf('day').toISOString();
+      const endDate = dayjs(item.date.end || item.date.start).endOf('day').toISOString();
+
+      await RNCalendarEvents.saveEvent(item.schedule, {
+        startDate,
+        endDate,
+        allDay: true,
+        notes: '선린인터넷고등학교 학사일정',
+      });
+
+      showToast('캘린더에 일정이 추가되었어요.');
+    } catch (e) {
+      console.error('Error adding to calendar:', e);
+      showToast('캘린더 추가 중 오류가 발생했어요.');
+    }
+  }, []);
+
+  const addAllToCalendar = useCallback(async () => {
+    if (schedules.length === 0) {
+      showToast('추가할 학사일정이 없어요.');
+      return;
+    }
+
+    try {
+      const authStatus = await RNCalendarEvents.requestPermissions();
+      if (authStatus !== 'authorized') {
+        showToast('캘린더 권한이 필요해요.');
+        return;
+      }
+
+      setLoadingMore(true); // 로딩 표시 활용
+
+      for (const item of schedules) {
+        const startDate = dayjs(item.date.start).startOf('day').toISOString();
+        const endDate = dayjs(item.date.end || item.date.start).endOf('day').toISOString();
+
+        await RNCalendarEvents.saveEvent(item.schedule, {
+          startDate,
+          endDate,
+          allDay: true,
+          notes: '선린인터넷고등학교 학사일정',
+        });
+      }
+
+      showToast(`${schedules.length}개의 일정이 캘린더에 추가되었어요.`);
+    } catch (e) {
+      console.error('Error adding all to calendar:', e);
+      showToast('캘린더 추가 중 오류가 발생했어요.');
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [schedules]);
+
+  const renderScheduleItem = useCallback(({ item, index }: { item: ScheduleType; index: number }) => {
     const isToday = today.isSame(item.date.start, 'day');
 
     // 광고 삽입 로직
@@ -170,43 +232,69 @@ const Schedules = () => {
     return (
       <Fragment key={index}>
         {shouldShowAd && <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />}
-        <TimelineItem item={item} isLast={index === schedules.length - 1} isToday={isToday} getScheduleType={getScheduleType} getScheduleColor={getScheduleColor} />
+        <TimelineItem
+          item={item}
+          isLast={index === schedules.length - 1}
+          isToday={isToday}
+          getScheduleType={getScheduleType}
+          getScheduleColor={getScheduleColor}
+          onAddToCalendar={() => addToCalendar(item)}
+        />
       </Fragment>
     );
-  }, [today, schedules.length, AD_FREQUENCY, MAX_ADS, getScheduleType, getScheduleColor]);
+  }, [today, schedules.length, AD_FREQUENCY, MAX_ADS, getScheduleType, getScheduleColor, addToCalendar]);
 
   const renderFooter = useCallback(() => {
     if (!loadingMore) return null;
     return (
-      <View style={{paddingVertical: 20, alignItems: 'center'}}>
+      <View style={{ paddingVertical: 20, alignItems: 'center' }}>
         <ActivityIndicator size="small" color={theme.highlight} />
-        <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 8}]}>더 불러오는 중...</Text>
+        <Text style={[typography.caption, { color: theme.secondaryText, marginTop: 8 }]}>더 불러오는 중...</Text>
       </View>
     );
   }, [loadingMore, theme, typography]);
 
   const renderEmpty = useCallback(() => (
-    <View style={{alignItems: 'center', justifyContent: 'center', width: '100%', paddingVertical: 40}}>
+    <View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', paddingVertical: 40 }}>
       <FontAwesome6 name="calendar-xmark" size={48} color={theme.secondaryText} iconStyle="solid" />
-      <Text style={[typography.body, {color: theme.secondaryText, marginTop: 12}]}>학사일정 데이터가 없어요.</Text>
-      <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 4}]}>학교에서 제공하지 않는 경우도 있어요.</Text>
+      <Text style={[typography.body, { color: theme.secondaryText, marginTop: 12 }]}>학사일정 데이터가 없어요.</Text>
+      <Text style={[typography.caption, { color: theme.secondaryText, marginTop: 4 }]}>학교에서 제공하지 않는 경우도 있어요.</Text>
     </View>
   ), [theme, typography]);
 
   const renderHeader = useCallback(() => (
-    <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
-  ), []);
+    <View style={{ gap: 12 }}>
+      <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
+      <TouchableOpacity
+        onPress={addAllToCalendar}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+          backgroundColor: theme.card,
+          paddingVertical: 12,
+          borderRadius: 12,
+          borderWidth: 1,
+          borderColor: theme.border
+        }}
+      >
+        <FontAwesome6 name="calendar-plus" size={16} color={theme.highlight} iconStyle="solid" />
+        <Text style={[typography.body, { color: theme.primaryText, fontWeight: '600' }]}>모든 일정 캘린더에 추가</Text>
+      </TouchableOpacity>
+    </View>
+  ), [theme, typography, addAllToCalendar]);
 
   return loading ? (
     <Loading fullScreen />
   ) : (
-    <View style={{flex: 1, backgroundColor: theme.background}}>
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
       <FlatList
         ref={flatListRef}
         data={schedules}
         renderItem={renderScheduleItem}
         keyExtractor={(item, index) => `${item.date.start}-${index}`}
-        contentContainerStyle={{paddingHorizontal: 16, paddingVertical: 16, gap: 12}}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16, gap: 12 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.secondaryText} />}
         onEndReached={() => loadMore()}
         onEndReachedThreshold={0.5}
@@ -219,17 +307,17 @@ const Schedules = () => {
   );
 };
 
-const TimelineItem = ({item, isLast, isToday, getScheduleType, getScheduleColor}: {item: ScheduleType; isLast: boolean; isToday: boolean; getScheduleType: (schedule: string) => string; getScheduleColor: (type: string) => string}) => {
+const TimelineItem = ({ item, isLast, isToday, getScheduleType, getScheduleColor, onAddToCalendar }: { item: ScheduleType; isLast: boolean; isToday: boolean; getScheduleType: (schedule: string) => string; getScheduleColor: (type: string) => string; onAddToCalendar: () => void }) => {
   const startDate = dayjs(item.date.start);
   const endDate = dayjs(item.date.end || item.date.start);
   const isSameDay = startDate.isSame(endDate, 'day');
   const duration = endDate.diff(startDate, 'day') + 1;
 
   const schedules = item.schedule.split(', ');
-  const {theme, typography} = useTheme();
+  const { theme, typography } = useTheme();
 
   return (
-    <View style={{marginBottom: isLast ? 0 : 4}}>
+    <View style={{ marginBottom: isLast ? 0 : 4 }}>
       <View
         style={{
           backgroundColor: isToday ? `${theme.highlight}10` : theme.card,
@@ -238,28 +326,38 @@ const TimelineItem = ({item, isLast, isToday, getScheduleType, getScheduleColor}
           borderWidth: isToday ? 1 : 0,
           borderColor: isToday ? `${theme.highlight}80` : 'transparent',
         }}>
-        {!isSameDay && (
-          <View style={{flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8}}>
-            <FontAwesome6 name="calendar-days" size={12} color={theme.secondaryText} iconStyle="solid" />
-            <Text style={[typography.caption, {color: theme.secondaryText}]}>
-              {startDate.format('M월 D일')} ~ {endDate.format('M월 D일')} ({duration}일간)
-            </Text>
+        {isSameDay && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <FontAwesome6 name="calendar-day" size={12} color={theme.secondaryText} iconStyle="solid" />
+              <Text style={[typography.caption, { color: theme.secondaryText }]}>{startDate.format('M월 D일')}</Text>
+            </View>
+            <TouchableOpacity onPress={onAddToCalendar} style={{ padding: 4 }}>
+              <FontAwesome6 name="calendar-plus" size={16} color={theme.highlight} iconStyle="solid" />
+            </TouchableOpacity>
           </View>
         )}
-        {isSameDay && (
-          <View style={{flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8}}>
-            <FontAwesome6 name="calendar-day" size={12} color={theme.secondaryText} iconStyle="solid" />
-            <Text style={[typography.caption, {color: theme.secondaryText}]}>{startDate.format('M월 D일')}</Text>
+        {!isSameDay && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <FontAwesome6 name="calendar-days" size={12} color={theme.secondaryText} iconStyle="solid" />
+              <Text style={[typography.caption, { color: theme.secondaryText }]}>
+                {startDate.format('M월 D일')} ~ {endDate.format('M월 D일')} ({duration}일간)
+              </Text>
+            </View>
+            <TouchableOpacity onPress={onAddToCalendar} style={{ padding: 4 }}>
+              <FontAwesome6 name="calendar-plus" size={16} color={theme.highlight} iconStyle="solid" />
+            </TouchableOpacity>
           </View>
         )}
 
-        <View style={{gap: 6}}>
+        <View style={{ gap: 6 }}>
           {schedules.map((scheduleItem, idx) => {
             const type = getScheduleType(scheduleItem);
             const color = getScheduleColor(type);
 
             return (
-              <View key={idx} style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+              <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <View
                   style={{
                     width: 4,
