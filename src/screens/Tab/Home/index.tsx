@@ -29,12 +29,7 @@ import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation
 import 'dayjs/locale/ko';
 import GradeTimetableCard, { GradeTimetableCardRef } from './components/GradeTimetableCard';
 
-interface CardData {
-  id: 'schedule' | 'meal' | 'timetable' | 'grade-timetable';
-  title: string;
-  iconName: string;
-  visible: boolean;
-}
+import { CardData } from '@/types/user';
 
 const Home = ({ setScrollRef }: { setScrollRef?: (ref: any) => void }) => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -42,12 +37,7 @@ const Home = ({ setScrollRef }: { setScrollRef?: (ref: any) => void }) => {
   const [selectedSubjectIndices, setSelectedSubjectIndices] = useState<{ row: number; col: number } | null>(null);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [cardOrder, setCardOrder] = useState<CardData[]>([
-    { id: 'schedule', title: '학사일정', iconName: 'calendar', visible: true },
-    { id: 'meal', title: '급식', iconName: 'utensils', visible: true },
-    { id: 'timetable', title: '시간표', iconName: 'table', visible: true },
-    { id: 'grade-timetable', title: '학년 시간표', iconName: 'table-cells', visible: false },
-  ]);
+  const { schoolInfo, classInfo, classChangedTrigger, setClassChangedTrigger, cardOrder, setCardOrder } = useUser();
 
   const bottomSheetRef = useRef<BottomSheet>(null);
   const backPressedOnceRef = useRef(false);
@@ -58,42 +48,28 @@ const Home = ({ setScrollRef }: { setScrollRef?: (ref: any) => void }) => {
   const gradeTimetableCardRef = useRef<GradeTimetableCardRef>(null);
 
   const { theme, typography } = useTheme();
-  const { schoolInfo, classInfo, classChangedTrigger, setClassChangedTrigger } = useUser();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   // Use the scroll-to-top hook
   useScrollToTop(scrollViewRef, setScrollRef);
 
-  // Load saved card order
-  useEffect(() => {
-    AsyncStorage.getItem('homeCardOrder').then(savedOrder => {
-      if (savedOrder) {
-        try {
-          const parsedOrder = JSON.parse(savedOrder);
-          // Ensure all cards have visible property, default to true if missing
-          const updatedOrder = parsedOrder.map((card: any) => ({
-            ...card,
-            visible: card.visible !== undefined ? card.visible : true,
-          }));
-          setCardOrder(updatedOrder);
-        } catch (error) {
-          console.error('Failed to parse saved card order:', error);
-        }
-      }
-    });
-  }, []);
-
   // Save card order when it changes
   const handleCardOrderChange = useCallback((newOrder: CardData[]) => {
     setCardOrder(newOrder);
-    AsyncStorage.setItem('homeCardOrder', JSON.stringify(newOrder));
-  }, []);
+  }, [setCardOrder]);
 
   // Toggle edit mode
   const toggleEditMode = useCallback(() => {
+    if (isEditMode) {
+      const visibleCards = cardOrder.filter(card => card.visible);
+      if (visibleCards.length === 0) {
+        showToast('최소 한 개의 카드는 표시되어야 해요.');
+        return;
+      }
+    }
     trigger('impactLight');
     setIsEditMode(prev => !prev);
-  }, []);
+  }, [isEditMode, cardOrder]);
 
   // Handle card long press
   const handleCardLongPress = useCallback(() => {
@@ -423,43 +399,43 @@ const Home = ({ setScrollRef }: { setScrollRef?: (ref: any) => void }) => {
             {/* Render cards based on saved order */}
             {cardOrder.filter(card => card.visible).map(card => {
               switch (card.id) {
-              case 'timetable':
-                return (
-                <TimetableCard
-                  key={card.id}
-                  ref={timetableCardRef}
-                  onLongPress={handleCardLongPress}
-                  onSubjectLongPress={handleSubjectLongPress}
-                />
-                );
-              case 'grade-timetable':
-                return (
-                <GradeTimetableCard
-                  key="grade-timetable-card"
-                  ref={gradeTimetableCardRef}
-                  onLongPress={handleCardLongPress}
-                />
-                );
-              case 'schedule':
-                return (
-                <ScheduleCard
-                  key={card.id}
-                  ref={scheduleCardRef}
-                  onPress={() => navigation.navigate('Schedules')}
-                  onLongPress={handleCardLongPress}
-                />
-                );
-              case 'meal':
-                return (
-                <MealCard
-                  key={card.id}
-                  ref={mealCardRef}
-                  onPress={() => navigation.navigate('Meal')}
-                  onLongPress={handleCardLongPress}
-                />
-                );
-              default:
-                return null;
+                case 'timetable':
+                  return (
+                    <TimetableCard
+                      key={card.id}
+                      ref={timetableCardRef}
+                      onLongPress={handleCardLongPress}
+                      onSubjectLongPress={handleSubjectLongPress}
+                    />
+                  );
+                case 'grade-timetable':
+                  return (
+                    <GradeTimetableCard
+                      key="grade-timetable-card"
+                      ref={gradeTimetableCardRef}
+                      onLongPress={handleCardLongPress}
+                    />
+                  );
+                case 'schedule':
+                  return (
+                    <ScheduleCard
+                      key={card.id}
+                      ref={scheduleCardRef}
+                      onPress={() => navigation.navigate('Schedules')}
+                      onLongPress={handleCardLongPress}
+                    />
+                  );
+                case 'meal':
+                  return (
+                    <MealCard
+                      key={card.id}
+                      ref={mealCardRef}
+                      onPress={() => navigation.navigate('Meal')}
+                      onLongPress={handleCardLongPress}
+                    />
+                  );
+                default:
+                  return null;
               }
             })}
             <Text style={[typography.caption, { color: theme.secondaryText, textAlign: 'center', marginTop: 12 }]}>카드를 길게 눌러 순서를 변경하거나 숨길 수 있어요.</Text>
