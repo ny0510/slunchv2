@@ -73,11 +73,49 @@ struct TimetableProvider: AppIntentTimelineProvider {
     let appGroupId = "group.kr.ny64.slunchv2"
     
     func placeholder(in context: Context) -> TimetableEntry {
-        TimetableEntry(date: Date(), timetableResult: nil, weeklyResult: nil, message: "시간표를 불러오는 중...")
+        TimetableEntry(date: Date(), timetableResult: TimetableResult(
+            subjects: [
+                SubjectItem(name: "국어", changed: false),
+                SubjectItem(name: "수학", changed: true),
+                SubjectItem(name: "영어", changed: false),
+                SubjectItem(name: "과학", changed: false),
+                SubjectItem(name: "사회", changed: false),
+                SubjectItem(name: "체육", changed: false),
+                SubjectItem(name: "음악", changed: false)
+            ],
+            displayDate: "12/28",
+            daysOffset: 0
+        ), weeklyResult: nil, message: nil)
     }
 
     func snapshot(for configuration: RefreshTimetableIntent, in context: Context) async -> TimetableEntry {
-        return TimetableEntry(date: Date(), timetableResult: nil, weeklyResult: nil, message: "시간표를 불러오는 중...")
+        if context.family == .systemLarge {
+            return TimetableEntry(date: Date(), timetableResult: nil, weeklyResult: WeeklyTimetableResult(
+                weeklySubjects: [
+                    [SubjectItem(name: "국어", changed: false), SubjectItem(name: "수학", changed: false), SubjectItem(name: "영어", changed: false), SubjectItem(name: "과학", changed: false), SubjectItem(name: "사회", changed: false), SubjectItem(name: "체육", changed: false), SubjectItem(name: "음악", changed: false)],
+                    [SubjectItem(name: "수학", changed: false), SubjectItem(name: "영어", changed: false), SubjectItem(name: "과학", changed: false), SubjectItem(name: "사회", changed: false), SubjectItem(name: "체육", changed: false), SubjectItem(name: "음악", changed: false), SubjectItem(name: "미술", changed: false)],
+                    [SubjectItem(name: "영어", changed: false), SubjectItem(name: "과학", changed: false), SubjectItem(name: "사회", changed: false), SubjectItem(name: "체육", changed: false), SubjectItem(name: "음악", changed: false), SubjectItem(name: "미술", changed: false), SubjectItem(name: "국어", changed: false)],
+                    [SubjectItem(name: "과학", changed: false), SubjectItem(name: "사회", changed: false), SubjectItem(name: "체육", changed: false), SubjectItem(name: "음악", changed: false), SubjectItem(name: "미술", changed: false), SubjectItem(name: "국어", changed: false), SubjectItem(name: "수학", changed: false)],
+                    [SubjectItem(name: "사회", changed: false), SubjectItem(name: "체육", changed: false), SubjectItem(name: "음악", changed: false), SubjectItem(name: "미술", changed: false), SubjectItem(name: "국어", changed: false), SubjectItem(name: "수학", changed: false), SubjectItem(name: "영어", changed: false)]
+                ],
+                todayIndex: 0,
+                isNextWeek: false
+            ), message: nil)
+        } else {
+            return TimetableEntry(date: Date(), timetableResult: TimetableResult(
+                subjects: [
+                    SubjectItem(name: "국어", changed: false),
+                    SubjectItem(name: "수학", changed: true),
+                    SubjectItem(name: "영어", changed: false),
+                    SubjectItem(name: "과학", changed: false),
+                    SubjectItem(name: "사회", changed: false),
+                    SubjectItem(name: "체육", changed: false),
+                    SubjectItem(name: "음악", changed: false)
+                ],
+                displayDate: "12/28",
+                daysOffset: 0
+            ), weeklyResult: nil, message: nil)
+        }
     }
 
     func timeline(for configuration: RefreshTimetableIntent, in context: Context) async -> Timeline<TimetableEntry> {
@@ -501,4 +539,59 @@ struct TimetableWidget: Widget {
         .description("오늘의 시간표를 확인하세요.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
+}
+
+// MARK: - Previews
+
+#Preview(as: .systemSmall) {
+    TimetableWidget()
+} timeline: {
+    TimetableEntry(date: .now, timetableResult: TimetableResult(
+        subjects: [
+            SubjectItem(name: "국어", changed: false),
+            SubjectItem(name: "수학", changed: true),
+            SubjectItem(name: "영어", changed: false),
+            SubjectItem(name: "과학", changed: false),
+            SubjectItem(name: "사회", changed: false),
+            SubjectItem(name: "체육", changed: false),
+            SubjectItem(name: "음악", changed: false)
+        ],
+        displayDate: "12/28",
+        daysOffset: 0
+    ), weeklyResult: nil, message: nil)
+}
+
+#Preview(as: .systemMedium) {
+    TimetableWidget()
+} timeline: {
+    TimetableEntry(date: .now, timetableResult: TimetableResult(
+        subjects: [
+            SubjectItem(name: "국어", changed: false),
+            SubjectItem(name: "수학", changed: true),
+            SubjectItem(name: "영어", changed: false),
+            SubjectItem(name: "과학", changed: false),
+            SubjectItem(name: "사회", changed: false),
+            SubjectItem(name: "체육", changed: false),
+            SubjectItem(name: "음악", changed: false),
+            SubjectItem(name: "미술", changed: false)
+        ],
+        displayDate: "12/28",
+        daysOffset: 0
+    ), weeklyResult: nil, message: nil)
+}
+
+#Preview(as: .systemLarge) {
+    TimetableWidget()
+} timeline: {
+    TimetableEntry(date: .now, timetableResult: nil, weeklyResult: WeeklyTimetableResult(
+        weeklySubjects: [
+            [SubjectItem(name: "국어", changed: false), SubjectItem(name: "수학", changed: false), SubjectItem(name: "영어", changed: false), SubjectItem(name: "과학", changed: false), SubjectItem(name: "사회", changed: false), SubjectItem(name: "체육", changed: false), SubjectItem(name: "음악", changed: false)],
+            [SubjectItem(name: "수학", changed: false), SubjectItem(name: "영어", changed: false), SubjectItem(name: "과학", changed: false), SubjectItem(name: "사회", changed: false), SubjectItem(name: "체육", changed: false), SubjectItem(name: "음악", changed: false), SubjectItem(name: "미술", changed: false)],
+            [SubjectItem(name: "영어", changed: false), SubjectItem(name: "과학", changed: false), SubjectItem(name: "사회", changed: false), SubjectItem(name: "체육", changed: false), SubjectItem(name: "음악", changed: false), SubjectItem(name: "미술", changed: false), SubjectItem(name: "국어", changed: false)],
+            [SubjectItem(name: "과학", changed: false), SubjectItem(name: "사회", changed: false), SubjectItem(name: "체육", changed: false), SubjectItem(name: "음악", changed: false), SubjectItem(name: "미술", changed: false), SubjectItem(name: "국어", changed: false), SubjectItem(name: "수학", changed: false)],
+            [SubjectItem(name: "사회", changed: false), SubjectItem(name: "체육", changed: false), SubjectItem(name: "음악", changed: false), SubjectItem(name: "미술", changed: false), SubjectItem(name: "국어", changed: false), SubjectItem(name: "수학", changed: false), SubjectItem(name: "영어", changed: false)]
+        ],
+        todayIndex: 0,
+        isNextWeek: false
+    ), message: nil)
 }

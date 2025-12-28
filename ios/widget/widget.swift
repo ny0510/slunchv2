@@ -13,11 +13,21 @@ struct Provider: TimelineProvider {
     let appGroupId = "group.kr.ny64.slunchv2"
     
     func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), meal: nil, message: "급식 정보를 불러오는 중...")
+        SimpleEntry(date: Date(), meal: Meal(
+            date: "2025-12-28",
+            type: "중식",
+            meal: ["현미찹쌀밥", "두부된장찌개/중", "LA갈비찜/중", "타코야끼", "배추겉절이", "딸기우유"],
+            calorie: 750.5
+        ), message: nil)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        let entry = SimpleEntry(date: Date(), meal: nil, message: "급식 정보를 불러오는 중...")
+        let entry = SimpleEntry(date: Date(), meal: Meal(
+            date: "2025-12-28",
+            type: "중식",
+            meal: ["현미찹쌀밥", "두부된장찌개/중", "LA갈비찜/중", "타코야끼", "배추겉절이", "딸기우유"],
+            calorie: 750.5
+        ), message: nil)
         completion(entry)
     }
 
@@ -131,6 +141,14 @@ struct Meal: Decodable {
             meal = []
         }
     }
+    
+    // Internal initializer for previews
+    init(date: String, type: String, meal: [String], calorie: Double?) {
+        self.date = date
+        self.type = type
+        self.meal = meal
+        self.calorie = calorie
+    }
 }
 
 struct SimpleEntry: TimelineEntry {
@@ -165,24 +183,22 @@ struct widgetEntryView : View {
                 }
                 .padding(.bottom, 2)
                 
-                GeometryReader { geometry in
-                    VStack(alignment: .leading, spacing: 2) {
-                        ForEach(Array(meal.meal.enumerated()), id: \.offset) { index, menu in
-                            // Simple logic to limit items based on size
-                            if family == .systemSmall && index < 5 {
-                                Text(menu)
-                                    .font(.caption)
-                                    .lineLimit(1)
-                            } else if family != .systemSmall {
-                                Text(menu)
-                                    .font(.caption)
-                                    .lineLimit(1)
-                            }
-                        }
-                        if family == .systemSmall && meal.meal.count > 5 {
-                            Text("...")
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(Array(meal.meal.enumerated()), id: \.offset) { index, menu in
+                        // Simple logic to limit items based on size
+                        if family == .systemSmall && index < 5 {
+                            Text(menu)
                                 .font(.caption)
+                                .lineLimit(1)
+                        } else if family != .systemSmall {
+                            Text(menu)
+                                .font(.caption)
+                                .lineLimit(1)
                         }
+                    }
+                    if family == .systemSmall && meal.meal.count > 5 {
+                        Text("...")
+                            .font(.caption)
                     }
                 }
             }
@@ -214,4 +230,30 @@ struct widget: Widget {
         .description("오늘의 급식 정보를 확인하세요.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
+}
+
+// MARK: - Previews
+
+#Preview(as: .systemSmall) {
+    widget()
+} timeline: {
+    SimpleEntry(date: .now, meal: Meal(
+        date: "2025-12-28",
+        type: "중식",
+        meal: ["현미찹쌀밥", "두부된장찌개/중", "LA갈비찜/중", "타코야끼", "배추겉절이", "딸기우유"],
+        calorie: 750.5
+    ), message: nil)
+    
+    SimpleEntry(date: .now, meal: nil, message: "급식 정보가 없습니다.")
+}
+
+#Preview(as: .systemMedium) {
+    widget()
+} timeline: {
+    SimpleEntry(date: .now, meal: Meal(
+        date: "2025-12-28",
+        type: "중식",
+        meal: ["현미찹쌀밥", "두부된장찌개/중", "LA갈비찜/중", "타코야끼", "배추겉절이", "딸기우유"],
+        calorie: 750.5
+    ), message: nil)
 }

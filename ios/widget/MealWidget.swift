@@ -66,11 +66,23 @@ struct MealProvider: TimelineProvider {
     let appGroupId = "group.kr.ny64.slunchv2"
     
     func placeholder(in context: Context) -> MealEntry {
-        MealEntry(date: Date(), mealResult: nil, message: "급식 정보를 불러오는 중...")
+        MealEntry(date: Date(), mealResult: MealResult(
+            meals: ["현미찹쌀밥", "두부된장찌개/중", "LA갈비찜/중", "타코야끼", "배추겉절이", "딸기우유"],
+            displayDate: "12/28",
+            mealType: "중식",
+            calorie: 750.5,
+            daysOffset: 0
+        ), message: nil)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (MealEntry) -> ()) {
-        let entry = MealEntry(date: Date(), mealResult: nil, message: "급식 정보를 불러오는 중...")
+        let entry = MealEntry(date: Date(), mealResult: MealResult(
+            meals: ["현미찹쌀밥", "두부된장찌개/중", "LA갈비찜/중", "타코야끼", "배추겉절이", "딸기우유"],
+            displayDate: "12/28",
+            mealType: "중식",
+            calorie: 750.5,
+            daysOffset: 0
+        ), message: nil)
         completion(entry)
     }
 
@@ -288,4 +300,32 @@ struct MealWidget: Widget {
         .description("오늘의 급식 정보를 확인하세요.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
+}
+
+// MARK: - Previews
+
+#Preview(as: .systemSmall) {
+    MealWidget()
+} timeline: {
+    MealEntry(date: .now, mealResult: MealResult(
+        meals: ["현미찹쌀밥", "두부된장찌개/중", "LA갈비찜/중", "타코야끼", "배추겉절이", "딸기우유"],
+        displayDate: "12/28",
+        mealType: "중식",
+        calorie: 750.5,
+        daysOffset: 0
+    ), message: nil)
+    
+    MealEntry(date: .now, mealResult: nil, message: "급식 정보가 없습니다.")
+}
+
+#Preview(as: .systemMedium) {
+    MealWidget()
+} timeline: {
+    MealEntry(date: .now, mealResult: MealResult(
+        meals: ["현미찹쌀밥", "두부된장찌개/중", "LA갈비찜/중", "타코야끼", "배추겉절이", "딸기우유"],
+        displayDate: "12/28",
+        mealType: "중식",
+        calorie: 750.5,
+        daysOffset: 0
+    ), message: nil)
 }
