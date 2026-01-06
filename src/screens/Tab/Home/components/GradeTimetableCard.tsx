@@ -243,7 +243,7 @@ const GradeTimetableCard = forwardRef<GradeTimetableCardRef, GradeTimetableCardP
                                 fontSize: 14,
                               },
                             ]}>
-                            {subject.subject}
+                            {subject.subject.replace("없음", "-")}
                           </Text>
                           <Text
                             style={[
@@ -258,7 +258,7 @@ const GradeTimetableCard = forwardRef<GradeTimetableCardRef, GradeTimetableCardP
                                 fontSize: 12,
                               },
                             ]}>
-                            {subject.teacher}
+                            {subject.teacher.replace("없음", "-")}
                           </Text>
                         </View>
                       ))}
