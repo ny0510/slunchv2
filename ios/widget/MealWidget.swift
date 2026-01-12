@@ -153,7 +153,7 @@ struct MealProvider: TimelineProvider {
 
         // 시작일 기준 최대 3일 뒤까지만 시도
         if dayOffset > baseOffset + 3 {
-            completion(.failure(NSError(domain: "MealWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "급식 정보가 없습니다.\n"+urlString])))
+            completion(.failure(NSError(domain: "MealWidget", code: 0, userInfo: [NSLocalizedDescriptionKey: "급식 정보가 없습니다."])))
             return
         }
         
