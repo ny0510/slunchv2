@@ -84,20 +84,56 @@ const SchoolCard = () => {
       const userEmail = user.email || '';
       const userName = user.displayName || '';
 
-      const _name = userName.slice(5);
-      const _grade = userName.slice(0, 1);
-      const _classNum = parseInt(userName.slice(1, 3), 10).toString();
-      const _number = parseInt(userName.slice(3, 5), 10).toString();
-      const _generation = 118 - (23 - parseInt(userEmail.slice(0, 2), 10));
-      let _barcodeValue = '';
+      // 1. 사용자 이름(userName)에서 정보 추출
+      // 형식: "학년(1)반(2)번호(2)이름" (예: 10607홍길동)
+      const nameMatch = userName.match(/^(\d)(\d{2})(\d{2})(.+)$/);
+      let _grade = '',
+        _classNum = '',
+        _number = '',
+        _name = '';
 
-      const year = parseInt(userEmail.slice(0, 2), 10);
-
-      if (year <= 24) {
-        _barcodeValue = `S2${userEmail.slice(0, 2)}0${userEmail.slice(8, 11)}`;
+      if (nameMatch) {
+        _grade = nameMatch[1];
+        _classNum = parseInt(nameMatch[2], 10).toString();
+        _number = parseInt(nameMatch[3], 10).toString();
+        _name = nameMatch[4];
       } else {
-        _barcodeValue = `S2${userEmail.slice(0, 2)}0${userEmail.slice(3, 6)}`;
+        // 매칭 실패 시 기존 slice 방식 (fallback)
+        _grade = userName.slice(0, 1);
+        _classNum = parseInt(userName.slice(1, 3), 10).toString();
+        _number = parseInt(userName.slice(3, 5), 10).toString();
+        _name = userName.slice(5);
       }
+
+      // 2. 이메일 아이디에서 입학년도(yearPart)와 학생 고유 번호(sequencePart) 추출
+      // 선린 구글 계정 패턴이 변경되더라도 아래 emailPatterns 목록에 새로운 정규식만 추가하면 됩니다.
+      const emailPatterns = [
+        /^s(\d{2})(\d{3})/, // 패턴 1: s26109 (2026년 신입생부터 적용된 s+연도+번호 형식)
+        /^(\d{2})s(\d{3})/, // 패턴 2: 25s112 (2025년 입학생의 연도+s+번호 형식)
+        /^(\d{2})sunrin(\d{3})/, // 패턴 3: 23sunrin061 (2024년 이전 입학생의 연도+sunrin+번호 형식)
+      ];
+
+      const emailId = userEmail.split('@')[0];
+      let matchedYear = '';
+      let matchedSeq = '';
+
+      for (const pattern of emailPatterns) {
+        const match = emailId.match(pattern);
+        if (match) {
+          matchedYear = match[1]; // 첫 번째 괄호: 연도 (YY)
+          matchedSeq = match[2]; // 두 번째 괄호: 번호 (NNN)
+          break;
+        }
+      }
+
+      // 패턴 매칭 실패 시를 위한 안전한 기본값 처리 (23년도 기준)
+      const yearPart = matchedYear || userEmail.slice(0, 2) || '23';
+      const sequencePart = matchedSeq || (parseInt(yearPart, 10) <= 24 ? userEmail.slice(8, 11) : userEmail.slice(3, 6));
+
+      // 3. 기수 및 바코드 값 계산
+      const year = parseInt(yearPart, 10);
+      const _generation = 118 - (23 - year); // 23학번이 118기 기준
+      const _barcodeValue = `S2${yearPart}0${sequencePart}`;
 
       setName(_name);
       setGrade(_grade);
