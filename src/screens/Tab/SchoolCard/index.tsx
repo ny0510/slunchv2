@@ -29,6 +29,7 @@ const SchoolCard = () => {
   const [originalBrightness, setOriginalBrightness] = useState<number | null>(null);
   const [isDemoUser, setIsDemoUser] = useState(false);
   const [isSunrinEmail, setIsSunrinEmail] = useState(false);
+  const [isNewStudent, setIsNewStudent] = useState(false);
 
   useEffect(() => {
     analytics().logScreenView({screen_name: '학생증 페이지', screen_class: 'SchoolCard'});
@@ -77,6 +78,7 @@ const SchoolCard = () => {
       setNumber('1');
       setGeneration(0);
       setBarcodeValue('DEMO123456');
+      setIsNewStudent(false);
       return;
     }
 
@@ -135,16 +137,22 @@ const SchoolCard = () => {
       const _generation = 118 - (23 - year); // 23학번이 118기 기준
       const _barcodeValue = `S2${yearPart}0${sequencePart}`;
 
+      // 26년도 신입생(s26xxx) 여부 확인
+      const _isNewStudent = year >= 26;
+
       setName(_name);
       setGrade(_grade);
       setClassNum(_classNum);
       setNumber(_number);
       setGeneration(_generation);
       setBarcodeValue(_barcodeValue);
+      setIsNewStudent(_isNewStudent);
     }
   }, [user, isDemoUser]);
 
   const handleBarcodePress = useCallback(async () => {
+    if (isNewStudent) return;
+
     try {
       const currentBrightness = await DeviceBrightness.getBrightnessLevel();
       setOriginalBrightness(currentBrightness);
@@ -153,7 +161,7 @@ const SchoolCard = () => {
     } catch (error) {
       console.error('Error adjusting brightness:', error);
     }
-  }, []);
+  }, [isNewStudent]);
 
   const handleCloseModal = useCallback(async () => {
     try {
@@ -174,7 +182,7 @@ const SchoolCard = () => {
     <Container style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
       {isDemoUser || (user && isSunrinEmail) ? (
         <View style={{width: '100%', alignItems: 'center', gap: 16}}>
-          <IDCard name={name} schoolName="선린인터넷고등학교" generation={generation.toString()} grade={grade} classNum={classNum} number={number} barcodeValue={barcodeValue} handleBarcodePress={handleBarcodePress} />
+          <IDCard name={name} schoolName="선린인터넷고등학교" generation={generation.toString()} grade={grade} classNum={classNum} number={number} barcodeValue={barcodeValue} handleBarcodePress={handleBarcodePress} isNewStudent={isNewStudent} />
           <View style={{alignItems: 'center', gap: 8, marginTop: 8}}>
             <TouchableOpacity
               onPress={handleBarcodePress}
@@ -186,9 +194,14 @@ const SchoolCard = () => {
                 paddingHorizontal: 12,
                 backgroundColor: theme.background,
                 borderRadius: 8,
+                opacity: isNewStudent ? 0.5 : 1,
               }}>
-              <FontAwesome6 name="barcode" size={14} color={theme.primaryText} iconStyle="solid" />
-              <Text style={[typography.caption, {color: theme.primaryText, fontWeight: '500'}]}>바코드 확대</Text>
+              {!isNewStudent && (
+                <>
+                  <FontAwesome6 name="barcode" size={14} color={theme.primaryText} iconStyle="solid" />
+                  <Text style={[typography.caption, {color: theme.primaryText, fontWeight: '500'}]}>바코드 크게 보기</Text>
+                </>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -243,20 +256,22 @@ const SchoolCard = () => {
         </View>
       )}
       <View style={{elevation: 0, zIndex: 0}}>
-        <Modal visible={isModalVisible} transparent={true}>
-          <TouchableOpacity
-            style={{
-              flex: 1,
-              justifyContent: 'center',
-              alignItems: 'center',
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              transform: [{rotate: '90deg'}, {scale: 2.5}],
-            }}
-            onPress={handleCloseModal}
-            activeOpacity={1}>
-            <Barcode value={barcodeValue} format={'CODE128'} fill={theme.white} />
-          </TouchableOpacity>
-        </Modal>
+        {!isNewStudent && (
+          <Modal visible={isModalVisible} transparent={true}>
+            <TouchableOpacity
+              style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                transform: [{rotate: '90deg'}, {scale: 2.5}],
+              }}
+              onPress={handleCloseModal}
+              activeOpacity={1}>
+              <Barcode value={barcodeValue} format={'CODE128'} fill={theme.white} />
+            </TouchableOpacity>
+          </Modal>
+        )}
       </View>
     </Container>
   );

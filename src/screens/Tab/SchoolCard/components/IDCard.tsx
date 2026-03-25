@@ -16,9 +16,10 @@ interface Props {
   number: string;
   barcodeValue: string;
   handleBarcodePress: () => void;
+  isNewStudent?: boolean;
 }
 
-const IDCard: React.FC<Props> = ({name, schoolName, generation, grade, classNum, number, barcodeValue, handleBarcodePress}) => {
+const IDCard: React.FC<Props> = ({name, schoolName, generation, grade, classNum, number, barcodeValue, handleBarcodePress, isNewStudent}) => {
   const {theme, typography} = useTheme();
 
   const rotateX = useSharedValue(0);
@@ -101,8 +102,16 @@ const IDCard: React.FC<Props> = ({name, schoolName, generation, grade, classNum,
 
         <TouchableOpacity onPress={handleBarcodePress} activeOpacity={0.8}>
           <View style={{justifyContent: 'center', alignItems: 'center', backgroundColor: theme.background, paddingVertical: 12, borderTopWidth: 1, borderTopColor: theme.border}}>
-            <Barcode value={barcodeValue} format={'CODE128'} fill={theme.primaryText} />
-            <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 4, fontWeight: '500'}]}>{barcodeValue}</Text>
+            <View style={{opacity: isNewStudent ? 0.05 : 1, alignItems: 'center'}}>
+              <Barcode value={barcodeValue} format={'CODE128'} fill={theme.primaryText} />
+              <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 4, fontWeight: '500'}]}>{!isNewStudent ? barcodeValue : '?????'}</Text>
+            </View>
+
+            {isNewStudent && (
+              <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center'}}>
+                <Text style={[typography.caption, {color: theme.primaryText, fontWeight: '700', textAlign: 'center'}]}>121기는 곧 지원 예정이에요!</Text>
+              </View>
+            )}
           </View>
         </TouchableOpacity>
       </Animated.View>
