@@ -1,9 +1,8 @@
-import {API_BASE_URL} from '@env';
+import { API_BASE_URL } from '@env';
 import axios from 'axios';
 
-import {showToast} from '@/lib/toast';
+import { showToast } from '@/lib/toast';
 
-console.log(API_BASE_URL);
 
 const httpClient = axios.create({
   baseURL: API_BASE_URL,

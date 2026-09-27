@@ -1,17 +1,19 @@
-import React, {createContext, useContext, useEffect, useState} from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
-import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
-import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import { getAuth, onAuthStateChanged, signInWithCredential, signOut, GoogleAuthProvider, type User } from '@react-native-firebase/auth';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 GoogleSignin.configure({
   webClientId: '1076316211812-m48klmqgvsn503of2oi35igcqgojhv6l.apps.googleusercontent.com',
   offlineAccess: true,
 });
 
+const auth = getAuth();
+
 type Props = {
-  user: FirebaseAuthTypes.User | null;
+  user: User | null;
   loading: boolean;
-  login: () => Promise<FirebaseAuthTypes.User | null>;
+  login: () => Promise<User | null>;
   logout: () => Promise<void>;
 };
 
@@ -21,17 +23,17 @@ const AuthContext = createContext<Props>({
   login: async () => {
     return null;
   },
-  logout: async () => {},
+  logout: async () => { },
 });
 
 export const useAuth = () => useContext(AuthContext);
 
-export const AuthProvider = ({children}: {children: React.ReactNode}) => {
-  const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const subscriber = auth().onAuthStateChanged(async firebaseUser => {
+    const subscriber = onAuthStateChanged(auth, async firebaseUser => {
       setUser(firebaseUser);
       if (firebaseUser) {
         await firebaseUser.getIdToken(true); // 강제 토큰 갱신
@@ -51,10 +53,10 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
         return null;
       }
 
-      const {idToken} = await GoogleSignin.getTokens();
+      const { idToken } = await GoogleSignin.getTokens();
 
-      const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-      const userCredential = await auth().signInWithCredential(googleCredential);
+      const googleCredential = GoogleAuthProvider.credential(idToken);
+      const userCredential = await signInWithCredential(auth, googleCredential);
 
       return userCredential.user;
     } catch (error) {
@@ -65,8 +67,8 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
 
   const logout = async () => {
     await GoogleSignin.signOut();
-    await auth().signOut();
+    await signOut(auth);
   };
 
-  return <AuthContext.Provider value={{user, loading, login, logout}}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, loading, login, logout }}>{children}</AuthContext.Provider>;
 };

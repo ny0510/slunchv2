@@ -1,33 +1,32 @@
-import {ANDROID_MEAL_NATIVE_AD_UNIT_ID, ANDROID_NOTI_BANNER_AD_UNIT_ID, IOS_NOTI_BANNER_AD_UNIT_ID, IOS_NOTI_NATIVE_AD_UNIT_ID} from '@env';
+import { ANDROID_NOTI_BANNER_AD_UNIT_ID, IOS_NOTI_BANNER_AD_UNIT_ID } from '@env';
 import dayjs from 'dayjs';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {useScrollToTop} from '@/hooks/useScrollToTop';
-import {Platform, RefreshControl, Text, TouchableOpacity, View} from 'react-native';
-import {useFocusEffect} from '@react-navigation/native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
+import { Platform, RefreshControl, Text, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import TouchableScale from 'react-native-touchable-scale';
 
-import Ad from './components/Ad';
-import {getNotifications} from '@/api';
+import { getNotifications } from '@/api';
 import BannerAdCard from '@/components/BannerAdCard';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
-import {useTheme} from '@/contexts/ThemeContext';
-import {showToast} from '@/lib/toast';
-import {typography} from '@/theme';
-import {Notification} from '@/types/api';
+import { useTheme } from '@/contexts/ThemeContext';
+import { showToast } from '@/lib/toast';
+import { typography } from '@/theme';
+import { Notification } from '@/types/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import analytics from '@react-native-firebase/analytics';
+import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 
-const Notifications = ({onReadNotification, setScrollRef}: {onReadNotification: () => void; setScrollRef?: (ref: any) => void}) => {
+const Notifications = ({ onReadNotification, setScrollRef }: { onReadNotification: () => void; setScrollRef?: (ref: any) => void }) => {
   const [expandedIndices, setExpandedIndices] = useState<number[]>([]);
   const [noti, setNoti] = useState<Notification[]>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [readNotifications, setReadNotifications] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const {theme} = useTheme();
+  const { theme } = useTheme();
   const scrollViewRef = useRef<any>(null);
 
   // Use the scroll-to-top hook
@@ -72,7 +71,7 @@ const Notifications = ({onReadNotification, setScrollRef}: {onReadNotification: 
   }, [onReadNotification]);
 
   useEffect(() => {
-    analytics().logScreenView({screen_name: '알림 페이지', screen_class: 'Notifications'});
+    logEvent(getAnalytics(), 'screen_view', { screen_name: '알림 페이지', screen_class: 'Notifications' });
   }, []);
 
   useEffect(() => {
@@ -90,7 +89,7 @@ const Notifications = ({onReadNotification, setScrollRef}: {onReadNotification: 
   };
 
   return loading ? (
-    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Loading fullScreen />
     </View>
   ) : (
@@ -98,7 +97,7 @@ const Notifications = ({onReadNotification, setScrollRef}: {onReadNotification: 
       scrollView
       bounce
       scrollViewRef={scrollViewRef}
-      style={{paddingHorizontal: 0}}
+      style={{ paddingHorizontal: 0 }}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -109,17 +108,15 @@ const Notifications = ({onReadNotification, setScrollRef}: {onReadNotification: 
           tintColor={theme.secondaryText}
         />
       }>
-      {/* <Ad adUnitId={Platform.OS === 'ios' ? IOS_NOTI_NATIVE_AD_UNIT_ID : ANDROID_MEAL_NATIVE_AD_UNIT_ID} /> */}
 
-      <View style={{gap: 4, width: '100%', paddingHorizontal: 16}}>
+      <View style={{ gap: 4, width: '100%', paddingHorizontal: 16 }}>
         <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_NOTI_BANNER_AD_UNIT_ID : ANDROID_NOTI_BANNER_AD_UNIT_ID} />
-        <View style={{height: 12}} />
+        <View style={{ height: 12 }} />
 
         {noti?.length > 0 ? (
           noti.map((item, index) => {
             const date = dayjs(item.date).format('MM월 DD일');
             const isNew = !readNotifications.includes(item.id);
-            const icon = <FontAwesome6 name="bullhorn" size={16} color={theme.primaryText} iconStyle="solid" />;
 
             return (
               <TouchableScale key={index} onPress={() => handlePress(index, item.id)} activeScale={0.98} tension={10} friction={3}>
@@ -127,9 +124,9 @@ const Notifications = ({onReadNotification, setScrollRef}: {onReadNotification: 
                   style={{
                     marginBottom: index === noti.length - 1 ? 0 : 12,
                   }}>
-                  <Card title={item.title} notificationDot={isNew} subtitle={date} arrow={!expandedIndices.includes(index)} style={{backgroundColor: theme.card}}>
+                  <Card title={item.title} notificationDot={isNew} subtitle={date} arrow={!expandedIndices.includes(index)} style={{ backgroundColor: theme.card }}>
                     {expandedIndices.includes(index) && (
-                      <View style={{marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.border}}>
+                      <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.border }}>
                         <Text
                           style={[
                             typography.body,
@@ -142,9 +139,9 @@ const Notifications = ({onReadNotification, setScrollRef}: {onReadNotification: 
                           {item.content}
                         </Text>
                         {isNew && (
-                          <View style={{flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8}}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 }}>
                             <FontAwesome6 name="check" size={12} color={theme.secondaryText} iconStyle="solid" />
-                            <Text style={[typography.caption, {color: theme.secondaryText}]}>읽음 처리됨</Text>
+                            <Text style={[typography.caption, { color: theme.secondaryText }]}>읽음 처리됨</Text>
                           </View>
                         )}
                       </View>
@@ -155,10 +152,10 @@ const Notifications = ({onReadNotification, setScrollRef}: {onReadNotification: 
             );
           })
         ) : (
-          <View style={{justifyContent: 'center', alignItems: 'center', flex: 1, marginTop: 80}}>
+          <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1, marginTop: 80 }}>
             <FontAwesome6 name="bell-slash" size={48} color={theme.secondaryText} iconStyle="regular" />
-            <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600', marginTop: 16}]}>표시할 알림이 없어요</Text>
-            <Text style={[typography.body, {color: theme.secondaryText, marginTop: 4}]}>새 알림이 오면 여기에 표시됩니다</Text>
+            <Text style={[typography.subtitle, { color: theme.primaryText, fontWeight: '600', marginTop: 16 }]}>표시할 알림이 없어요</Text>
+            <Text style={[typography.body, { color: theme.secondaryText, marginTop: 4 }]}>새 알림이 오면 여기에 표시됩니다</Text>
           </View>
         )}
       </View>

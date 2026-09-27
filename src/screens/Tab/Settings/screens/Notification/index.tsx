@@ -1,22 +1,22 @@
 import dayjs from 'dayjs';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Alert, Keyboard, ScrollView, Text, TouchableOpacity, View} from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Alert, Keyboard, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 
 import Content from '../../components/Content';
-import {addKeywordNotification, addMealNotification, addTimetableNotification, checkMealNotification, editKeywordNotification, editMealNotification, editTimetableTime, removeKeywordNotification, removeMealNotification, removeTimetableNotification} from '@/api';
+import { addKeywordNotification, addMealNotification, addTimetableNotification, checkMealNotification, editKeywordNotification, editMealNotification, editTimetableTime, removeKeywordNotification, removeMealNotification, removeTimetableNotification } from '@/api';
 import Card from '@/components/Card';
 import Container from '@/components/Container';
 import ToggleSwitch from '@/components/ToggleSwitch';
-import {useTheme} from '@/contexts/ThemeContext';
-import {useUser} from '@/contexts/UserContext';
-import {showToast} from '@/lib/toast';
-import BottomSheet, {BottomSheetBackdrop, BottomSheetTextInput, BottomSheetView} from '@gorhom/bottom-sheet';
-import notifee, {AuthorizationStatus} from '@notifee/react-native';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useUser } from '@/contexts/UserContext';
+import { showToast } from '@/lib/toast';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
+import notifee, { AuthorizationStatus } from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import messaging from '@react-native-firebase/messaging';
+import { getMessaging, getToken, registerDeviceForRemoteMessages } from '@react-native-firebase/messaging';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
-import {useFocusEffect} from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 
 const Notification = () => {
   // 급식 알림 상태
@@ -45,8 +45,8 @@ const Notification = () => {
   const [isTimetableBottomSheetOpen, setIsTimetableBottomSheetOpen] = useState(false);
   const timetableBottomSheetRef = useRef<BottomSheet>(null);
 
-  const {theme, typography} = useTheme();
-  const {schoolInfo, classInfo} = useUser();
+  const { theme, typography } = useTheme();
+  const { schoolInfo, classInfo } = useUser();
 
   const initializeNotificationSettings = useCallback(async () => {
     const settings = JSON.parse((await AsyncStorage.getItem('settings')) || '{}');
@@ -79,7 +79,7 @@ const Notification = () => {
       await AsyncStorage.setItem('settings', JSON.stringify(newSettings));
     }
 
-    return {isEnabledState, notificationTime, isKeywordEnabledState, keywordsList, isTimetableEnabledState, timetableNotificationTime};
+    return { isEnabledState, notificationTime, isKeywordEnabledState, keywordsList, isTimetableEnabledState, timetableNotificationTime };
   }, []);
 
   const getFcmToken = async () => {
@@ -87,8 +87,8 @@ const Notification = () => {
     if (storedToken) {
       return storedToken;
     }
-    await messaging().registerDeviceForRemoteMessages();
-    const newToken = await messaging().getToken();
+    await registerDeviceForRemoteMessages(getMessaging());
+    const newToken = await getToken(getMessaging());
     await AsyncStorage.setItem('fcmToken', newToken);
     return newToken;
   };
@@ -98,7 +98,7 @@ const Notification = () => {
     useCallback(() => {
       (async () => {
         try {
-          const {isEnabledState, notificationTime, isKeywordEnabledState, keywordsList, isTimetableEnabledState, timetableNotificationTime} = await initializeNotificationSettings();
+          const { isEnabledState, notificationTime, isKeywordEnabledState, keywordsList, isTimetableEnabledState, timetableNotificationTime } = await initializeNotificationSettings();
           setIsMealEnabled(isEnabledState);
           setMealTime(notificationTime);
           setIsKeywordEnabled(isKeywordEnabledState);
@@ -178,7 +178,7 @@ const Notification = () => {
             style: 'cancel',
           },
         ],
-        {cancelable: false},
+        { cancelable: false },
       );
       return false;
     }
@@ -487,40 +487,40 @@ const Notification = () => {
 
   return (
     <>
-      <Container scrollView bounce style={{gap: 8}}>
-        <Card title="급식 알림" titleStyle={{fontSize: typography.body.fontSize}}>
-          <View style={{gap: 8, marginTop: 8}}>
+      <Container scrollView bounce style={{ gap: 8 }}>
+        <Card title="급식 알림" titleStyle={{ fontSize: typography.body.fontSize }}>
+          <View style={{ gap: 8, marginTop: 8 }}>
             {/* 알림 시간 설정 (공통) */}
             <Content title="알림 시간" arrow onPress={openBottomSheet} disabled={!isMealEnabled && !isKeywordEnabled} arrowText={dayjs(mealTime).format('A hh:mm')} />
 
             {/* 매일 알림 */}
-            <View style={{marginTop: 8, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.border}}>
-              <Text style={[typography.caption, {color: theme.secondaryText, marginBottom: 8}]}>매일 알림</Text>
-              <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-                <View style={{flex: 1}}>
-                  <Text style={[typography.body, {color: theme.primaryText}]}>매일 급식 알림 받기</Text>
-                  <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 2}]}>매일 설정한 시간에 급식 정보를 받아요</Text>
+            <View style={{ marginTop: 8, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.border }}>
+              <Text style={[typography.caption, { color: theme.secondaryText, marginBottom: 8 }]}>매일 알림</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[typography.body, { color: theme.primaryText }]}>매일 급식 알림 받기</Text>
+                  <Text style={[typography.caption, { color: theme.secondaryText, marginTop: 2 }]}>매일 설정한 시간에 급식 정보를 받아요</Text>
                 </View>
                 <ToggleSwitch value={isMealEnabled} onValueChange={toggleMealSwitch} disabled={isMealProcessing || isKeywordEnabled} />
               </View>
             </View>
 
             {/* 키워드 알림 */}
-            <View style={{marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.border}}>
-              <Text style={[typography.caption, {color: theme.secondaryText, marginBottom: 8}]}>키워드 알림</Text>
-              <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8}}>
-                <View style={{flex: 1}}>
-                  <Text style={[typography.body, {color: theme.primaryText}]}>키워드 알림 받기</Text>
-                  <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 2}]}>원하는 메뉴가 나올 때만 알림을 받아요</Text>
+            <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.border }}>
+              <Text style={[typography.caption, { color: theme.secondaryText, marginBottom: 8 }]}>키워드 알림</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[typography.body, { color: theme.primaryText }]}>키워드 알림 받기</Text>
+                  <Text style={[typography.caption, { color: theme.secondaryText, marginTop: 2 }]}>원하는 메뉴가 나올 때만 알림을 받아요</Text>
                 </View>
                 <ToggleSwitch value={isKeywordEnabled} onValueChange={toggleKeywordSwitch} disabled={isKeywordProcessing || isMealEnabled} />
               </View>
               <Content title="키워드 관리" arrow onPress={openKeywordBottomSheet} disabled={false} arrowText={keywords.length > 0 ? `${keywords.length}개` : '추가'} />
               {isKeywordEnabled && keywords.length > 0 && (
-                <View style={{marginTop: 8, flexDirection: 'row', flexWrap: 'wrap', gap: 6}}>
+                <View style={{ marginTop: 8, flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
                   {keywords.map((keyword, index) => (
-                    <View key={index} style={{backgroundColor: `${theme.highlight}20`, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12}}>
-                      <Text style={[typography.small, {color: theme.highlight}]}>{keyword}</Text>
+                    <View key={index} style={{ backgroundColor: `${theme.highlight}20`, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
+                      <Text style={[typography.small, { color: theme.highlight }]}>{keyword}</Text>
                     </View>
                   ))}
                 </View>
@@ -529,10 +529,10 @@ const Notification = () => {
           </View>
         </Card>
 
-        <Card title="시간표 알림" titleStyle={{fontSize: typography.body.fontSize}}>
-          <View style={{gap: 8, marginTop: 8}}>
-            <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-              <Text style={[typography.body, {color: theme.primaryText}]}>알림 받기</Text>
+        <Card title="시간표 알림" titleStyle={{ fontSize: typography.body.fontSize }}>
+          <View style={{ gap: 8, marginTop: 8 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={[typography.body, { color: theme.primaryText }]}>알림 받기</Text>
               <ToggleSwitch value={isTimetableEnabled} onValueChange={toggleTimetableSwitch} disabled={isTimetableProcessing} />
             </View>
             <Content title="알림 시간 변경" arrow onPress={openTimetableBottomSheet} disabled={!isTimetableEnabled} arrowText={dayjs(timetableTime).format('A hh:mm')} />
@@ -548,14 +548,14 @@ const Notification = () => {
           enablePanDownToClose
           onChange={handleMealSheetChanges}
           onClose={() => setIsBottomSheetOpen(false)}
-          backgroundStyle={{backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}}
-          handleIndicatorStyle={{backgroundColor: theme.secondaryText}}
+          backgroundStyle={{ backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16 }}
+          handleIndicatorStyle={{ backgroundColor: theme.secondaryText }}
           keyboardBehavior="interactive"
           keyboardBlurBehavior="restore">
-          <BottomSheetView style={{paddingHorizontal: 18, paddingBottom: 12, backgroundColor: theme.card, justifyContent: 'center', alignItems: 'center'}}>
-            <View style={{gap: 4, width: '100%'}}>
-              <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600', alignSelf: 'flex-start'}]}>급식 알림 시간</Text>
-              <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', alignSelf: 'flex-start'}]}>급식 알림을 받을 시간을 설정해보세요.</Text>
+          <BottomSheetView style={{ paddingHorizontal: 18, paddingBottom: 12, backgroundColor: theme.card, justifyContent: 'center', alignItems: 'center' }}>
+            <View style={{ gap: 4, width: '100%' }}>
+              <Text style={[typography.subtitle, { color: theme.primaryText, fontWeight: '600', alignSelf: 'flex-start' }]}>급식 알림 시간</Text>
+              <Text style={[typography.body, { color: theme.primaryText, fontWeight: '300', alignSelf: 'flex-start' }]}>급식 알림을 받을 시간을 설정해보세요.</Text>
             </View>
             <DatePicker mode="time" date={mealTime} theme="dark" dividerColor={theme.secondaryText} onDateChange={setMealTime} />
           </BottomSheetView>
@@ -570,14 +570,14 @@ const Notification = () => {
           enablePanDownToClose
           onChange={handleTimetableSheetChanges}
           onClose={() => setIsTimetableBottomSheetOpen(false)}
-          backgroundStyle={{backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}}
-          handleIndicatorStyle={{backgroundColor: theme.secondaryText}}
+          backgroundStyle={{ backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16 }}
+          handleIndicatorStyle={{ backgroundColor: theme.secondaryText }}
           keyboardBehavior="interactive"
           keyboardBlurBehavior="restore">
-          <BottomSheetView style={{paddingHorizontal: 18, paddingBottom: 12, backgroundColor: theme.card, justifyContent: 'center', alignItems: 'center'}}>
-            <View style={{gap: 4, width: '100%'}}>
-              <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600', alignSelf: 'flex-start'}]}>시간표 알림 시간</Text>
-              <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', alignSelf: 'flex-start'}]}>원하는 시간으로 설정해보세요.</Text>
+          <BottomSheetView style={{ paddingHorizontal: 18, paddingBottom: 12, backgroundColor: theme.card, justifyContent: 'center', alignItems: 'center' }}>
+            <View style={{ gap: 4, width: '100%' }}>
+              <Text style={[typography.subtitle, { color: theme.primaryText, fontWeight: '600', alignSelf: 'flex-start' }]}>시간표 알림 시간</Text>
+              <Text style={[typography.body, { color: theme.primaryText, fontWeight: '300', alignSelf: 'flex-start' }]}>원하는 시간으로 설정해보세요.</Text>
             </View>
             <DatePicker mode="time" date={timetableTime} theme="dark" dividerColor={theme.secondaryText} onDateChange={setTimetableTime} />
           </BottomSheetView>
@@ -593,16 +593,16 @@ const Notification = () => {
           ref={keywordBottomSheetRef}
           enablePanDownToClose
           onClose={() => setIsKeywordBottomSheetOpen(false)}
-          backgroundStyle={{backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}}
-          handleIndicatorStyle={{backgroundColor: theme.secondaryText}}>
-          <BottomSheetView style={{paddingHorizontal: 18, paddingBottom: 12, flex: 1}}>
-            <View style={{gap: 4, marginBottom: 16}}>
-              <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600'}]}>키워드 관리</Text>
-              <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300'}]}>특정 메뉴가 나오는 날만 알림을 받아보세요.</Text>
+          backgroundStyle={{ backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16 }}
+          handleIndicatorStyle={{ backgroundColor: theme.secondaryText }}>
+          <BottomSheetView style={{ paddingHorizontal: 18, paddingBottom: 12, flex: 1 }}>
+            <View style={{ gap: 4, marginBottom: 16 }}>
+              <Text style={[typography.subtitle, { color: theme.primaryText, fontWeight: '600' }]}>키워드 관리</Text>
+              <Text style={[typography.body, { color: theme.primaryText, fontWeight: '300' }]}>특정 메뉴가 나오는 날만 알림을 받아보세요.</Text>
             </View>
 
             {/* 키워드 입력 */}
-            <View style={{flexDirection: 'row', gap: 8, marginBottom: 16}}>
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
               <BottomSheetTextInput
                 placeholder="키워드를 입력하세요 (예: 타코야끼, 찜닭)"
                 value={keywordInput}
@@ -634,20 +634,20 @@ const Notification = () => {
                   alignItems: 'center',
                 }}
                 activeOpacity={0.8}>
-                <Text style={[typography.body, {color: theme.white, fontWeight: '600'}]}>추가</Text>
+                <Text style={[typography.body, { color: theme.white, fontWeight: '600' }]}>추가</Text>
               </TouchableOpacity>
             </View>
 
             {/* 키워드 리스트 */}
-            <ScrollView style={{flex: 1}} showsVerticalScrollIndicator={false}>
+            <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
               {keywords.length === 0 ? (
-                <View style={{alignItems: 'center', paddingVertical: 32}}>
+                <View style={{ alignItems: 'center', paddingVertical: 32 }}>
                   <FontAwesome6 name="bell-slash" size={32} color={theme.secondaryText} iconStyle="solid" />
-                  <Text style={[typography.body, {color: theme.secondaryText, marginTop: 12}]}>아직 키워드가 없어요.</Text>
-                  <Text style={[typography.caption, {color: theme.secondaryText, marginTop: 4}]}>알림 받고 싶은 메뉴를 추가해보세요.</Text>
+                  <Text style={[typography.body, { color: theme.secondaryText, marginTop: 12 }]}>아직 키워드가 없어요.</Text>
+                  <Text style={[typography.caption, { color: theme.secondaryText, marginTop: 4 }]}>알림 받고 싶은 메뉴를 추가해보세요.</Text>
                 </View>
               ) : (
-                <View style={{gap: 8}}>
+                <View style={{ gap: 8 }}>
                   {keywords.map((keyword, index) => (
                     <View
                       key={index}
@@ -661,8 +661,8 @@ const Notification = () => {
                         borderWidth: 1,
                         borderColor: theme.border,
                       }}>
-                      <Text style={[typography.body, {color: theme.primaryText}]}>{keyword}</Text>
-                      <TouchableOpacity onPress={() => removeKeyword(keyword)} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}} activeOpacity={0.7}>
+                      <Text style={[typography.body, { color: theme.primaryText }]}>{keyword}</Text>
+                      <TouchableOpacity onPress={() => removeKeyword(keyword)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} activeOpacity={0.7}>
                         <FontAwesome6 name="xmark" size={16} color={theme.secondaryText} iconStyle="solid" />
                       </TouchableOpacity>
                     </View>
@@ -672,8 +672,8 @@ const Notification = () => {
             </ScrollView>
 
             {keywords.length > 0 && (
-              <View style={{marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.border}}>
-                <Text style={[typography.caption, {color: theme.secondaryText, textAlign: 'center'}]}>{keywords.length}개의 키워드가 등록되어 있어요.</Text>
+              <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.border }}>
+                <Text style={[typography.caption, { color: theme.secondaryText, textAlign: 'center' }]}>{keywords.length}개의 키워드가 등록되어 있어요.</Text>
               </View>
             )}
           </BottomSheetView>

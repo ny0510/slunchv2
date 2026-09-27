@@ -1,0 +1,244 @@
+name: Verify Android release
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: Exact 40-character commit SHA to verify
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-verification-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  android-release:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-26.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Check revision and runner disk before secrets
+        id: preflight
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "expected_sha must be exactly 40 lowercase hexadecimal characters" >&2
+            exit 1
+          fi
+          actual_sha=$(git rev-parse HEAD)
+          [[ "$actual_sha" == "$EXPECTED_SHA" ]] || { echo "Revision mismatch: expected $EXPECTED_SHA, checked out $actual_sha" >&2; exit 1; }
+          echo "Revision: $actual_sha" >> "$GITHUB_STEP_SUMMARY"
+          free_kb=$(df -Pk "$RUNNER_TEMP" | awk 'NR==2 {print $4}')
+          if ((free_kb < 25 * 1024 * 1024)); then
+            sdk="$ANDROID_HOME/ndk"
+            if [[ -d "$sdk" ]]; then
+              while IFS= read -r -d '' dir; do
+                [[ "${dir##*/}" == "29.0.13113456" ]] || rm -rf -- "$dir"
+              done < <(find "$sdk" -mindepth 1 -maxdepth 1 -type d -print0)
+            fi
+            images="$ANDROID_HOME/system-images"
+            [[ ! -d "$images" ]] || find "$images" -mindepth 1 -maxdepth 1 -type d -exec rm -rf -- {} +
+            free_kb=$(df -Pk "$RUNNER_TEMP" | awk 'NR==2 {print $4}')
+          fi
+          echo "Disk free after preflight: $(df -h "$RUNNER_TEMP" | awk 'NR==2 {print $4}')" >> "$GITHUB_STEP_SUMMARY"
+          ((free_kb >= 25 * 1024 * 1024)) || { echo "Less than 25 GiB free; stop before downloads" >&2; exit 1; }
+      - name: Validate required secrets before downloads
+        shell: bash
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          RN_UPLOAD_STORE_PASSWORD: ${{ secrets.RN_UPLOAD_STORE_PASSWORD }}
+          RN_UPLOAD_KEY_ALIAS: ${{ secrets.RN_UPLOAD_KEY_ALIAS }}
+          RN_UPLOAD_KEY_PASSWORD: ${{ secrets.RN_UPLOAD_KEY_PASSWORD }}
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          ANDROID_HOME_BANNER_AD_UNIT_ID: ${{ secrets.ANDROID_HOME_BANNER_AD_UNIT_ID }}
+          ANDROID_NOTI_BANNER_AD_UNIT_ID: ${{ secrets.ANDROID_NOTI_BANNER_AD_UNIT_ID }}
+          ANDROID_SCHEDULE_NATIVE_AD_UNIT_ID: ${{ secrets.ANDROID_SCHEDULE_NATIVE_AD_UNIT_ID }}
+          ANDROID_MEAL_NATIVE_AD_UNIT_ID: ${{ secrets.ANDROID_MEAL_NATIVE_AD_UNIT_ID }}
+          ANDROID_NOTI_NATIVE_AD_UNIT_ID: ${{ secrets.ANDROID_NOTI_NATIVE_AD_UNIT_ID }}
+          IOS_HOME_BANNER_AD_UNIT_ID: ${{ secrets.IOS_HOME_BANNER_AD_UNIT_ID }}
+          IOS_NOTI_BANNER_AD_UNIT_ID: ${{ secrets.IOS_NOTI_BANNER_AD_UNIT_ID }}
+          IOS_SCHEDULE_NATIVE_AD_UNIT_ID: ${{ secrets.IOS_SCHEDULE_NATIVE_AD_UNIT_ID }}
+          IOS_MEAL_NATIVE_AD_UNIT_ID: ${{ secrets.IOS_MEAL_NATIVE_AD_UNIT_ID }}
+          IOS_NOTI_NATIVE_AD_UNIT_ID: ${{ secrets.IOS_NOTI_NATIVE_AD_UNIT_ID }}
+        run: |
+          set -euo pipefail
+          missing=()
+          for name in GOOGLE_SERVICES_JSON KEYSTORE_BASE64 RN_UPLOAD_STORE_PASSWORD RN_UPLOAD_KEY_ALIAS RN_UPLOAD_KEY_PASSWORD API_BASE_URL ANDROID_HOME_BANNER_AD_UNIT_ID ANDROID_NOTI_BANNER_AD_UNIT_ID ANDROID_SCHEDULE_NATIVE_AD_UNIT_ID ANDROID_MEAL_NATIVE_AD_UNIT_ID ANDROID_NOTI_NATIVE_AD_UNIT_ID IOS_HOME_BANNER_AD_UNIT_ID IOS_NOTI_BANNER_AD_UNIT_ID IOS_SCHEDULE_NATIVE_AD_UNIT_ID IOS_MEAL_NATIVE_AD_UNIT_ID IOS_NOTI_NATIVE_AD_UNIT_ID; do
+            [[ -n "${!name}" ]] || missing+=("$name")
+          done
+          if ((${#missing[@]})); then printf 'Missing required secret: %s\n' "${missing[@]}" >&2; exit 1; fi
+          echo "Runner image: $ImageOS $ImageVersion" >> "$GITHUB_STEP_SUMMARY"
+          echo "Disk before installs: $(df -h "$RUNNER_TEMP" | awk 'NR==2 {print $4 " free of " $2}')" >> "$GITHUB_STEP_SUMMARY"
+
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.2'
+
+      - name: Record toolchain versions
+        shell: bash
+        run: |
+          {
+            echo "Node: $(node --version)"
+            echo "Bun: $(bun --version)"
+            echo "Java: $(java -version 2>&1 | sed -n '1p')"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Locate existing Android SDK tools
+        id: sdk-tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          tool=$(command -v sdkmanager || true)
+          if [[ -z "$tool" && -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]]; then tool="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"; fi
+          if [[ -z "$tool" ]]; then echo "Existing sdkmanager not found" >&2; exit 1; fi
+          echo "sdkmanager=$tool" >> "$GITHUB_OUTPUT"
+
+      - name: Accept Android SDK licenses and install exact revisions
+        shell: bash
+        env:
+          SDKMANAGER: ${{ steps.sdk-tools.outputs.sdkmanager }}
+        run: |
+          set -euo pipefail
+          "$SDKMANAGER" --licenses < <(yes)
+          "$SDKMANAGER" 'platforms;android-37.0' 'build-tools;37.0.0' 'ndk;29.0.13113456' 'platform-tools'
+      - name: Verify installed apksigner
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -x "$ANDROID_HOME/build-tools/37.0.0/apksigner" ]] || { echo "Installed apksigner missing" >&2; exit 1; }
+      - name: Materialize signing and app configuration
+        shell: bash
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          ANDROID_HOME_BANNER_AD_UNIT_ID: ${{ secrets.ANDROID_HOME_BANNER_AD_UNIT_ID }}
+          ANDROID_NOTI_BANNER_AD_UNIT_ID: ${{ secrets.ANDROID_NOTI_BANNER_AD_UNIT_ID }}
+          ANDROID_SCHEDULE_NATIVE_AD_UNIT_ID: ${{ secrets.ANDROID_SCHEDULE_NATIVE_AD_UNIT_ID }}
+          ANDROID_MEAL_NATIVE_AD_UNIT_ID: ${{ secrets.ANDROID_MEAL_NATIVE_AD_UNIT_ID }}
+          ANDROID_NOTI_NATIVE_AD_UNIT_ID: ${{ secrets.ANDROID_NOTI_NATIVE_AD_UNIT_ID }}
+          IOS_HOME_BANNER_AD_UNIT_ID: ${{ secrets.IOS_HOME_BANNER_AD_UNIT_ID }}
+          IOS_NOTI_BANNER_AD_UNIT_ID: ${{ secrets.IOS_NOTI_BANNER_AD_UNIT_ID }}
+          IOS_SCHEDULE_NATIVE_AD_UNIT_ID: ${{ secrets.IOS_SCHEDULE_NATIVE_AD_UNIT_ID }}
+          IOS_MEAL_NATIVE_AD_UNIT_ID: ${{ secrets.IOS_MEAL_NATIVE_AD_UNIT_ID }}
+          IOS_NOTI_NATIVE_AD_UNIT_ID: ${{ secrets.IOS_NOTI_NATIVE_AD_UNIT_ID }}
+        run: |
+          set -euo pipefail
+          umask 077
+          printf '%s' "$GOOGLE_SERVICES_JSON" | base64 --decode > android/app/google-services.json
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/slunchv2-release.keystore"
+          node <<'NODE'
+          const fs = require('node:fs');
+          const config = JSON.parse(fs.readFileSync('android/app/google-services.json', 'utf8'));
+          if (!config.client?.some(client => client.client_info?.android_client_info?.package_name === 'kr.ny64.slunchv2')) {
+            throw new Error('GOOGLE_SERVICES_JSON has no Android client for kr.ny64.slunchv2');
+          }
+          const names = ['API_BASE_URL','ANDROID_HOME_BANNER_AD_UNIT_ID','ANDROID_NOTI_BANNER_AD_UNIT_ID','ANDROID_SCHEDULE_NATIVE_AD_UNIT_ID','ANDROID_MEAL_NATIVE_AD_UNIT_ID','ANDROID_NOTI_NATIVE_AD_UNIT_ID','IOS_HOME_BANNER_AD_UNIT_ID','IOS_NOTI_BANNER_AD_UNIT_ID','IOS_SCHEDULE_NATIVE_AD_UNIT_ID','IOS_MEAL_NATIVE_AD_UNIT_ID','IOS_NOTI_NATIVE_AD_UNIT_ID'];
+          const quote = value => {
+            if (/[\r\n]/.test(value)) throw new Error('Environment values must not contain line breaks');
+            return '"' + value.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+          };
+          fs.writeFileSync('.env', names.map(name => `${name}=${quote(process.env[name] ?? '')}`).join('\n') + '\n', { mode: 0o600 });
+          NODE
+          echo "RN_UPLOAD_STORE_FILE=$RUNNER_TEMP/slunchv2-release.keystore" >> "$GITHUB_ENV"
+          echo "SENTRY_DISABLE_AUTO_UPLOAD=true" >> "$GITHUB_ENV"
+          echo "SENTRY_DISABLE_NATIVE_DEBUG_UPLOAD=true" >> "$GITHUB_ENV"
+
+      - name: Install locked JavaScript dependencies
+        run: bun install --frozen-lockfile --ignore-scripts
+
+      - name: Verify patches, tests, types, and lint
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'namespace "io.xogus.reactnative.versioncheck"' node_modules/react-native-version-check/android/build.gradle
+          grep -q 'namespace "com.BV.LinearGradient"' node_modules/react-native-linear-gradient/android/build.gradle
+          grep -q "proguard-android-optimize.txt" node_modules/react-native-date-picker/android/build.gradle
+          if grep -q 'package=' node_modules/react-native-version-check/android/src/main/AndroidManifest.xml node_modules/react-native-linear-gradient/android/src/main/AndroidManifest.xml node_modules/react-native-date-picker/android/src/main/AndroidManifest.xml; then exit 1; fi
+          if grep -q 'proguard-android.txt' node_modules/react-native-date-picker/android/build.gradle; then exit 1; fi
+          bun run test -- --runInBand
+          ./node_modules/.bin/tsc --noEmit -p .
+          bun run lint
+
+      - name: Assemble signed release APK and AAB
+        id: gradle
+        shell: bash
+        env:
+          RN_UPLOAD_STORE_FILE: ${{ runner.temp }}/slunchv2-release.keystore
+          RN_UPLOAD_STORE_PASSWORD: ${{ secrets.RN_UPLOAD_STORE_PASSWORD }}
+          RN_UPLOAD_KEY_ALIAS: ${{ secrets.RN_UPLOAD_KEY_ALIAS }}
+          RN_UPLOAD_KEY_PASSWORD: ${{ secrets.RN_UPLOAD_KEY_PASSWORD }}
+          SENTRY_DISABLE_AUTO_UPLOAD: 'true'
+          SENTRY_DISABLE_NATIVE_DEBUG_UPLOAD: 'true'
+        # R8 exhausted the default 2 GiB heap during release minification.
+        run: |
+          set -euo pipefail
+          cd android
+          ./gradlew app:assembleRelease app:bundleRelease --no-daemon --max-workers=2 -Dorg.gradle.jvmargs="-Xmx6144m -XX:MaxMetaspaceSize=512m" -PreactNativeArchitectures=arm64-v8a
+
+      - name: Verify release artifacts
+        id: artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk=android/app/build/outputs/apk/release/app-release.apk
+          aab=android/app/build/outputs/bundle/release/app-release.aab
+          test -s "$apk"
+          test -s "$aab"
+          python3 - "$apk" "$aab" <<'PY'
+          import sys, zipfile
+          apk, aab = map(zipfile.ZipFile, sys.argv[1:])
+          apk_names, aab_names = apk.namelist(), aab.namelist()
+          assert 'AndroidManifest.xml' in apk_names and any(name.endswith('.dex') for name in apk_names), 'APK missing manifest or dex'
+          assert any(name.startswith('lib/arm64-v8a/') and name.endswith('.so') for name in apk_names), 'APK missing ARM64 native library'
+          assert 'base/manifest/AndroidManifest.xml' in aab_names and any(name.startswith('base/lib/arm64-v8a/') and name.endswith('.so') for name in aab_names), 'AAB missing manifest or ARM64 native library'
+          PY
+          signer="$ANDROID_HOME/build-tools/37.0.0/apksigner"
+          [[ -x "$signer" ]] || signer=$(command -v apksigner)
+          "$signer" verify "$apk"
+          jarsigner -verify "$aab"
+          {
+            echo "APK bytes: $(stat -c '%s' "$apk")"
+            echo "APK SHA-256: $(sha256sum "$apk" | cut -d' ' -f1)"
+            echo "AAB bytes: $(stat -c '%s' "$aab")"
+            echo "AAB SHA-256: $(sha256sum "$aab" | cut -d' ' -f1)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Summarize outcome and clean secrets
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          rm -f .env android/app/google-services.json "$RUNNER_TEMP/slunchv2-release.keystore"
+          {
+            echo "### Android build outcome"
+            echo "Gradle step outcome: ${{ steps.gradle.outcome }}"
+            echo "Artifact verification outcome: ${{ steps.artifacts.outcome }}"
+            echo "APK present: $([[ -s android/app/build/outputs/apk/release/app-release.apk ]] && echo yes || echo no)"
+            echo "AAB present: $([[ -s android/app/build/outputs/bundle/release/app-release.aab ]] && echo yes || echo no)"
+          } >> "$GITHUB_STEP_SUMMARY"

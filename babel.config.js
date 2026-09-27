@@ -1,26 +1,31 @@
-module.exports = {
-  presets: ['module:@react-native/babel-preset'],
-  plugins: [
-    [
-      'module:react-native-dotenv',
-      {
-        moduleName: '@env',
-        path: '.env',
-        safe: false,
-        allowUndefined: false,
-      },
-    ],
-    [
-      'module-resolver',
-      {
-        root: ['.'],
-        extensions: ['.ios.js', '.android.js', '.js', '.jsx', '.ts', '.tsx', '.json'],
-        alias: {
-          '@': './src',
+module.exports = api => {
+  const isTest = api.env('test');
+  return {
+    presets: ['module:@react-native/babel-preset'],
+    plugins: [
+      ...(!isTest ? [
+        [
+          'module:react-native-dotenv',
+          {
+            moduleName: '@env',
+            path: '.env',
+            safe: false,
+            allowUndefined: false,
+          },
+        ],
+      ] : []),
+      [
+        'module-resolver',
+        {
+          root: ['.'],
+          extensions: ['.ios.js', '.android.js', '.js', '.jsx', '.ts', '.tsx', '.json'],
+          alias: {
+            '@': './src',
+          },
         },
-      },
+      ],
+      'react-native-boost/plugin',
+      'react-native-worklets/plugin',
     ],
-    'react-native-boost/plugin',
-    'react-native-worklets/plugin',
-  ],
+  };
 };

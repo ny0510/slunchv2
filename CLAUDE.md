@@ -24,9 +24,8 @@ bun android
 bun lint
 
 # Testing
-bun test
+bun run test -- --runInBand
 ```
-
 ### iOS-specific
 ```bash
 # Install/update CocoaPods dependencies
@@ -106,7 +105,8 @@ src/
 ## Testing Approach
 - Jest with React Native preset
 - Test files should be placed alongside source files
-- Run specific tests with: `bun test <filename>`
+- Run tests with: `bun run test -- --runInBand`
+- Run a specific test with: `bun run test -- --runInBand <filename>`
 
 ## Build Requirements
 - Node.js >= 18

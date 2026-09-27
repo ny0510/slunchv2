@@ -1,11 +1,11 @@
-import {useEffect} from 'react';
-import {NativeModules, Platform} from 'react-native';
+import { useEffect } from 'react';
+import { NativeModules } from 'react-native';
 
-import type {WidgetBridge} from '@/types/WidgetBridge';
-import type {UserSchoolInfo} from '@/types/user';
+import type { WidgetBridge } from '@/types/WidgetBridge';
+import type { UserSchoolInfo } from '@/types/user';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const {WidgetBridge} = NativeModules as {WidgetBridge: WidgetBridge};
+const { WidgetBridge } = NativeModules as { WidgetBridge: WidgetBridge };
 
 export const useWidget = () => {
   useEffect(() => {
@@ -17,7 +17,7 @@ export const useWidget = () => {
     // 앱 시작 시 학교 정보를 네이티브로 동기화
     syncSchoolInfoToNative();
 
-    return () => {};
+    return () => { };
   }, []);
 
   const syncSchoolInfoToNative = async () => {

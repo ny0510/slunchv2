@@ -2,7 +2,7 @@ import React from 'react';
 import { PermissionsAndroid, Platform, Text, View } from 'react-native';
 import Share, { ShareSingleOptions, Social } from 'react-native-share';
 import TouchableScale from 'react-native-touchable-scale';
-import ViewShot from 'react-native-view-shot';
+import ViewShot, { type ViewShotRef } from 'react-native-view-shot';
 
 import Logo from '@/assets/images/logo.svg';
 import Container from '@/components/Container';
@@ -10,18 +10,18 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { showToast } from '@/lib/toast';
 import { RootStackParamList } from '@/navigation/RootStacks';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
-import analytics from '@react-native-firebase/analytics';
+import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import { StackScreenProps } from '@react-navigation/stack';
 
 const ShareScreen = ({ route }: StackScreenProps<RootStackParamList, 'Share'>) => {
   const { data } = route.params;
-  const viewShotRef = React.useRef<ViewShot>(null);
+  const viewShotRef = React.useRef<ViewShotRef>(null);
 
   const { theme, typography } = useTheme();
 
   const shareToInstagramStory = async () => {
-    analytics().logEvent('share_to_instagram_story');
+    logEvent(getAnalytics(), 'share_to_instagram_story');
     const viewShot = viewShotRef.current;
     if (!viewShot) {
       return showToast('이미지 캡처에 실패했어요.');
@@ -58,7 +58,7 @@ const ShareScreen = ({ route }: StackScreenProps<RootStackParamList, 'Share'>) =
   };
 
   const shareToImage = async () => {
-    analytics().logEvent('share_to_image');
+    logEvent(getAnalytics(), 'share_to_image');
     const viewShot = viewShotRef.current;
     if (!viewShot) {
       return showToast('이미지 캡처에 실패했어요.');
@@ -203,7 +203,7 @@ const ShareScreen = ({ route }: StackScreenProps<RootStackParamList, 'Share'>) =
                 // Save to gallery using CameraRoll.saveAsset
                 await CameraRoll.saveAsset(`file://${capturedImageUri}`, { type: 'photo' });
 
-                analytics().logEvent('meal_save_to_gallery');
+                logEvent(getAnalytics(), 'meal_save_to_gallery');
                 showToast('갤러리에 저장되었어요.');
               } catch (error) {
                 console.error('Failed to save image:', error);

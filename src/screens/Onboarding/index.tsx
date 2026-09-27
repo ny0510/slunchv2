@@ -1,29 +1,27 @@
+import WheelPicker from '@quidone/react-native-wheel-picker';
 import dayjs from 'dayjs';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Alert, FlatList, ImageBackground, Platform, Text, TextInput, TouchableOpacity, View} from 'react-native';
-import {trigger} from 'react-native-haptic-feedback';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Alert, FlatList, ImageBackground, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { trigger } from 'react-native-haptic-feedback';
 import LinearGradient from 'react-native-linear-gradient';
 
-import {createStyles} from './styles';
-import {comciganSchoolSearch, getClassList, neisSchoolSearch, removeMealNotification, removeTimetableNotification} from '@/api';
-import LogoIcon from '@/assets/images/logo.svg';
+import { createStyles } from './styles';
+import { comciganSchoolSearch, getClassList, neisSchoolSearch, removeMealNotification, removeTimetableNotification } from '@/api';
 import Loading from '@/components/Loading';
-import SlotMachine from '@/components/SlotMachine';
-import {useTheme} from '@/contexts/ThemeContext';
-import {useUser} from '@/contexts/UserContext';
-import {useFirstOpen} from '@/hooks/useFirstOpen';
-import {useWidget} from '@/hooks/useWidget';
-import {showToast} from '@/lib/toast';
-import {RootStackParamList} from '@/navigation/RootStacks';
-import {School} from '@/types/api';
-import {ClassData, SchoolData} from '@/types/onboarding';
-import notifee, {AuthorizationStatus} from '@notifee/react-native';
-import WheelPicker, {type PickerItem} from '@quidone/react-native-wheel-picker';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useUser } from '@/contexts/UserContext';
+import { useFirstOpen } from '@/hooks/useFirstOpen';
+import { useWidget } from '@/hooks/useWidget';
+import { showToast } from '@/lib/toast';
+import { RootStackParamList } from '@/navigation/RootStacks';
+import { School } from '@/types/api';
+import { ClassData, SchoolData } from '@/types/onboarding';
+import notifee, { AuthorizationStatus } from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import analytics from '@react-native-firebase/analytics';
+import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
-import {NavigationProp, useNavigation} from '@react-navigation/native';
-import {StackScreenProps} from '@react-navigation/stack';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { StackScreenProps } from '@react-navigation/stack';
 
 // Constants
 const DEMO_SCHOOL_DATA: SchoolData = {
@@ -37,33 +35,11 @@ const DEMO_SCHOOL_DATA: SchoolData = {
 
 const SEARCH_DEBOUNCE_DELAY = 300;
 const LONG_PRESS_DELAY = 2000;
-const SLOT_MACHINE_DELAY = 1500;
-const SLOT_MACHINE_DURATION = 300;
 
-const INTRO_MESSAGES = [
-  '🍽️ 급식 뭐 나오지?',
-  '📚 오늘 1교시가..',
-  '📅 중요한 학사일정은?',
-  '🎈 곧 있을 학교 행사는?',
-  '⏰ 내일 시간표는?',
-  '🍕 오늘 점심 맛있을까?',
-  '📝 시험 언제였지?',
-  '🎒 내일 준비물은?',
-  '🏃 체육 있는 날인가?',
-  '📖 과제 뭐 있었지?',
-  '🚌 몇 시에 끝나지?',
-  '☔ 우산 챙겨야 하나?',
-  '📌 오늘 공지사항은?',
-  '🎯 놓친 일정 없나?',
-  '💭 방과후 뭐하지?',
-  '🤷 오늘 뭐 먹지?',
-  '📚 다음 수업 뭐더라?',
-  '🎪 이번 주 행사는?',
-]; // const INTRO_MESSAGES = ['🚀 학교생활이 편해진다', '✨ 모든 정보를 한눈에', '📱 스마트한 학교생활', '🎯 놓치는 일정이 없도록'];
 
 // Utility functions
 const logScreenView = (screenName: string, screenClass: string) => {
-  analytics().logScreenView({screen_name: screenName, screen_class: screenClass});
+  logEvent(getAnalytics(), 'screen_view', { screen_name: screenName, screen_class: screenClass });
 };
 
 const handleError = (error: unknown, message: string) => {
@@ -81,7 +57,7 @@ const SearchEmptyState = React.memo<{
   hasInput: boolean;
   hasResults: boolean;
   styles: any;
-}>(({isLoading, hasInput, hasResults, styles}) => {
+}>(({ isLoading, hasInput, hasResults, styles }) => {
   if (isLoading) {
     return (
       <View style={styles.centerView}>
@@ -109,35 +85,23 @@ const SearchEmptyState = React.memo<{
   return null;
 });
 
-const SchoolListItem = React.memo<{
-  item: School;
-  onPress: (school: School) => void;
-  schoolNameStyle: any;
-  addressStyle: any;
-  itemStyle: any;
-}>(({item, onPress, schoolNameStyle, addressStyle, itemStyle}) => (
-  <TouchableOpacity style={itemStyle} onPress={() => onPress(item)}>
-    <Text style={schoolNameStyle}>{item.schoolName}</Text>
-    <Text style={addressStyle}>{item.region}</Text>
-  </TouchableOpacity>
-));
 
 export const IntroScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const {refreshUserData} = useUser();
-  const {syncSchoolInfoToNative} = useWidget();
+  const { refreshUserData } = useUser();
+  const { syncSchoolInfoToNative } = useWidget();
 
-  const {theme, typography, isDark} = useTheme();
+  const { theme, typography, isDark } = useTheme();
   const s = createStyles(theme, typography);
 
   const handlePress = useCallback(() => {
-    navigation.navigate('SchoolSearch', {isFirstOpen: true});
+    navigation.navigate('SchoolSearch', { isFirstOpen: true });
   }, [navigation]);
 
   const handleLongPress = useCallback(() => {
     trigger('impactLight');
     Alert.alert('데모 모드', '데모 모드에서는 학교를 선택할 수 없어요.\n계속하시겠습니까?', [
-      {text: '아니요', style: 'cancel'},
+      { text: '아니요', style: 'cancel' },
       {
         text: '네',
         onPress: async () => {
@@ -145,7 +109,7 @@ export const IntroScreen = () => {
             await setStorageItems({
               demoMode: 'true',
               school: JSON.stringify(DEMO_SCHOOL_DATA),
-              class: JSON.stringify({grade: 1, class: 1}),
+              class: JSON.stringify({ grade: 1, class: 1 }),
             });
             await syncSchoolInfoToNative();
             refreshUserData();
@@ -156,7 +120,7 @@ export const IntroScreen = () => {
         },
       },
     ]);
-  }, [navigation]);
+  }, [navigation, syncSchoolInfoToNative, refreshUserData]);
 
   useEffect(() => {
     logScreenView('온보딩 스크린', 'Onboarding');
@@ -164,7 +128,7 @@ export const IntroScreen = () => {
 
   return (
     <View style={s.introContainer}>
-      <LinearGradient colors={[theme.background, 'transparent']} start={{x: 0, y: -0.5}} end={{x: 0, y: 1}} style={s.introGradientTop} />
+      <LinearGradient colors={[theme.background, 'transparent']} start={{ x: 0, y: -0.5 }} end={{ x: 0, y: 1 }} style={s.introGradientTop} />
       <View style={s.introImageContainer}>
         <ImageBackground blurRadius={5} source={isDark ? require('@/assets/images/onboarding_dark.png') : require('@/assets/images/onboarding_white.png')} style={s.introBackgroundImage} />
       </View>
@@ -184,7 +148,6 @@ export const IntroScreen = () => {
             <Text style={s.introWelcomeSubtitle}>급식, 시간표, 학사일정을{'\n'}한 번에 확인하세요</Text>
           </View> */}
 
-          {/* <SlotMachine list={INTRO_MESSAGES} style={s.introSlotMachine} delay={SLOT_MACHINE_DELAY} duration={SLOT_MACHINE_DURATION} /> */}
 
           {/* <View style={s.introFeatureGrid}>
             <LinearGradient colors={[`${theme.highlight}15`, `${theme.highlight}05`]} style={s.introFeatureCard} start={{x: 0, y: 0}} end={{x: 1, y: 1}}>
@@ -242,11 +205,11 @@ export const IntroScreen = () => {
   );
 };
 
-export const SchoolSearchScreen = ({route}: StackScreenProps<RootStackParamList, 'SchoolSearch'>) => {
+export const SchoolSearchScreen = ({ route }: StackScreenProps<RootStackParamList, 'SchoolSearch'>) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const {isFirstOpen = true} = route.params;
+  const { isFirstOpen = true } = route.params;
 
-  const {theme, typography} = useTheme();
+  const { theme, typography } = useTheme();
   const s = createStyles(theme, typography);
 
   const [inputText, setInputText] = useState('');
@@ -255,7 +218,7 @@ export const SchoolSearchScreen = ({route}: StackScreenProps<RootStackParamList,
 
   const handleSchoolPress = useCallback(
     (school: School) => {
-      navigation.navigate('ClassSelect', {school, isFirstOpen});
+      navigation.navigate('ClassSelect', { school, isFirstOpen });
     },
     [navigation, isFirstOpen],
   );
@@ -339,7 +302,7 @@ export const SchoolSearchScreen = ({route}: StackScreenProps<RootStackParamList,
             style={s.searchResultList}
             data={schoolList}
             keyExtractor={item => item.schoolCode.toString()}
-            renderItem={({item}) => (
+            renderItem={({ item }) => (
               <TouchableOpacity style={s.searchResultItem} onPress={() => handleSchoolPress(item)} activeOpacity={0.7}>
                 <View style={s.searchResultContent}>
                   <Text style={s.searchResultName}>{item.schoolName}</Text>
@@ -355,11 +318,11 @@ export const SchoolSearchScreen = ({route}: StackScreenProps<RootStackParamList,
   );
 };
 
-export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 'ClassSelect'>) => {
+export const ClassSelectScreen = ({ route }: StackScreenProps<RootStackParamList, 'ClassSelect'>) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const {school, isFirstOpen = true} = route.params;
-  const {refreshUserData} = useUser();
-  const {syncSchoolInfoToNative} = useWidget();
+  const { school, isFirstOpen = true } = route.params;
+  const { refreshUserData } = useUser();
+  const { syncSchoolInfoToNative } = useWidget();
 
   const [gradeList, setGradeList] = useState<number[]>([]);
   const [classList, setClassList] = useState<number[][]>([]);
@@ -368,8 +331,8 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
-  const {completeOnboarding} = useFirstOpen();
-  const {theme, typography, isDark} = useTheme();
+  const { completeOnboarding } = useFirstOpen();
+  const { theme, typography, isDark } = useTheme();
   const s = createStyles(theme, typography);
 
   useEffect(() => {
@@ -446,7 +409,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
         neisRegionCode: neisSchool.regionCode,
       };
 
-      const classData: ClassData = {grade: selectedGrade, class: selectedClass};
+      const classData: ClassData = { grade: selectedGrade, class: selectedClass };
 
       // Set storage items
       await Promise.all([
@@ -513,7 +476,7 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
 
       navigation.reset({
         index: 0,
-        routes: [{name: 'Tab'}],
+        routes: [{ name: 'Tab' }],
       });
     } catch (error) {
       handleError(error, '학교 정보를 불러오는 중 오류가 발생했어요.');
@@ -543,11 +506,11 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
             <>
               <View style={s.classSelectPickerContainer}>
                 <WheelPicker
-                  data={gradeList.map(grade => ({value: grade, label: `${grade}학년`}))}
+                  data={gradeList.map(grade => ({ value: grade, label: `${grade}학년` }))}
                   value={selectedGrade}
                   itemHeight={50}
                   visibleItemCount={5}
-                  onValueChanged={({item}) => handleGradeChange(gradeList.indexOf(item.value) + 1)}
+                  onValueChanged={({ item }) => handleGradeChange(gradeList.indexOf(item.value) + 1)}
                   itemTextStyle={{
                     fontSize: 20,
                     color: theme.primaryText,
@@ -556,18 +519,18 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
                   overlayItemStyle={
                     isDark
                       ? {
-                          backgroundColor: theme.white,
-                        }
+                        backgroundColor: theme.white,
+                      }
                       : undefined
                   }
-                  style={{flex: 1}}
+                  style={{ flex: 1 }}
                 />
                 <WheelPicker
-                  data={(classList[gradeList.indexOf(selectedGrade)] || []).map(cls => ({value: cls, label: `${cls}반`}))}
+                  data={(classList[gradeList.indexOf(selectedGrade)] || []).map(cls => ({ value: cls, label: `${cls}반` }))}
                   value={selectedClass}
                   itemHeight={50}
                   visibleItemCount={5}
-                  onValueChanged={({item}) => handleClassChange((classList[gradeList.indexOf(selectedGrade)] || []).indexOf(item.value) + 1)}
+                  onValueChanged={({ item }) => handleClassChange((classList[gradeList.indexOf(selectedGrade)] || []).indexOf(item.value) + 1)}
                   itemTextStyle={{
                     fontSize: 20,
                     color: theme.primaryText,
@@ -576,11 +539,11 @@ export const ClassSelectScreen = ({route}: StackScreenProps<RootStackParamList, 
                   overlayItemStyle={
                     isDark
                       ? {
-                          backgroundColor: theme.white,
-                        }
+                        backgroundColor: theme.white,
+                      }
                       : undefined
                   }
-                  style={{flex: 1}}
+                  style={{ flex: 1 }}
                 />
               </View>
 

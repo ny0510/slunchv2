@@ -1,13 +1,13 @@
-import React, {useRef} from 'react';
-import {Alert, View} from 'react-native';
+import React, { useRef } from 'react';
+import { Alert, View } from 'react-native';
 
 import Content from './Content';
 import Card from '@/components/Card';
-import {useTheme} from '@/contexts/ThemeContext';
-import {useFirstOpen} from '@/hooks/useFirstOpen';
-import {RootStackParamList} from '@/navigation/RootStacks';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useFirstOpen } from '@/hooks/useFirstOpen';
+import { RootStackParamList } from '@/navigation/RootStacks';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {NavigationProp, useNavigation} from '@react-navigation/native';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 
 const clearCache = async (prefix: string) => {
   try {
@@ -15,7 +15,7 @@ const clearCache = async (prefix: string) => {
     const cacheKeys = keys.filter(key => key.startsWith(prefix));
 
     if (cacheKeys.length > 0) {
-      await AsyncStorage.multiRemove(cacheKeys);
+      await AsyncStorage.removeMany(cacheKeys);
     }
 
     console.log('Cache cleared:', cacheKeys);
@@ -26,8 +26,8 @@ const clearCache = async (prefix: string) => {
 
 const DeveloperSettingCard = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const {typography} = useTheme();
-  const {setFirstOpen} = useFirstOpen();
+  const { typography } = useTheme();
+  const { setFirstOpen } = useFirstOpen();
 
   const cacheClearInProgress = useRef(false);
   const appDataClearInProgress = useRef(false);
@@ -48,11 +48,11 @@ const DeveloperSettingCard = () => {
 
           clearCache('@cache/')
             .then(() => {
-              Alert.alert('캐시 삭제', '캐시가 삭제되었어요.', [{text: '확인'}]);
+              Alert.alert('캐시 삭제', '캐시가 삭제되었어요.', [{ text: '확인' }]);
             })
             .catch(error => {
               console.error('Cache clear error:', error);
-              Alert.alert('오류', '캐시 삭제 중 오류가 발생했어요.', [{text: '확인'}]);
+              Alert.alert('오류', '캐시 삭제 중 오류가 발생했어요.', [{ text: '확인' }]);
             })
             .finally(() => {
               cacheClearInProgress.current = false;
@@ -66,7 +66,7 @@ const DeveloperSettingCard = () => {
     if (appDataClearInProgress.current) return;
 
     Alert.alert('앱 데이터 삭제', '앱 데이터를 삭제하시겠습니까?', [
-      {text: '아니요', style: 'cancel'},
+      { text: '아니요', style: 'cancel' },
       {
         text: '네',
         onPress: () => {
@@ -75,11 +75,11 @@ const DeveloperSettingCard = () => {
 
           Promise.all([AsyncStorage.clear(), setFirstOpen(true)])
             .then(() => {
-              navigation.reset({routes: [{name: 'Intro'}]});
+              navigation.reset({ routes: [{ name: 'Intro' }] });
             })
             .catch(error => {
               console.error('App data clear error:', error);
-              Alert.alert('오류', '앱 데이터 삭제 중 오류가 발생했어요.', [{text: '확인'}]);
+              Alert.alert('오류', '앱 데이터 삭제 중 오류가 발생했어요.', [{ text: '확인' }]);
             })
             .finally(() => {
               appDataClearInProgress.current = false;
@@ -90,8 +90,8 @@ const DeveloperSettingCard = () => {
   };
 
   return (
-    <Card title="개발자 설정" titleStyle={{fontSize: typography.body.fontSize}}>
-      <View style={{gap: 8, marginTop: 8}}>
+    <Card title="개발자 설정" titleStyle={{ fontSize: typography.body.fontSize }}>
+      <View style={{ gap: 8, marginTop: 8 }}>
         <Content title="캐시 삭제" arrow onPress={handleCacheClear} />
         <Content title="앱 데이터 삭제" arrow onPress={handleAppDataClear} />
       </View>

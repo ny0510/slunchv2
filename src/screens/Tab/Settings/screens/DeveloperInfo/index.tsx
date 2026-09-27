@@ -33,7 +33,7 @@ const DeveloperCard = ({ name, role, profileImage, isFurry }: { name: string; ro
   return (
     <View style={{ flexDirection: 'row', alignContent: 'center', gap: 10 }}>
       <Pressable onPress={handleProfileTap}>
-        <ImageBackground src={profileImage || `${API_BASE_URL}/public/default_profile.png`} style={{ width: 48, height: 48, backgroundColor: theme.border, borderRadius: 48 / 2 }} borderRadius={48 / 2} />
+        <ImageBackground src={profileImage || `${API_BASE_URL}/public/default_profile.png`} style={{ width: 48, height: 48, backgroundColor: theme.border, borderRadius: 48 / 2 }} />
       </Pressable>
       <View style={{ justifyContent: 'center', gap: 4 }}>
         <Text style={[typography.body, { color: theme.primaryText, fontWeight: '600' }]}>{name}</Text>

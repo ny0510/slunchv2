@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import React, { useCallback, useEffect, useState, useImperativeHandle, forwardRef } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { TouchableOpacity, ScrollView } from 'react-native-gesture-handler';
 import DropDownPicker from 'react-native-dropdown-picker';
 
@@ -31,7 +31,6 @@ const GradeTimetableCard = forwardRef<GradeTimetableCardRef, GradeTimetableCardP
 
   const [timetable, setTimetable] = useState<Timetable[][][]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [todayIndex, setTodayIndex] = useState<number>(dayjs().day() - 1);
   const [isNextWeek, setIsNextWeek] = useState(false);
   const [selectedGrade, setSelectedGrade] = useState<number>(Number(classInfo.grade) || 1);
   const [selectedDay, setSelectedDay] = useState<number>(() => {
@@ -80,7 +79,6 @@ const GradeTimetableCard = forwardRef<GradeTimetableCardRef, GradeTimetableCardP
   }, [schoolInfo.comciganCode, selectedGrade, isNextWeek]);
 
   useEffect(() => {
-    setTodayIndex(dayjs().day() - 1);
     fetchTimetable();
   }, [fetchTimetable]);
 
@@ -276,7 +274,7 @@ const GradeTimetableCard = forwardRef<GradeTimetableCardRef, GradeTimetableCardP
 
 GradeTimetableCard.displayName = 'GradeTimetableCard';
 
-const LoadingView = ({ height }: { height: number }) => (
+const LoadingView = ({ height: _height }: { height: number }) => (
   <View style={styles.loadingView}>
     <Loading />
   </View>

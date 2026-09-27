@@ -1,35 +1,29 @@
 import dayjs from 'dayjs';
-import React, {useEffect} from 'react';
-import {AppRegistry, Platform} from 'react-native';
+import React, { useEffect } from 'react';
+import { AppRegistry, Platform } from 'react-native';
 import mobileAds from 'react-native-google-mobile-ads';
-import changeNavigationBarColor from 'react-native-navigation-bar-color';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {enableScreens} from 'react-native-screens';
-import {showSplash} from 'react-native-splash-view';
-import {getTrackingStatus, requestTrackingPermission} from 'react-native-tracking-transparency';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { enableScreens } from 'react-native-screens';
+import { showSplash } from 'react-native-splash-view';
+import { getTrackingStatus, requestTrackingPermission } from 'react-native-tracking-transparency';
 
-import {name as appName} from './app.json';
+import { name as appName } from './app.json';
 import App from '@/App';
-import {ThemeProvider} from '@/contexts/ThemeContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import notifee from '@notifee/react-native';
-import analytics from '@react-native-firebase/analytics';
+import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
 import 'dayjs/locale/ko';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
-global.RNFB_SILENCE_MODULAR_DEPRECATION_WARNINGS = true;
 
-const Root = ({isHeadless}) => {
+const Root = ({ isHeadless }) => {
   showSplash();
   enableScreens();
 
   dayjs.locale('ko');
   dayjs.extend(isSameOrAfter);
   dayjs.extend(relativeTime);
-
-  if (Platform.OS === 'android') {
-    changeNavigationBarColor('transparent', true);
-  }
 
   useEffect(() => {
     (async () => {
@@ -57,17 +51,17 @@ const Root = ({isHeadless}) => {
   }, []);
 
   useEffect(() => {
-    async () => {
-      await mobileAds().setRequestConfiguration({testDeviceIdentifiers: ['EMULATOR']});
+    (async () => {
+      await mobileAds().setRequestConfiguration({ testDeviceIdentifiers: ['EMULATOR'] });
       const adapterStatuses = await mobileAds().initialize();
       console.log(`[AdMob] Adapter Statuses: ${JSON.stringify(adapterStatuses)}`);
-    };
+    })();
   }, []);
 
   useEffect(() => {
     notifee.getInitialNotification().then(remoteMessage => {
       if (remoteMessage) {
-        analytics().logEvent('notification_open', {
+        logEvent(getAnalytics(), 'notification_open', {
           title: remoteMessage.notification?.title,
           body: remoteMessage.notification?.body,
         });

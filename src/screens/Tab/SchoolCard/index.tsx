@@ -1,22 +1,22 @@
-import React, {useCallback, useEffect, useState} from 'react';
-import {Modal, Text, TouchableOpacity, View} from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Modal, Text, TouchableOpacity, View } from 'react-native';
 
 import Barcode from './components/Barcode';
 import IDCard from './components/IDCard';
 import Container from '@/components/Container';
-import {useAuth} from '@/contexts/AuthContext';
-import {useTheme} from '@/contexts/ThemeContext';
-import {showToast} from '@/lib/toast';
-import DeviceBrightness from '@adrianso/react-native-device-brightness';
+import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { showToast } from '@/lib/toast';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import analytics from '@react-native-firebase/analytics';
+import { getBrightnessLevel, setBrightnessLevel } from '@reeq/react-native-device-brightness';
+import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
-import {useIsFocused} from '@react-navigation/native';
-import {activateKeepAwake, deactivateKeepAwake} from '@sayem314/react-native-keep-awake';
+import { useIsFocused } from '@react-navigation/native';
+import { activateKeepAwake, deactivateKeepAwake } from '@sayem314/react-native-keep-awake';
 
 const SchoolCard = () => {
-  const {user, login, logout, loading} = useAuth();
-  const {theme, typography} = useTheme();
+  const { user, login, logout, loading } = useAuth();
+  const { theme, typography } = useTheme();
   const isFocused = useIsFocused();
 
   const [name, setName] = useState<string>('');
@@ -32,7 +32,7 @@ const SchoolCard = () => {
   const [isNewStudent, setIsNewStudent] = useState(false);
 
   useEffect(() => {
-    analytics().logScreenView({screen_name: '학생증 페이지', screen_class: 'SchoolCard'});
+    logEvent(getAnalytics(), 'screen_view', { screen_name: '학생증 페이지', screen_class: 'SchoolCard' });
   }, []);
 
   // 화면이 포커스될 때만 화면 자동 꺼짐 방지
@@ -154,9 +154,8 @@ const SchoolCard = () => {
     if (isNewStudent) return;
 
     try {
-      const currentBrightness = await DeviceBrightness.getBrightnessLevel();
-      setOriginalBrightness(currentBrightness);
-      await DeviceBrightness.setBrightnessLevel(1);
+      setOriginalBrightness(getBrightnessLevel());
+      setBrightnessLevel(1);
       setIsModalVisible(true);
     } catch (error) {
       console.error('Error adjusting brightness:', error);
@@ -166,7 +165,7 @@ const SchoolCard = () => {
   const handleCloseModal = useCallback(async () => {
     try {
       if (originalBrightness !== null) {
-        await DeviceBrightness.setBrightnessLevel(originalBrightness);
+        setBrightnessLevel(originalBrightness);
       }
       setIsModalVisible(false);
     } catch (error) {
@@ -179,11 +178,11 @@ const SchoolCard = () => {
   }
 
   return (
-    <Container style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
+    <Container style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
       {isDemoUser || (user && isSunrinEmail) ? (
-        <View style={{width: '100%', alignItems: 'center', gap: 16}}>
+        <View style={{ width: '100%', alignItems: 'center', gap: 16 }}>
           <IDCard name={name} schoolName="선린인터넷고등학교" generation={generation.toString()} grade={grade} classNum={classNum} number={number} barcodeValue={barcodeValue} handleBarcodePress={handleBarcodePress} isNewStudent={isNewStudent} />
-          <View style={{alignItems: 'center', gap: 8, marginTop: 8}}>
+          <View style={{ alignItems: 'center', gap: 8, marginTop: 8 }}>
             <TouchableOpacity
               onPress={handleBarcodePress}
               style={{
@@ -199,19 +198,19 @@ const SchoolCard = () => {
               {!isNewStudent && (
                 <>
                   <FontAwesome6 name="barcode" size={14} color={theme.primaryText} iconStyle="solid" />
-                  <Text style={[typography.caption, {color: theme.primaryText, fontWeight: '500'}]}>바코드 크게 보기</Text>
+                  <Text style={[typography.caption, { color: theme.primaryText, fontWeight: '500' }]}>바코드 크게 보기</Text>
                 </>
               )}
             </TouchableOpacity>
           </View>
         </View>
       ) : (
-        <View style={{justifyContent: 'center', alignItems: 'center', flex: 1, gap: 16}}>
+        <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1, gap: 16 }}>
           {/* Login prompt with improved UI */}
-          <View style={{alignItems: 'center', gap: 8, marginBottom: 16}}>
+          <View style={{ alignItems: 'center', gap: 8, marginBottom: 16 }}>
             {/* <FontAwesome6 name="id-card" size={48} color={theme.secondaryText} iconStyle="regular" /> */}
-            <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600'}]}>학생증을 사용하려면</Text>
-            <Text style={[typography.body, {color: theme.secondaryText}]}>선린 구글 계정으로 로그인해 주세요</Text>
+            <Text style={[typography.subtitle, { color: theme.primaryText, fontWeight: '600' }]}>학생증을 사용하려면</Text>
+            <Text style={[typography.body, { color: theme.secondaryText }]}>선린 구글 계정으로 로그인해 주세요</Text>
           </View>
 
           <TouchableOpacity
@@ -221,7 +220,7 @@ const SchoolCard = () => {
               paddingVertical: 12,
               borderRadius: 10,
               shadowColor: '#000',
-              shadowOffset: {width: 0, height: 2},
+              shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.1,
               shadowRadius: 4,
               elevation: 3,
@@ -246,16 +245,16 @@ const SchoolCard = () => {
                 })
                 .catch(error => showToast(`로그인에 실패했어요:\n${error.message}`));
             }}>
-            <View style={{flexDirection: 'row', gap: 8, alignItems: 'center'}}>
+            <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
               <FontAwesome6 name="google" iconStyle="brand" size={18} color="white" />
-              <Text style={[typography.body, {color: 'white', fontWeight: '600'}]}>구글로 로그인</Text>
+              <Text style={[typography.body, { color: 'white', fontWeight: '600' }]}>구글로 로그인</Text>
             </View>
           </TouchableOpacity>
 
-          <Text style={[typography.caption, {color: theme.secondaryText, textAlign: 'center', paddingHorizontal: 32}]}>@sunrint.hs.kr 도메인 계정만 사용 가능합니다</Text>
+          <Text style={[typography.caption, { color: theme.secondaryText, textAlign: 'center', paddingHorizontal: 32 }]}>@sunrint.hs.kr 도메인 계정만 사용 가능합니다</Text>
         </View>
       )}
-      <View style={{elevation: 0, zIndex: 0}}>
+      <View style={{ elevation: 0, zIndex: 0 }}>
         {!isNewStudent && (
           <Modal visible={isModalVisible} transparent={true}>
             <TouchableOpacity
@@ -264,7 +263,7 @@ const SchoolCard = () => {
                 justifyContent: 'center',
                 alignItems: 'center',
                 backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                transform: [{rotate: '90deg'}, {scale: 2.5}],
+                transform: [{ rotate: '90deg' }, { scale: 2.5 }],
               }}
               onPress={handleCloseModal}
               activeOpacity={1}>

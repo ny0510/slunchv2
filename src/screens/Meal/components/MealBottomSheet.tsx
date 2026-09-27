@@ -1,8 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useState } from 'react';
-import { View } from 'react-native';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import analytics from '@react-native-firebase/analytics';
+import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Share from 'react-native-share';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
@@ -35,14 +34,14 @@ const MealBottomSheet = forwardRef<BottomSheet, MealBottomSheetProps>(({ selecte
     ), []);
 
     const handleCopy = () => {
-        analytics().logEvent('meal_copy');
+        logEvent(getAnalytics(), 'meal_copy');
         Clipboard.setString(`🍴${schoolName} ${selectedMealDate} 급식\n\n- ${selectedMeal.split('\n').join('\n- ')}`);
         showToast('클립보드에 복사되었어요.');
         onClose();
     };
 
     const handleTextShare = () => {
-        analytics().logEvent('meal_share');
+        logEvent(getAnalytics(), 'meal_share');
         Share.open({
             title: `${schoolName} ${selectedMealDate} 급식`,
             message: `🍴${schoolName} ${selectedMealDate} 급식\n\n- ${selectedMeal.split('\n').join('\n- ')}`,
@@ -54,7 +53,7 @@ const MealBottomSheet = forwardRef<BottomSheet, MealBottomSheetProps>(({ selecte
     };
 
     const handleImageShare = () => {
-        analytics().logEvent('meal_instagram_share');
+        logEvent(getAnalytics(), 'meal_instagram_share');
         navigation.navigate('Share', { data: { meal: selectedMeal, date: selectedMealDate, school: schoolName } });
         onClose();
     };

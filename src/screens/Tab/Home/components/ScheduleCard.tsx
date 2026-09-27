@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import React, { useCallback, useEffect, useState, useImperativeHandle, forwardRef } from 'react';
 import { FlatList, Text, View } from 'react-native';
 import TouchableScale from 'react-native-touchable-scale';
@@ -10,6 +11,8 @@ import { useUser } from '@/contexts/UserContext';
 import { showToast } from '@/lib/toast';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import { Schedule } from '@/types/api';
+
+dayjs.extend(isSameOrAfter);
 
 export interface ScheduleCardRef {
   refresh: () => Promise<void>;
@@ -40,10 +43,10 @@ const ScheduleCard = forwardRef<ScheduleCardRef, ScheduleCardProps>(({ onPress, 
       const scheduleResponse =
         scheduleResult?.length > 0
           ? scheduleResult.filter(schedule => {
-              const startDate = dayjs(schedule.date.start);
-              const endDate = dayjs(schedule.date.end || schedule.date.start);
-              return startDate.isSameOrAfter(today, 'day') || (startDate.isBefore(today, 'day') && endDate.isSameOrAfter(today, 'day'));
-            })
+            const startDate = dayjs(schedule.date.start);
+            const endDate = dayjs(schedule.date.end || schedule.date.start);
+            return startDate.isSameOrAfter(today, 'day') || (startDate.isBefore(today, 'day') && endDate.isSameOrAfter(today, 'day'));
+          })
           : [];
       setSchedules(scheduleResponse);
     } catch (e) {

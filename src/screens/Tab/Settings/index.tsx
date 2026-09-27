@@ -1,29 +1,29 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {BackHandler, Platform, Text, TouchableOpacity, View} from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { BackHandler, Platform, Text, TouchableOpacity, View } from 'react-native';
 
 import AppInfoCard from './components/AppInfoCard';
 import DeveloperSettingCard from './components/DeveloperSettingCard';
 import MyInfoCard from './components/MyInfoCard';
 import ProfileSection from './components/ProfileSection';
 import SettingCard from './components/SettingCard';
-import {getClassList, removeMealNotification, removeTimetableNotification} from '@/api';
+import { getClassList, removeMealNotification, removeTimetableNotification } from '@/api';
 import Container from '@/components/Container';
 import Loading from '@/components/Loading';
-import {useTheme} from '@/contexts/ThemeContext';
-import {useUser} from '@/contexts/UserContext';
-import {useScrollToTop} from '@/hooks/useScrollToTop';
-import {showToast} from '@/lib/toast';
-import {RootStackParamList} from '@/navigation/RootStacks';
-import {ClassData} from '@/types/onboarding';
-import BottomSheet, {BottomSheetBackdrop, BottomSheetView} from '@gorhom/bottom-sheet';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useUser } from '@/contexts/UserContext';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
+import { showToast } from '@/lib/toast';
+import { RootStackParamList } from '@/navigation/RootStacks';
+import { ClassData } from '@/types/onboarding';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import analytics from '@react-native-firebase/analytics';
-import {NavigationProp, useNavigation} from '@react-navigation/native';
+import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import BannerAdCard from '@/components/BannerAdCard';
 import { ANDROID_HOME_BANNER_AD_UNIT_ID, IOS_HOME_BANNER_AD_UNIT_ID } from '@env';
 import WheelPicker from '@quidone/react-native-wheel-picker';
 
-const Settings = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
+const Settings = ({ setScrollRef }: { setScrollRef?: (ref: any) => void }) => {
   const [developerOptions, setDeveloperOptions] = useState(false);
   const [gradeList, setGradeList] = useState<number[]>([]);
   const [classList, setClassList] = useState<number[][]>([]);
@@ -38,15 +38,15 @@ const Settings = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
   const gradeScrollPickerRef = useRef<any>(null);
   const scrollViewRef = useRef<any>(null);
 
-  const {theme, typography, isDark} = useTheme();
-  const {schoolInfo, classInfo, refreshUserData, setClassChangedTrigger} = useUser();
+  const { theme, typography, isDark } = useTheme();
+  const { schoolInfo, classInfo, refreshUserData, setClassChangedTrigger } = useUser();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   // Use the scroll-to-top hook
   useScrollToTop(scrollViewRef, setScrollRef);
 
   useEffect(() => {
-    analytics().logScreenView({screen_name: '설정 페이지', screen_class: 'Settings'});
+    logEvent(getAnalytics(), 'screen_view', { screen_name: '설정 페이지', screen_class: 'Settings' });
     AsyncStorage.getItem('developerOptions').then(val => setDeveloperOptions(!!JSON.parse(val ?? 'false')));
   }, []);
 
@@ -86,7 +86,7 @@ const Settings = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
     setSelectedClass(currentClass);
 
     setIsBottomSheetOpen(true);
-  }, [classInfo.grade, classInfo.class, gradeList, classList, isLoading, isButtonDisabled]);
+  }, [classInfo.grade, classInfo.class, isLoading, isButtonDisabled]);
 
   // Open bottom sheet and initialize ScrollPickers after it mounts
   useEffect(() => {
@@ -193,7 +193,7 @@ const Settings = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
     setIsLoading(true);
 
     try {
-      const classData: ClassData = {grade: selectedGrade, class: selectedClass};
+      const classData: ClassData = { grade: selectedGrade, class: selectedClass };
 
       // Update class information
       await AsyncStorage.setItem('class', JSON.stringify(classData));
@@ -267,27 +267,27 @@ const Settings = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
   return (
     <>
       <Container scrollView bounce scrollViewRef={scrollViewRef}>
-        <View style={{gap: 18, width: '100%', marginVertical: 16}}>
+        <View style={{ gap: 18, width: '100%', marginVertical: 16 }}>
           {/* 계정 섹션 */}
-          <View style={{gap: 8}}>
+          <View style={{ gap: 8 }}>
             <ProfileSection />
           </View>
 
           {/* 설정 섹션 */}
-          <View style={{gap: 8}}>
-            <Text style={[typography.caption, {color: theme.secondaryText, paddingHorizontal: 16, marginBottom: 4}]}>설정</Text>
+          <View style={{ gap: 8 }}>
+            <Text style={[typography.caption, { color: theme.secondaryText, paddingHorizontal: 16, marginBottom: 4 }]}>설정</Text>
             <SettingCard onClassChangePress={handleClassChangePress} />
             {developerOptions && <DeveloperSettingCard />}
           </View>
 
           {/* 정보 섹션 */}
-          <View style={{gap: 8}}>
-            <Text style={[typography.caption, {color: theme.secondaryText, paddingHorizontal: 16, marginBottom: 4}]}>정보</Text>
+          <View style={{ gap: 8 }}>
+            <Text style={[typography.caption, { color: theme.secondaryText, paddingHorizontal: 16, marginBottom: 4 }]}>정보</Text>
             <MyInfoCard schoolInfo={schoolInfo} classInfo={classInfo} />
             <AppInfoCard onDeveloperOptionsEnabled={enabled => setDeveloperOptions(enabled)} />
           </View>
 
-          { /* 야호 */ }
+          { /* 야호 */}
           <BannerAdCard adUnitId={Platform.OS === 'ios' ? IOS_HOME_BANNER_AD_UNIT_ID : ANDROID_HOME_BANNER_AD_UNIT_ID} />
         </View>
       </Container>
@@ -300,55 +300,55 @@ const Settings = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
           backdropComponent={renderBackdrop}
           enablePanDownToClose={true}
           onClose={() => setIsBottomSheetOpen(false)}
-          backgroundStyle={{backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16}}
-          handleIndicatorStyle={{backgroundColor: theme.secondaryText}}
+          backgroundStyle={{ backgroundColor: theme.card, borderTopLeftRadius: 16, borderTopRightRadius: 16 }}
+          handleIndicatorStyle={{ backgroundColor: theme.secondaryText }}
           keyboardBehavior="interactive"
           keyboardBlurBehavior="restore">
-          <BottomSheetView style={{paddingHorizontal: 18, paddingBottom: 12}}>
-            <View style={{gap: 20, flex: 1}}>
-              <View style={{gap: 4, width: '100%'}}>
-                <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '600', alignSelf: 'flex-start'}]}>학급 변경</Text>
-                <Text style={[typography.body, {color: theme.primaryText, fontWeight: '300', alignSelf: 'flex-start'}]}>변경할 학년과 반을 선택해주세요.</Text>
+          <BottomSheetView style={{ paddingHorizontal: 18, paddingBottom: 12 }}>
+            <View style={{ gap: 20, flex: 1 }}>
+              <View style={{ gap: 4, width: '100%' }}>
+                <Text style={[typography.subtitle, { color: theme.primaryText, fontWeight: '600', alignSelf: 'flex-start' }]}>학급 변경</Text>
+                <Text style={[typography.body, { color: theme.primaryText, fontWeight: '300', alignSelf: 'flex-start' }]}>변경할 학년과 반을 선택해주세요.</Text>
               </View>
 
               {isLoading ? (
-                <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                   <Loading />
                 </View>
               ) : (
-                <View style={{flex: 1, flexDirection: 'row', gap: 12}}>
-                <WheelPicker
-                  data={gradeList.map(grade => ({ value: grade, label: `${grade}학년` }))}
-                  value={selectedGrade}
-                  itemHeight={50}
-                  visibleItemCount={5}
-                  onValueChanged={({ item }) => handleGradeChange(gradeList.indexOf(item.value) + 1)}
-                  itemTextStyle={{
-                    fontSize: 20,
-                    color: theme.primaryText,
-                    fontWeight: '500',
-                  }}
-                  overlayItemStyle={isDark ? {
-                    backgroundColor: theme.white
-                  } : undefined}
-                  style={{ flex: 1 }}
-                />
-                <WheelPicker
-                  data={(classList[gradeList.indexOf(selectedGrade)] || []).map(cls => ({ value: cls, label: `${cls}반` }))}
-                  value={selectedClass}
-                  itemHeight={50}
-                  visibleItemCount={5}
-                  onValueChanged={({ item }) => handleClassChange((classList[gradeList.indexOf(selectedGrade)] || []).indexOf(item.value) + 1)}
-                  itemTextStyle={{
-                    fontSize: 20,
-                    color: theme.primaryText,
-                    fontWeight: '500',
-                  }}
-                  overlayItemStyle={isDark ? {
-                    backgroundColor: theme.white
-                  } : undefined}
-                  style={{ flex: 1 }}
-                />
+                <View style={{ flex: 1, flexDirection: 'row', gap: 12 }}>
+                  <WheelPicker
+                    data={gradeList.map(grade => ({ value: grade, label: `${grade}학년` }))}
+                    value={selectedGrade}
+                    itemHeight={50}
+                    visibleItemCount={5}
+                    onValueChanged={({ item }) => handleGradeChange(gradeList.indexOf(item.value) + 1)}
+                    itemTextStyle={{
+                      fontSize: 20,
+                      color: theme.primaryText,
+                      fontWeight: '500',
+                    }}
+                    overlayItemStyle={isDark ? {
+                      backgroundColor: theme.white
+                    } : undefined}
+                    style={{ flex: 1 }}
+                  />
+                  <WheelPicker
+                    data={(classList[gradeList.indexOf(selectedGrade)] || []).map(cls => ({ value: cls, label: `${cls}반` }))}
+                    value={selectedClass}
+                    itemHeight={50}
+                    visibleItemCount={5}
+                    onValueChanged={({ item }) => handleClassChange((classList[gradeList.indexOf(selectedGrade)] || []).indexOf(item.value) + 1)}
+                    itemTextStyle={{
+                      fontSize: 20,
+                      color: theme.primaryText,
+                      fontWeight: '500',
+                    }}
+                    overlayItemStyle={isDark ? {
+                      backgroundColor: theme.white
+                    } : undefined}
+                    style={{ flex: 1 }}
+                  />
                 </View>
               )}
 
@@ -368,8 +368,8 @@ const Settings = ({setScrollRef}: {setScrollRef?: (ref: any) => void}) => {
                 disabled={isButtonDisabled || isLoading}
                 activeOpacity={0.7}
                 delayPressIn={0}
-                hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
-                <Text style={[typography.subtitle, {color: theme.primaryText, fontWeight: '700'}]}>변경하기</Text>
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Text style={[typography.subtitle, { color: theme.primaryText, fontWeight: '700' }]}>변경하기</Text>
               </TouchableOpacity>
             </View>
           </BottomSheetView>

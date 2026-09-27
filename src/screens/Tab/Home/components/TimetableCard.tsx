@@ -155,7 +155,7 @@ const TimetableCard = forwardRef<TimetableCardRef, TimetableCardProps>(({ onLong
 
 TimetableCard.displayName = 'TimetableCard';
 
-const LoadingView = ({ height }: { height: number }) => (
+const LoadingView = ({ height: _height }: { height: number }) => (
   <View style={styles.loadingView}>
     <Loading />
   </View>

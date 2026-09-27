@@ -1,4 +1,3 @@
-import dayjs from 'dayjs';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -18,7 +17,7 @@ export const getCachedData = async (key: string) => {
   const cacheKey = `${CACHE_PREFIX}${key}`;
   const cachedData = await AsyncStorage.getItem(cacheKey);
   if (cachedData) {
-    const {data, timestamp} = JSON.parse(cachedData);
+    const { data, timestamp } = JSON.parse(cachedData);
     const now = Date.now();
 
     // Simple cache expiration check
@@ -38,7 +37,7 @@ export const clearCache = async (prefix: string) => {
     const cacheKeys = keys.filter(key => key.startsWith(prefix));
 
     if (cacheKeys.length > 0) {
-      await AsyncStorage.multiRemove(cacheKeys);
+      await AsyncStorage.removeMany(cacheKeys);
     }
   } catch (error) {
     console.error('Error clearing cache:', error);

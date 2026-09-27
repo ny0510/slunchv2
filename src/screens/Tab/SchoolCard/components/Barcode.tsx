@@ -1,17 +1,17 @@
-import React, {useEffect, useState} from 'react';
-import {View} from 'react-native';
-import {Path, Svg} from 'react-native-svg';
+import React, { useEffect, useState } from 'react';
+import { View } from 'react-native';
+import { Path, Svg } from 'react-native-svg';
 
-import {binaryToSvg} from '@/lib/binaryToSvg';
+import { binaryToSvg } from '@/lib/binaryToSvg';
 import barcodes from 'jsbarcode/src/barcodes';
 
 interface BarcodeProps {
   value: string;
-  format?: barcodes;
+  format?: keyof typeof barcodes;
   fill?: string;
 }
 
-const Barcode = ({value, format = 'CODE128', fill}: BarcodeProps) => {
+const Barcode = ({ value, format = 'CODE128', fill }: BarcodeProps) => {
   const [bars, setBars] = useState<any>();
   const [width, setWidth] = useState<number>();
   useEffect(() => {
@@ -19,7 +19,7 @@ const Barcode = ({value, format = 'CODE128', fill}: BarcodeProps) => {
       const encoded = new barcodes[format](value, {}).encode();
       setBars(binaryToSvg(encoded));
       setWidth(encoded.data.length * 2);
-    } catch (error) {
+    } catch {
       setBars([]);
       setWidth(0);
     }

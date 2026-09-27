@@ -1,0 +1,19 @@
+diff --git a/android/build.gradle b/android/build.gradle
+index e3aacde27907a94692c8ae9beec9d3d0ed897f5e..2498ebab430523196a0fd922aafaf5738022ba58 100644
+--- a/android/build.gradle
++++ b/android/build.gradle
+@@ -20,6 +20,7 @@ buildscript {
+ apply plugin: 'com.android.library'
+ 
+ android {
++    namespace "com.BV.LinearGradient"
+     compileSdkVersion safeExtGet('compileSdkVersion', 31).toInteger()
+     defaultConfig {
+         minSdkVersion safeExtGet('minSdkVersion', 21)
+diff --git a/android/src/main/AndroidManifest.xml b/android/src/main/AndroidManifest.xml
+index a7d57a67e829f75a40b5d385e687ad178b3cf6cb..94cbbcfc396aca20240417158bac4d52ba4e1a14 100644
+--- a/android/src/main/AndroidManifest.xml
++++ b/android/src/main/AndroidManifest.xml
+@@ -1 +1 @@
+-<manifest package="com.BV.LinearGradient" />
++<manifest xmlns:android="http://schemas.android.com/apk/res/android" />

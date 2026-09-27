@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Platform, RefreshControl, Text, View } from 'react-native';
 import { trigger } from 'react-native-haptic-feedback';
-import analytics from '@react-native-firebase/analytics';
+import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import BottomSheet from '@gorhom/bottom-sheet';
 
@@ -42,7 +42,7 @@ const Meal = () => {
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   useEffect(() => {
-    analytics().logScreenView({ screen_name: '급식 상세 페이지', screen_class: 'Meal' });
+    logEvent(getAnalytics(), 'screen_view', { screen_name: '급식 상세 페이지', screen_class: 'Meal' });
   }, []);
 
   const openBottomSheet = useCallback((_meal: string, date: string) => {
