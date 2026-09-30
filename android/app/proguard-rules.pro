@@ -96,6 +96,10 @@
 -keep class com.facebook.hermes.unicode.** { *; }
 -keep class com.facebook.jni.** { *; }
 
+# time4j (react-native-date-picker) 관련
+# time4j가 리플렉션으로 생성하므로 기본 생성자 유지 (R8 full mode에서는 -keep class만으로 유지되지 않음)
+-keep class net.time4j.android.spi.AndroidResourceLoader { <init>(); }
+
 # R8 관련 경고 무시
 -dontwarn java.lang.invoke.StringConcatFactory
 
